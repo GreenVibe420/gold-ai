@@ -7,46 +7,65 @@
 
 <style>
 body{
-  margin:0;
-  background:#000;
-  color:#00ff99;
-  font-family:monospace;
+    margin:0;
+    background:#000;
+    color:#39ff14;
+    font-family:monospace;
 }
 
 /* HEADER */
 .header{
-  display:flex;
-  justify-content:space-between;
-  padding:12px;
-  border-bottom:1px solid #00ff99;
-  box-shadow:0 0 10px #00ff99;
+    text-align:center;
+    padding:20px;
+    font-size:28px;
+    font-weight:bold;
+    border-bottom:2px solid #39ff14;
+    text-shadow:0 0 15px #39ff14;
 }
 
 /* BOX */
 .box{
-  margin:10px;
-  padding:15px;
-  border:2px solid #00ff99;
-  border-radius:12px;
-  box-shadow:0 0 10px #00ff99;
+    border:2px solid #39ff14;
+    border-radius:15px;
+    padding:15px;
+    margin:15px;
+    box-shadow:0 0 20px #39ff14;
 }
 
-/* GRID */
+/* GRID 3 ช่อง */
 .grid{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+    gap:10px;
+    padding:10px;
 }
 
-/* BAR */
+/* AI BAR */
 .bar{
-  height:8px;
-  background:#003322;
-  border-radius:10px;
+    height:10px;
+    background:#111;
+    border-radius:10px;
+    overflow:hidden;
 }
 .fill{
-  height:100%;
-  background:#00ff99;
+    height:100%;
+    background:#39ff14;
+}
+
+/* NEWS */
+.news-item{
+    padding:5px;
+    border-bottom:1px solid #39ff14;
+}
+
+/* ALERT */
+.alert{
+    color:red;
+    font-weight:bold;
+    animation:blink 1s infinite;
+}
+@keyframes blink{
+    50%{opacity:0;}
 }
 </style>
 </head>
@@ -54,33 +73,43 @@ body{
 <body>
 
 <div class="header">
-  <div>🟢 XAUUSD AI TERMINAL PRO</div>
-  <div id="time"></div>
+🟢 XAUUSD AI TERMINAL PRO
 </div>
 
-<div class="box" id="price">PRICE: Loading...</div>
-
+<!-- ราคา -->
 <div class="box">
-<iframe src="https://s.tradingview.com/widgetembed/?symbol=OANDA:XAUUSD&interval=1&theme=dark"
+PRICE: <span id="price">Loading...</span>
+</div>
+
+<!-- กราฟ -->
+<div class="box">
+<iframe src="https://s.tradingview.com/widgetembed/?symbol=OANDA:XAUUSD&interval=1"
 width="100%" height="300"></iframe>
 </div>
 
+<!-- AI -->
 <div class="grid">
 
 <div class="box">
-⚡ AI FAST (1M)
-<div id="ai1"></div>
-<div class="bar"><div class="fill" id="bar1"></div></div>
+⚡ AI FAST (1M)<br>
+<span id="ai1"></span>
+<div class="bar"><div id="bar1" class="fill"></div></div>
 </div>
 
 <div class="box">
-🧠 AI SMART (5M)
-<div id="ai5"></div>
-<div class="bar"><div class="fill" id="bar5"></div></div>
+🧠 AI SMART (5M)<br>
+<span id="ai5"></span>
+<div class="bar"><div id="bar5" class="fill"></div></div>
+</div>
+
+<div class="box">
+📊 TREND<br>
+<span id="trend"></span>
 </div>
 
 </div>
 
+<!-- ข่าว -->
 <div class="box">
 🌍 ข่าว + Impact
 <div id="news"></div>
@@ -88,141 +117,69 @@ width="100%" height="300"></iframe>
 
 <script>
 
-/* TIME */
-setInterval(()=>{
-  time.innerText=new Date().toLocaleTimeString();
-},1000);
+/* ===== ราคา Fake (เดี๋ยวอัป API ทีหลัง) ===== */
+let price = 4400;
 
-/* PRICE */
-let price=0;
-let history=[];
+function updatePrice(){
+    let change = (Math.random()-0.5)*5;
+    price += change;
 
-async function getPrice(){
-  try{
-    let res=await fetch("https://api.gold-api.com/price/XAUUSD");
-    let data=await res.json();
+    let percent = (change/price*100).toFixed(2);
 
-    price=data.price;
-    history.push(price);
-    if(history.length>100) history.shift();
+    let color = change>=0 ? "lime" : "red";
 
-    priceBox.innerText="PRICE: "+price+" USD";
-  }catch{}
+    document.getElementById("price").innerHTML =
+    `<span style="color:${color}">${price.toFixed(2)} USD (${percent}%)</span>`;
 }
-setInterval(getPrice,5000);
-getPrice();
+setInterval(updatePrice,1000);
 
-/* RSI */
-function rsi(period=14){
-  if(history.length<period+1) return 50;
-  let gain=0,loss=0;
-  for(let i=history.length-period;i<history.length;i++){
-    let d=history[i]-history[i-1];
-    if(d>0) gain+=d; else loss+=Math.abs(d);
-  }
-  let rs=gain/(loss||1);
-  return 100-(100/(1+rs));
+/* ===== AI ===== */
+function ai(){
+    let a1 = Math.floor(Math.random()*100);
+    let a5 = Math.floor(Math.random()*100);
+
+    document.getElementById("ai1").innerHTML =
+    a1+"% "+(a1>50?"BUY 📈":"SELL 📉");
+
+    document.getElementById("ai5").innerHTML =
+    a5+"% "+(a5>50?"BUY 📈":"SELL 📉");
+
+    document.getElementById("bar1").style.width=a1+"%";
+    document.getElementById("bar5").style.width=a5+"%";
+
+    /* trend */
+    let trend = (a1+a5)/2;
+    document.getElementById("trend").innerHTML =
+    trend>50 ? "UPTREND 📈" : "DOWNTREND 📉";
+
+    /* ALERT */
+    if(a1>80 && a5>70){
+        addNews("🚨 ทองกำลังพุ่งแรงมาก!", "HIGH", "+90%", true);
+    }
+    if(a1<20 && a5<30){
+        addNews("⚠️ ทองมีโอกาสร่วง!", "HIGH", "-85%", true);
+    }
 }
+setInterval(ai,5000);
 
-/* TREND */
-function trend(){
-  if(history.length<20) return 0;
-  let s=history.slice(-5).reduce((a,b)=>a+b)/5;
-  let l=history.slice(-20).reduce((a,b)=>a+b)/20;
-  return s-l;
-}
+/* ===== ข่าว ===== */
+function addNews(text,impact,percent,alert=false){
+    let color = percent.includes("+") ? "lime" : "red";
 
-/* AI */
-function analyze(len){
-  if(history.length<len) return null;
+    let html = `
+    <div class="news-item ${alert?'alert':''}">
+    ${text} | Impact: ${impact} |
+    <span style="color:${color}">${percent}</span>
+    </div>
+    `;
 
-  let last=history[history.length-1];
-  let avg=history.slice(-len).reduce((a,b)=>a+b)/len;
-  let diff=last-avg;
-
-  let r=rsi();
-  let t=trend();
-
-  let score=0;
-  if(diff>0) score++;
-  if(r<30) score++;
-  if(r>70) score--;
-  if(t>0) score++;
-  if(t<0) score--;
-
-  let dir="WAIT";
-  if(score>=2) dir="BUY";
-  if(score<=-2) dir="SELL";
-
-  let conf=Math.min(Math.abs(score)*30+50,95);
-
-  return {
-    dir,conf,
-    entry:last.toFixed(2),
-    tp:(dir=="BUY"?last+10:last-10).toFixed(2),
-    sl:(dir=="BUY"?last-5:last+5).toFixed(2),
-    rsi:r.toFixed(1)
-  };
+    document.getElementById("news").innerHTML =
+    html + document.getElementById("news").innerHTML;
 }
 
-/* AI FAST */
-function aiFast(){
-  let r=analyze(20);
-  if(!r) return;
-  ai1.innerHTML=
-  `${r.dir} ${r.conf}%<br>
-  RSI:${r.rsi}<br>
-  Entry:${r.entry}<br>
-  TP:${r.tp}<br>
-  SL:${r.sl}`;
-  bar1.style.width=r.conf+"%";
-}
-setInterval(aiFast,60000);
-aiFast();
-
-/* AI SMART */
-function aiSmart(){
-  let r=analyze(50);
-  if(!r) return;
-  ai5.innerHTML=
-  `${r.dir} ${r.conf}%<br>
-  RSI:${r.rsi}<br>
-  Entry:${r.entry}<br>
-  TP:${r.tp}<br>
-  SL:${r.sl}`;
-  bar5.style.width=r.conf+"%";
-}
-setInterval(aiSmart,300000);
-aiSmart();
-
-/* NEWS */
-async function loadNews(){
-  try{
-    let res=await fetch("https://api.currentsapi.services/v1/latest-news?language=en&apiKey=demo");
-    let data=await res.json();
-
-    let html="";
-    data.news.slice(0,5).forEach(n=>{
-      let impact=(Math.random()*10-5).toFixed(2);
-      let color=impact>0?"#00ff99":"#ff4444";
-
-      html+=`
-      <div style="margin-bottom:8px">
-        ${n.title}
-        <div style="color:${color}">
-        Impact: ${impact}%
-        </div>
-      </div>`;
-    });
-
-    news.innerHTML=html;
-
-  }catch{
-    news.innerText="ข่าวโหลดไม่ได้";
-  }
-}
-setInterval(loadNews,60000);
-loadNews();
+/* ข่าวเริ่มต้น */
+addNews("Fed มีผลต่อทอง","HIGH","+60%");
+addNews("USD แข็งค่า","MEDIUM","-40%");
 
 </script>
 
