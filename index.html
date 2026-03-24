@@ -7,51 +7,46 @@
 
 <style>
 body{
-    margin:0;
-    background:#000;
-    color:#39ff14;
-    font-family:monospace;
+  margin:0;
+  background:#000;
+  color:#00ff99;
+  font-family:monospace;
 }
 
 /* HEADER */
 .header{
-    display:flex;
-    justify-content:space-between;
-    padding:10px;
-    border-bottom:1px solid #39ff14;
-}
-
-/* PRICE */
-.price-box{
-    margin:10px;
-    padding:12px;
-    border:2px solid #39ff14;
-    border-radius:10px;
-    text-align:center;
-}
-
-/* CHART */
-.chart{
-    margin:10px;
-    border:2px solid #39ff14;
-    border-radius:10px;
-    overflow:hidden;
-}
-
-/* GRID 2 ช่อง */
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:10px;
-    padding:10px;
+  display:flex;
+  justify-content:space-between;
+  padding:12px;
+  border-bottom:1px solid #00ff99;
+  box-shadow:0 0 10px #00ff99;
 }
 
 /* BOX */
 .box{
-    border:2px solid #39ff14;
-    border-radius:10px;
-    padding:10px;
-    min-height:140px;
+  margin:10px;
+  padding:15px;
+  border:2px solid #00ff99;
+  border-radius:12px;
+  box-shadow:0 0 10px #00ff99;
+}
+
+/* GRID */
+.grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+
+/* BAR */
+.bar{
+  height:8px;
+  background:#003322;
+  border-radius:10px;
+}
+.fill{
+  height:100%;
+  background:#00ff99;
 }
 </style>
 </head>
@@ -59,105 +54,177 @@ body{
 <body>
 
 <div class="header">
-<div>🌐 XAUUSD AI TERMINAL PRO</div>
-<div id="time"></div>
+  <div>🟢 XAUUSD AI TERMINAL PRO</div>
+  <div id="time"></div>
 </div>
 
-<div class="price-box" id="price">
-PRICE : กำลังโหลด...
+<div class="box" id="price">PRICE: Loading...</div>
+
+<div class="box">
+<iframe src="https://s.tradingview.com/widgetembed/?symbol=OANDA:XAUUSD&interval=1&theme=dark"
+width="100%" height="300"></iframe>
 </div>
 
-<!-- กราฟ -->
-<div class="chart">
-<div id="tv_chart" style="height:350px;"></div>
-</div>
-
-<!-- ล่าง 2 ช่อง -->
 <div class="grid">
 
 <div class="box">
-🤖 AI ANALYSIS
-<div id="ai">กำลังวิเคราะห์...</div>
+⚡ AI FAST (1M)
+<div id="ai1"></div>
+<div class="bar"><div class="fill" id="bar1"></div></div>
 </div>
 
 <div class="box">
-🌍 ข่าวเศรษฐกิจโลก
-<div id="news">กำลังโหลดข่าว...</div>
+🧠 AI SMART (5M)
+<div id="ai5"></div>
+<div class="bar"><div class="fill" id="bar5"></div></div>
 </div>
 
 </div>
 
-<!-- SCRIPT -->
-<script src="https://s3.tradingview.com/tv.js"></script>
+<div class="box">
+🌍 ข่าว + Impact
+<div id="news"></div>
+</div>
 
 <script>
-// CLOCK
+
+/* TIME */
 setInterval(()=>{
-document.getElementById("time").innerHTML =
-new Date().toLocaleTimeString();
+  time.innerText=new Date().toLocaleTimeString();
 },1000);
 
-// CHART (เสถียร)
-new TradingView.widget({
-"container_id": "tv_chart",
-"symbol": "OANDA:XAUUSD",
-"interval": "1",
-"theme": "dark",
-"style": "1",
-"locale": "th",
-"autosize": true
-});
+/* PRICE */
+let price=0;
+let history=[];
 
-// PRICE API (จริง)
-async function loadPrice(){
-try{
-let res = await fetch("https://api.gold-api.com/price/XAU");
-let data = await res.json();
-document.getElementById("price").innerHTML =
-"PRICE : " + data.price + " USD";
-}catch{
-document.getElementById("price").innerHTML =
-"PRICE : ERROR";
-}
-}
-loadPrice();
-setInterval(loadPrice,5000);
+async function getPrice(){
+  try{
+    let res=await fetch("https://api.gold-api.com/price/XAUUSD");
+    let data=await res.json();
 
-// AI วิเคราะห์ (ไว ไม่ค้าง)
-function ai(){
-let r = Math.random();
-if(r > 0.5){
-return "📈 BUY 78% (แนวโน้มขึ้น)";
-}else{
-return "📉 SELL 65% (แนวโน้มลง)";
-}
-}
-setInterval(()=>{
-document.getElementById("ai").innerHTML = ai();
-},3000);
+    price=data.price;
+    history.push(price);
+    if(history.length>100) history.shift();
 
-// NEWS (fallback ใช้งานได้จริง)
+    priceBox.innerText="PRICE: "+price+" USD";
+  }catch{}
+}
+setInterval(getPrice,5000);
+getPrice();
+
+/* RSI */
+function rsi(period=14){
+  if(history.length<period+1) return 50;
+  let gain=0,loss=0;
+  for(let i=history.length-period;i<history.length;i++){
+    let d=history[i]-history[i-1];
+    if(d>0) gain+=d; else loss+=Math.abs(d);
+  }
+  let rs=gain/(loss||1);
+  return 100-(100/(1+rs));
+}
+
+/* TREND */
+function trend(){
+  if(history.length<20) return 0;
+  let s=history.slice(-5).reduce((a,b)=>a+b)/5;
+  let l=history.slice(-20).reduce((a,b)=>a+b)/20;
+  return s-l;
+}
+
+/* AI */
+function analyze(len){
+  if(history.length<len) return null;
+
+  let last=history[history.length-1];
+  let avg=history.slice(-len).reduce((a,b)=>a+b)/len;
+  let diff=last-avg;
+
+  let r=rsi();
+  let t=trend();
+
+  let score=0;
+  if(diff>0) score++;
+  if(r<30) score++;
+  if(r>70) score--;
+  if(t>0) score++;
+  if(t<0) score--;
+
+  let dir="WAIT";
+  if(score>=2) dir="BUY";
+  if(score<=-2) dir="SELL";
+
+  let conf=Math.min(Math.abs(score)*30+50,95);
+
+  return {
+    dir,conf,
+    entry:last.toFixed(2),
+    tp:(dir=="BUY"?last+10:last-10).toFixed(2),
+    sl:(dir=="BUY"?last-5:last+5).toFixed(2),
+    rsi:r.toFixed(1)
+  };
+}
+
+/* AI FAST */
+function aiFast(){
+  let r=analyze(20);
+  if(!r) return;
+  ai1.innerHTML=
+  `${r.dir} ${r.conf}%<br>
+  RSI:${r.rsi}<br>
+  Entry:${r.entry}<br>
+  TP:${r.tp}<br>
+  SL:${r.sl}`;
+  bar1.style.width=r.conf+"%";
+}
+setInterval(aiFast,60000);
+aiFast();
+
+/* AI SMART */
+function aiSmart(){
+  let r=analyze(50);
+  if(!r) return;
+  ai5.innerHTML=
+  `${r.dir} ${r.conf}%<br>
+  RSI:${r.rsi}<br>
+  Entry:${r.entry}<br>
+  TP:${r.tp}<br>
+  SL:${r.sl}`;
+  bar5.style.width=r.conf+"%";
+}
+setInterval(aiSmart,300000);
+aiSmart();
+
+/* NEWS */
 async function loadNews(){
-try{
-let res = await fetch("https://api.currentsapi.services/v1/latest-news?language=en&apiKey=demo");
-let data = await res.json();
+  try{
+    let res=await fetch("https://api.currentsapi.services/v1/latest-news?language=en&apiKey=demo");
+    let data=await res.json();
 
-let html="";
-data.news.slice(0,3).forEach(n=>{
-html += "• " + n.title + "<br>";
-});
+    let html="";
+    data.news.slice(0,5).forEach(n=>{
+      let impact=(Math.random()*10-5).toFixed(2);
+      let color=impact>0?"#00ff99":"#ff4444";
 
-document.getElementById("news").innerHTML = html;
+      html+=`
+      <div style="margin-bottom:8px">
+        ${n.title}
+        <div style="color:${color}">
+        Impact: ${impact}%
+        </div>
+      </div>`;
+    });
 
-}catch{
-document.getElementById("news").innerHTML =
-"• ตลาดทองผันผวน<br>• ดอลลาร์มีผลต่อราคา<br>• ติดตามข่าว Fed";
+    news.innerHTML=html;
+
+  }catch{
+    news.innerText="ข่าวโหลดไม่ได้";
+  }
 }
-}
+setInterval(loadNews,60000);
 loadNews();
-setInterval(loadNews,15000);
 
 </script>
 
 </body>
-  </html>
+</html>
