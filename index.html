@@ -1,283 +1,251 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
-
-<title>XAUUSD AI PRO</title>
-
-<style>
-body{
-    margin:0;
-    background:#000;
-    color:#39ff14;
-    font-family:'Share Tech Mono', monospace;
-}
-
-.header{
-    display:flex;
-    justify-content:space-between;
-    padding:15px;
-    font-size:26px;
-    border-bottom:2px solid #39ff14;
-}
-
-.price-box{
-    margin:15px;
-    padding:15px;
-    border:2px solid #39ff14;
-    border-radius:20px;
-    text-align:center;
-    font-size:24px;
-    box-shadow:0 0 25px #39ff14;
-}
-
-.grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:15px;
-    padding:15px;
-}
-
-.box{
-    border:2px solid #39ff14;
-    border-radius:20px;
-    padding:15px;
-    box-shadow:0 0 20px #39ff14;
-}
-
-.buy{ color:#00ffcc; }
-.sell{ color:red; }
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>กัญชาบ่ - POS System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --neon: #39ff14; --bg-dark: #050505; }
+        body { font-family: 'Kanit', sans-serif; background-color: var(--bg-dark); color: white; overflow-x: hidden; user-select: none; }
+        .text-neon { color: var(--neon); text-shadow: 0 0 10px rgba(57, 255, 20, 0.7); }
+        .bg-neon { background-color: var(--neon); box-shadow: 0 0 15px rgba(57, 255, 20, 0.4); color: #000; }
+        .border-neon { border-color: var(--neon); box-shadow: 0 0 5px rgba(57, 255, 20, 0.3); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 50; }
+        .glass-panel { background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(16px); border-top: 1px solid rgba(57, 255, 20, 0.2); }
+        .smoke-effect { position: absolute; width: 40px; height: 40px; background: radial-gradient(circle, rgba(200,255,200,0.4) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); filter: blur(4px); animation: smokeAnim 0.6s ease-out forwards; z-index: 9999; }
+        @keyframes smokeAnim { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -150%) scale(2.5); opacity: 0; } }
+        .size-btn.active { background-color: rgba(57, 255, 20, 0.15); border-color: var(--neon); color: var(--neon); }
+    </style>
 </head>
+<body class="pb-64">
 
-<body>
+    <div id="cover-page" onclick="enterShop()" class="fixed inset-0 z-[100] flex flex-col items-center justify-center cursor-pointer bg-cover bg-center transition-opacity duration-500" 
+         style="background-image: url('https://i.postimg.cc/pTkmrM6z/20250825084156-22433108.jpg'); background-color: #000;">
+        <div class="absolute inset-0 bg-black/60 z-0"></div> 
+        <div class="z-10 text-center relative">
+            <h1 class="text-7xl font-extrabold text-neon tracking-widest drop-shadow-2xl mb-2">กัญชาบ่🌳</h1>
+            <div class="w-24 h-1 bg-neon mx-auto rounded-full shadow-[0_0_10px_#39ff14]"></div>
+            <p class="mt-20 text-gray-300 animate-pulse text-sm font-light tracking-widest">แตะเพื่อเข้าสู่ระบบ</p>
+        </div>
+    </div>
 
-<div class="header">
-    <div>🌐 XAUUSD AI PRO</div>
-    <div id="time"></div>
-</div>
+    <header class="p-4 bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-40 flex justify-between items-center border-b border-green-900/30">
+        <h1 class="text-neon font-bold text-xl tracking-wide">รายการสินค้า</h1>
+        <span class="text-xs text-gray-400 bg-black px-3 py-1 rounded-full border border-gray-800">30 สายพันธุ์🌳</span>
+    </header>
 
-<div class="price-box">
-    PRICE : <span id="price">Loading...</span>
-</div>
+    <main class="p-3">
+        <div id="product-list" class="product-grid"></div>
+    </main>
 
-<div style="padding:10px;">
-<div id="tv_chart"></div>
-<script src="https://s3.tradingview.com/tv.js"></script>
-<script>
-new TradingView.widget({
-    "width":"100%",
-    "height":300,
-    "symbol":"OANDA:XAUUSD",
-    "interval":"1",
-    "theme":"dark",
-    "container_id":"tv_chart"
-});
-</script>
-</div>
+    <div class="sticky-footer glass-panel p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.9)]">
+        <div id="cart-items" class="flex gap-2 overflow-x-auto no-scrollbar mb-4 py-2 min-h-[45px] items-center">
+            <span class="text-gray-600 text-sm italic">ยังไม่มีสินค้าในตะกร้า...</span>
+        </div>
+        <div class="flex justify-between items-end">
+            <div>
+                <p class="text-gray-400 text-xs mb-1">ยอดรวมทั้งหมด</p>
+                <p class="text-3xl font-bold text-neon leading-none">฿ <span id="total-price">0</span></p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="clearCart()" class="text-red-500 bg-black border border-red-900/50 px-4 py-3 rounded-xl font-bold active:scale-95 transition">ล้าง</button>
+                <button onclick="openCheckout()" class="bg-neon px-8 py-3 rounded-xl font-extrabold text-lg active:scale-95 transition text-black">ชำระเงิน</button>
+            </div>
+        </div>
+    </div>
 
-<div class="grid">
+    <div id="checkout-page" class="fixed inset-0 bg-black z-[90] hidden flex-col transition-transform duration-300 transform translate-y-full">
+        <header class="p-5 flex justify-between items-center border-b border-gray-800 bg-[#0a0a0a]">
+            <button onclick="closeCheckout()" class="text-gray-400 font-bold active:scale-95 px-2 py-1">← ย้อนกลับ</button>
+            <h2 class="text-neon font-bold text-xl tracking-wide">สรุปยอดชำระ</h2>
+            <div class="w-16"></div>
+        </header>
+        <div class="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-[#0a0a0a] to-[#000]">
+            <div id="checkout-list" class="space-y-3 mb-8"></div>
+            <div class="bg-[#111] border border-green-900/50 rounded-2xl p-6 mb-6 flex flex-col items-center shadow-lg relative overflow-hidden">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-neon opacity-10 blur-3xl rounded-full"></div>
+                <p class="text-neon font-bold mb-4 text-lg z-10">สแกนเพื่อชำระเงิน</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PROMPTPAY_DATA" alt="QR Code" class="w-48 h-48 object-cover rounded-xl border-2 border-neon mb-4 z-10 bg-white p-2">
+                <div class="text-center z-10">
+                    <p class="text-gray-300 text-sm">พร้อมเพย์: <span class="text-white font-bold">0996360891</span></p>
+                    <p class="text-gray-300 text-sm">ชื่อบัญชี: <span class="text-white font-bold">นาย ทวีทรัพย์ ไตรณรงค์</span></p>    
+                </div>
+            </div>
+        </div>
+        <div class="p-6 bg-[#050505] border-t border-green-900/50 pb-10 z-10">
+            <div class="flex justify-between items-end mb-4 border-b border-gray-800 pb-4">
+                <span class="text-gray-400 text-lg">ยอดชำระสุทธิ:</span>
+                <span class="text-neon text-4xl font-bold">฿ <span id="checkout-total">0</span></span>
+            </div>
+            <button onclick="confirmPayment()" class="w-full bg-neon text-black py-4 rounded-xl font-extrabold text-xl active:scale-95 transition">ยืนยันการโอนเงินแล้ว</button>
+        </div>
+    </div>
 
-<div class="box">
-<h3>⚡ AI FAST (1M)</h3>
-<div id="ai1"></div>
-</div>
+    <script>
+        // --- 🟢 ข้อมูลสินค้าทั้ง 30 รายการ (แก้ไขชื่อและลิงก์รูปที่นี่) ---
+        const productsData = [
+            { id: 1, name: "OG Kush", stock: 10, img: "https://i.postimg.cc/6QyRD3jD/Gemini-Generated-Image-sgwjy4sgwjy4sgwj.png", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 2, name: "Amnesia Haze", stock: 12, img: "https://via.placeholder.com/200/111111/39ff14?text=Amnesia", prices: { "25g": 450, "50g": 800, "100g": 1500 } },
+            { id: 3, name: "Gelato #41", stock: 8, img: "https://via.placeholder.com/200/111111/39ff14?text=Gelato", prices: { "25g": 500, "50g": 900, "100g": 1700 } },
+            { id: 4, name: "Blue Dream", stock: 15, img: "https://via.placeholder.com/200/111111/39ff14?text=Blue+Dream", prices: { "25g": 350, "50g": 650, "100g": 1200 } },
+            { id: 5, name: "Sour Diesel", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Sour+Diesel", prices: { "25g": 420, "50g": 780, "100g": 1450 } },
+            { id: 6, name: "Girl Scout Cookies", stock: 5, img: "https://via.placeholder.com/200/111111/39ff14?text=GSC", prices: { "25g": 550, "50g": 1000, "100g": 1900 } },
+            { id: 7, name: "White Widow", stock: 20, img: "https://via.placeholder.com/200/111111/39ff14?text=White+Widow", prices: { "25g": 380, "50g": 700, "100g": 1300 } },
+            { id: 8, name: "Purple Haze", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Purple+Haze", prices: { "25g": 480, "50g": 850, "100g": 1600 } },
+            { id: 9, name: "Northern Lights", stock: 9, img: "https://via.placeholder.com/200/111111/39ff14?text=Northern", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 10, name: "Gorilla Glue #4", stock: 4, img: "https://via.placeholder.com/200/111111/39ff14?text=GG4", prices: { "25g": 520, "50g": 950, "100g": 1800 } },
+            { id: 11, name: "Jack Herer", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Jack", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 12, name: "Pineapple Express", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Pineapple", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 13, name: "Wedding Cake", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Wedding", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 14, name: "Granddaddy Purple", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=GDP", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 15, name: "Strawberry Cough", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Strawberry", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 16, name: "AK-47", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=AK47", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 17, name: "Bubble Gum", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=BubbleGum", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 18, name: "Lemon Skunk", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Lemon", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 19, name: "Cherry Pie", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=CherryPie", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 20, name: "Zkittlez", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Zkittlez", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 21, name: "Durban Poison", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Durban", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 22, name: "Afghan Kush", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Afghan", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 23, name: "Chemdawg", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Chemdawg", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 24, name: "Banana Kush", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Banana", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 25, name: "Master Kush", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Master", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 26, name: "Trainwreck", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Trainwreck", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 27, name: "Blackberry Kush", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Blackberry", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 28, name: "Maui Wowie", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Maui", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 29, name: "Super Lemon Haze", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=SLH", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
+            { id: 30, name: "Skywalker OG", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Skywalker", prices: { "25g": 400, "50g": 750, "100g": 1400 } }
+        ];
 
-<div class="box">
-<h3>🧠 AI SMART (5M)</h3>
-<div id="ai5"></div>
-</div>
+        let cart = [];
+        let selectedSizes = {}; 
+        productsData.forEach(p => { selectedSizes[p.id] = "25g"; });
 
-<div class="box">
-<h3>🌍 ข่าว</h3>
-<div id="news">Loading...</div>
-</div>
+        function enterShop() {
+            const cover = document.getElementById('cover-page');
+            cover.style.opacity = '0';
+            setTimeout(() => { cover.style.display = 'none'; }, 500);
+        }
 
-<div class="box">
-<h3>📊 SUMMARY</h3>
-<div id="summary"></div>
-</div>
-
-</div>
-
-<script>
-
-// 🔑 ใส่ API
-const NEWS_API = "0278fb28ca40442189b342195f50d06a";
-
-let priceHistory = [];
-let currentPrice = 0;
-let marketScore = 0;
-
-/* TIME */
-setInterval(()=>{
-    document.getElementById("time").innerText =
-    new Date().toLocaleTimeString();
-},1000);
-
-/* PRICE */
-async function getPrice(){
-    try{
-        let r = await fetch("https://api.gold-api.com/price/XAUUSD");
-        let d = await r.json();
-
-        currentPrice = d.price;
-        document.getElementById("price").innerText = currentPrice;
-
-        priceHistory.push(currentPrice);
-        if(priceHistory.length > 100) priceHistory.shift();
-
-    }catch{}
-}
-setInterval(getPrice,3000);
-getPrice();
-
-/* EMA */
-function EMA(period){
-    if(priceHistory.length < period) return currentPrice;
-
-    let k = 2/(period+1);
-    let ema = priceHistory[0];
-
-    for(let i=1;i<priceHistory.length;i++){
-        ema = priceHistory[i]*k + ema*(1-k);
-    }
-    return ema;
-}
-
-/* RSI */
-function RSI(){
-    if(priceHistory.length < 15) return 50;
-
-    let gains=0, losses=0;
-
-    for(let i=priceHistory.length-14;i<priceHistory.length;i++){
-        let diff = priceHistory[i] - priceHistory[i-1];
-        if(diff>0) gains+=diff;
-        else losses+=Math.abs(diff);
-    }
-
-    let rs = gains / (losses || 1);
-    return 100 - (100/(1+rs));
-}
-
-/* NEWS */
-async function loadNews(){
-    try{
-        let r = await fetch(`https://newsapi.org/v2/everything?q=gold&apiKey=${NEWS_API}`);
-        let d = await r.json();
-
-        let total=0;
-        let html="";
-
-        d.articles.slice(0,3).forEach(n=>{
-            let text = (n.title||"").toLowerCase();
-
-            let score = 0;
-            if(text.includes("war")) score+=20;
-            if(text.includes("inflation")) score+=20;
-            if(text.includes("fed")) score-=20;
-
-            total += score;
-
-            html += `${n.title}<br>`;
+        // เอฟเฟกต์ควันตอนคลิก
+        document.addEventListener('click', function(e) {
+            if(e.target.tagName === 'BUTTON' || e.target.closest('a')) return; 
+            const smoke = document.createElement('div');
+            smoke.className = 'smoke-effect';
+            smoke.style.left = e.pageX + 'px';
+            smoke.style.top = e.pageY + 'px';
+            document.body.appendChild(smoke);
+            setTimeout(() => smoke.remove(), 600);
         });
 
-        marketScore = total;
+        function renderProducts() {
+            const container = document.getElementById('product-list');
+            container.innerHTML = productsData.map(p => {
+                const currentSize = selectedSizes[p.id];
+                const currentPrice = p.prices[currentSize];
+                return `
+                <div class="bg-[#0f0f0f] rounded-2xl p-2 border border-gray-800 flex flex-col relative overflow-hidden shadow-lg">
+                    <div class="relative mb-2">
+                        <img src="${p.img}" class="w-full h-24 object-cover rounded-xl border border-gray-800" onerror="this.src='https://via.placeholder.com/150/111111/333333?text=No+Image'">
+                        <div class="absolute top-1 right-1 bg-black/80 px-2 py-0.5 rounded text-[10px] text-gray-300 border border-gray-700">คลัง: <span id="stock-${p.id}" class="text-neon font-bold">${p.stock}</span></div>
+                    </div>
+                    <h3 class="text-[11px] font-bold truncate text-gray-200 mb-1 px-1">${p.name}</h3>
+                    <p class="text-neon font-bold text-sm mb-2 text-center" id="price-display-${p.id}">฿${currentPrice.toLocaleString()}</p>
+                    <div class="flex gap-1 mb-2 bg-black p-1 rounded-lg border border-gray-800">
+                        ${['25g', '50g', '100g'].map(size => `
+                            <button onclick="changeSize(${p.id}, '${size}')" id="btn-size-${p.id}-${size}" class="size-btn flex-1 text-[9px] py-1 rounded-md text-gray-500 ${currentSize === size ? 'active' : ''}">${size}</button>
+                        `).join('')}
+                    </div>
+                    <button onclick="addToCart(${p.id})" class="w-full border border-neon/30 bg-transparent text-neon text-xs font-bold py-1.5 rounded-lg active:scale-95 transition hover:bg-neon hover:text-black">+ ใส่ตะกร้า</button>
+                </div>
+            `}).join('');
+        }
 
-        document.getElementById("news").innerHTML = html;
+        function changeSize(productId, size) {
+            selectedSizes[productId] = size;
+            const product = productsData.find(p => p.id === productId);
+            document.getElementById(`price-display-${productId}`).innerText = `฿${product.prices[size].toLocaleString()}`;
+            ['25g', '50g', '100g'].forEach(s => {
+                const btn = document.getElementById(`btn-size-${productId}-${s}`);
+                if (btn) btn.classList.toggle('active', s === size);
+            });
+        }
 
-    }catch{
-        document.getElementById("news").innerHTML="❌ API บล็อก";
-    }
-}
-setInterval(loadNews,300000);
-loadNews();
+        function addToCart(productId) {
+            const product = productsData.find(p => p.id === productId);
+            if (product.stock > 0) {
+                const size = selectedSizes[productId];
+                product.stock -= 1;
+                document.getElementById(`stock-${productId}`).innerText = product.stock;
+                cart.push({ cartId: Date.now() + Math.random(), productId, name: product.name, size, price: product.prices[size], img: product.img });
+                updateUI();
+            } else { alert("สินค้าหมดครับ!"); }
+        }
 
-/* AI CORE */
-function AI(){
+        function removeFromCart(cartId, productId) {
+            const product = productsData.find(p => p.id === productId);
+            product.stock += 1;
+            document.getElementById(`stock-${productId}`).innerText = product.stock;
+            cart = cart.filter(item => item.cartId !== cartId);
+            updateUI();
+        }
 
-    let ema9 = EMA(9);
-    let ema21 = EMA(21);
-    let rsi = RSI();
+        function clearCart() {
+            cart.forEach(item => {
+                const p = productsData.find(prod => prod.id === item.productId);
+                p.stock += 1;
+                document.getElementById(`stock-${p.id}`).innerText = p.stock;
+            });
+            cart = [];
+            updateUI();
+        }
 
-    let signal = "WAIT";
-    let score = 0;
+        function updateUI() {
+            const cartContainer = document.getElementById('cart-items');
+            if(cart.length === 0) {
+                cartContainer.innerHTML = `<span class="text-gray-600 text-sm italic">ยังไม่มีสินค้าในตะกร้า...</span>`;
+            } else {
+                cartContainer.innerHTML = cart.map(item => `
+                    <div class="bg-[#111] text-neon px-3 py-1.5 rounded-full flex items-center gap-2 whitespace-nowrap border border-neon/20">
+                        <span class="text-[11px] font-bold">${item.name} (${item.size})</span>
+                        <button onclick="removeFromCart(${item.cartId}, ${item.productId})" class="text-red-500 font-bold px-1">✕</button>
+                    </div>
+                `).join('');
+            }
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('total-price').innerText = total.toLocaleString();
+            document.getElementById('checkout-total').innerText = total.toLocaleString();
+        }
 
-    if(ema9 > ema21){
-        signal = "BUY";
-        score += 30;
-    }else{
-        signal = "SELL";
-        score += 30;
-    }
+        function openCheckout() {
+            if (cart.length === 0) return alert("หยิบสินค้าใส่ตะกร้าก่อนครับ");
+            const checkoutPage = document.getElementById('checkout-page');
+            checkoutPage.style.display = 'flex';
+            setTimeout(() => { checkoutPage.classList.remove('translate-y-full'); }, 10);
+            document.getElementById('checkout-list').innerHTML = cart.map(item => `
+                <div class="flex items-center gap-4 bg-[#111] p-3 rounded-xl border border-gray-800">
+                    <img src="${item.img}" class="w-12 h-12 rounded-lg object-cover border border-gray-700" onerror="this.src='https://via.placeholder.com/150/111111/333333'">
+                    <div class="flex-1 text-sm"><p class="font-bold text-gray-200">${item.name}</p><p class="text-[10px] text-gray-500">ขนาด: ${item.size}</p></div>
+                    <p class="text-neon font-bold">฿${item.price.toLocaleString()}</p>
+                </div>
+            `).join('');
+        }
 
-    if(rsi < 30){
-        signal = "BUY";
-        score += 30;
-    }
+        function closeCheckout() {
+            const checkoutPage = document.getElementById('checkout-page');
+            checkoutPage.classList.add('translate-y-full');
+            setTimeout(() => { checkoutPage.style.display = 'none'; }, 300);
+        }
 
-    if(rsi > 70){
-        signal = "SELL";
-        score += 30;
-    }
+        function confirmPayment() {
+            alert("✅ ขอบคุณที่อุดหนุนครับ! แอดมินจะตรวจสอบสลิปและจัดส่งให้เร็วที่สุด");
+            cart = []; updateUI(); closeCheckout();
+        }
 
-    score += marketScore;
-
-    let confidence = Math.min(95, Math.abs(score));
-
-    let entry = currentPrice;
-
-    let tp = signal==="BUY"
-        ? entry + (confidence * 0.4)
-        : entry - (confidence * 0.4);
-
-    let sl = signal==="BUY"
-        ? entry - (confidence * 0.25)
-        : entry + (confidence * 0.25);
-
-    return {
-        signal,
-        confidence,
-        entry: entry.toFixed(2),
-        tp: tp.toFixed(2),
-        sl: sl.toFixed(2)
-    };
-}
-
-/* UPDATE UI */
-function update(){
-
-    let a1 = AI();
-    let a5 = AI();
-
-    document.getElementById("ai1").innerHTML = `
-    Signal: <span class="${a1.signal==='BUY'?'buy':'sell'}">${a1.signal}</span><br>
-    Conf: ${a1.confidence}%<br>
-    Entry: ${a1.entry}<br>
-    TP: ${a1.tp}<br>
-    SL: ${a1.sl}
-    `;
-
-    document.getElementById("ai5").innerHTML = `
-    Signal: <span class="${a5.signal==='BUY'?'buy':'sell'}">${a5.signal}</span><br>
-    Conf: ${a5.confidence}%<br>
-    Entry: ${a5.entry}<br>
-    TP: ${a5.tp}<br>
-    SL: ${a5.sl}
-    `;
-
-    document.getElementById("summary").innerHTML =
-    a5.signal==="BUY" ? "📈 UP TREND" : "📉 DOWN TREND";
-}
-
-setInterval(update,10000);
-update();
-
-</script>
-
+        renderProducts();
+    </script>
 </body>
-</html>
+    </html>
