@@ -16,7 +16,6 @@ body{
     font-family:'Share Tech Mono', monospace;
 }
 
-/* HEADER */
 .header{
     display:flex;
     justify-content:space-between;
@@ -25,7 +24,6 @@ body{
     border-bottom:2px solid #39ff14;
 }
 
-/* PRICE */
 .price-box{
     margin:15px;
     padding:15px;
@@ -36,7 +34,6 @@ body{
     box-shadow:0 0 25px #39ff14;
 }
 
-/* GRID */
 .grid{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -44,7 +41,6 @@ body{
     padding:15px;
 }
 
-/* BOX */
 .box{
     border:2px solid #39ff14;
     border-radius:20px;
@@ -52,10 +48,8 @@ body{
     box-shadow:0 0 20px #39ff14;
 }
 
-/* สี */
 .buy{ color:#00ffcc; }
 .sell{ color:red; }
-
 </style>
 </head>
 
@@ -70,7 +64,6 @@ body{
     PRICE : <span id="price">Loading...</span>
 </div>
 
-<!-- CHART -->
 <div style="padding:10px;">
 <div id="tv_chart"></div>
 <script src="https://s3.tradingview.com/tv.js"></script>
@@ -89,166 +82,200 @@ new TradingView.widget({
 <div class="grid">
 
 <div class="box">
-    <h3>⚡ AI FAST (1M)</h3>
-    <div id="ai1"></div>
+<h3>⚡ AI FAST (1M)</h3>
+<div id="ai1"></div>
 </div>
 
 <div class="box">
-    <h3>🧠 AI SMART (5M)</h3>
-    <div id="ai5"></div>
+<h3>🧠 AI SMART (5M)</h3>
+<div id="ai5"></div>
 </div>
 
 <div class="box">
-    <h3>🌍 ข่าวเศรษฐกิจโลก</h3>
-    <div id="news">Loading...</div>
+<h3>🌍 ข่าว</h3>
+<div id="news">Loading...</div>
 </div>
 
 <div class="box">
-    <h3>📊 AI SUMMARY</h3>
-    <div id="summary"></div>
+<h3>📊 SUMMARY</h3>
+<div id="summary"></div>
 </div>
 
 </div>
 
 <script>
 
-// 🔑 API NEWS (ใช้ของคุณ)
-const API_KEY = "0278fb28ca40442189b342195f50d06a";
+// 🔑 ใส่ API
+const NEWS_API = "0278fb28ca40442189b342195f50d06a";
 
-/* เวลา */
+let priceHistory = [];
+let currentPrice = 0;
+let marketScore = 0;
+
+/* TIME */
 setInterval(()=>{
     document.getElementById("time").innerText =
     new Date().toLocaleTimeString();
 },1000);
 
-/* ราคาทอง */
-let currentPrice = 0;
-
+/* PRICE */
 async function getPrice(){
     try{
         let r = await fetch("https://api.gold-api.com/price/XAUUSD");
         let d = await r.json();
 
         currentPrice = d.price;
-        document.getElementById("price").innerText = d.price;
+        document.getElementById("price").innerText = currentPrice;
 
-    }catch{
-        document.getElementById("price").innerText = "Offline";
-    }
+        priceHistory.push(currentPrice);
+        if(priceHistory.length > 100) priceHistory.shift();
+
+    }catch{}
 }
-setInterval(getPrice,5000);
+setInterval(getPrice,3000);
 getPrice();
 
-/* วิเคราะห์ข่าว */
-function analyze(text){
-    let score = 0;
+/* EMA */
+function EMA(period){
+    if(priceHistory.length < period) return currentPrice;
 
-    const up = ["war","inflation","crisis","tension","conflict"];
-    const down = ["rate hike","fed","strong dollar","bond yield"];
+    let k = 2/(period+1);
+    let ema = priceHistory[0];
 
-    text = text.toLowerCase();
-
-    up.forEach(w=>{ if(text.includes(w)) score+=20; });
-    down.forEach(w=>{ if(text.includes(w)) score-=20; });
-
-    return score;
+    for(let i=1;i<priceHistory.length;i++){
+        ema = priceHistory[i]*k + ema*(1-k);
+    }
+    return ema;
 }
 
-/* ข่าว */
+/* RSI */
+function RSI(){
+    if(priceHistory.length < 15) return 50;
+
+    let gains=0, losses=0;
+
+    for(let i=priceHistory.length-14;i<priceHistory.length;i++){
+        let diff = priceHistory[i] - priceHistory[i-1];
+        if(diff>0) gains+=diff;
+        else losses+=Math.abs(diff);
+    }
+
+    let rs = gains / (losses || 1);
+    return 100 - (100/(1+rs));
+}
+
+/* NEWS */
 async function loadNews(){
     try{
-        let r = await fetch(`https://newsapi.org/v2/everything?q=gold&apiKey=${API_KEY}`);
+        let r = await fetch(`https://newsapi.org/v2/everything?q=gold&apiKey=${NEWS_API}`);
         let d = await r.json();
 
-        let html="";
         let total=0;
+        let html="";
 
-        d.articles.slice(0,5).forEach(n=>{
-            let s = analyze((n.title||"")+" "+(n.description||""));
-            total += s;
+        d.articles.slice(0,3).forEach(n=>{
+            let text = (n.title||"").toLowerCase();
 
-            html += `
-            <div>
-            ${n.title}<br>
-            <span class="${s>=0?'buy':'sell'}">
-            ${s>=0?'🔵 ขึ้น':'🔴 ลง'} ${Math.abs(s)}%
-            </span>
-            </div><br>`;
+            let score = 0;
+            if(text.includes("war")) score+=20;
+            if(text.includes("inflation")) score+=20;
+            if(text.includes("fed")) score-=20;
+
+            total += score;
+
+            html += `${n.title}<br>`;
         });
+
+        marketScore = total;
 
         document.getElementById("news").innerHTML = html;
 
-        window.marketScore = total/5;
-
     }catch{
-        document.getElementById("news").innerHTML="❌ API โดนบล็อก";
-        window.marketScore = 0;
+        document.getElementById("news").innerHTML="❌ API บล็อก";
     }
 }
 setInterval(loadNews,300000);
 loadNews();
 
-/* AI + TP SL */
-function calcAI(){
+/* AI CORE */
+function AI(){
 
-    let base = Math.random()*30;
-    let trend = window.marketScore || 0;
+    let ema9 = EMA(9);
+    let ema21 = EMA(21);
+    let rsi = RSI();
 
-    let final = base + trend;
+    let signal = "WAIT";
+    let score = 0;
 
-    let signal = final >= 0 ? "BUY" : "SELL";
-    let confidence = Math.abs(final);
+    if(ema9 > ema21){
+        signal = "BUY";
+        score += 30;
+    }else{
+        signal = "SELL";
+        score += 30;
+    }
+
+    if(rsi < 30){
+        signal = "BUY";
+        score += 30;
+    }
+
+    if(rsi > 70){
+        signal = "SELL";
+        score += 30;
+    }
+
+    score += marketScore;
+
+    let confidence = Math.min(95, Math.abs(score));
 
     let entry = currentPrice;
 
     let tp = signal==="BUY"
-        ? entry + (confidence * 0.5)
-        : entry - (confidence * 0.5);
+        ? entry + (confidence * 0.4)
+        : entry - (confidence * 0.4);
 
     let sl = signal==="BUY"
-        ? entry - (confidence * 0.3)
-        : entry + (confidence * 0.3);
+        ? entry - (confidence * 0.25)
+        : entry + (confidence * 0.25);
 
     return {
         signal,
         confidence,
-        entry,
-        tp,
-        sl
+        entry: entry.toFixed(2),
+        tp: tp.toFixed(2),
+        sl: sl.toFixed(2)
     };
 }
 
-/* อัพเดต AI */
-function updateAI(){
+/* UPDATE UI */
+function update(){
 
-    let ai1 = calcAI();
-    let ai5 = calcAI();
+    let a1 = AI();
+    let a5 = AI();
 
     document.getElementById("ai1").innerHTML = `
-    สัญญาณ: <span class="${ai1.signal==='BUY'?'buy':'sell'}">${ai1.signal}</span><br>
-    ความมั่นใจ: ${ai1.confidence.toFixed(1)}%<br>
-    Entry: ${ai1.entry}<br>
-    TP: ${ai1.tp.toFixed(2)}<br>
-    SL: ${ai1.sl.toFixed(2)}
+    Signal: <span class="${a1.signal==='BUY'?'buy':'sell'}">${a1.signal}</span><br>
+    Conf: ${a1.confidence}%<br>
+    Entry: ${a1.entry}<br>
+    TP: ${a1.tp}<br>
+    SL: ${a1.sl}
     `;
 
     document.getElementById("ai5").innerHTML = `
-    สัญญาณ: <span class="${ai5.signal==='BUY'?'buy':'sell'}">${ai5.signal}</span><br>
-    ความมั่นใจ: ${ai5.confidence.toFixed(1)}%<br>
-    Entry: ${ai5.entry}<br>
-    TP: ${ai5.tp.toFixed(2)}<br>
-    SL: ${ai5.sl.toFixed(2)}
+    Signal: <span class="${a5.signal==='BUY'?'buy':'sell'}">${a5.signal}</span><br>
+    Conf: ${a5.confidence}%<br>
+    Entry: ${a5.entry}<br>
+    TP: ${a5.tp}<br>
+    SL: ${a5.sl}
     `;
 
     document.getElementById("summary").innerHTML =
-    ai5.signal==="BUY"
-    ? `🔵 แนวโน้มขึ้น`
-    : `🔴 แนวโน้มลง`;
-
+    a5.signal==="BUY" ? "📈 UP TREND" : "📉 DOWN TREND";
 }
 
-setInterval(updateAI,60000);
-updateAI();
+setInterval(update,10000);
+update();
 
 </script>
 
