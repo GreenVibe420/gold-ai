@@ -16,7 +16,7 @@
         .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 50; }
         .glass-panel { background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(16px); border-top: 1px solid rgba(57, 255, 20, 0.2); }
-        .smoke-effect { position: absolute; width: 40px; height: 40px; background: radial-gradient(circle, rgba(200,255,200,0.4) 0%, rgba(0,0,0,0) 70%); border-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); filter: blur(4px); animation: smokeAnim 0.6s ease-out forwards; z-index: 9999; }
+        .smoke-effect { position: absolute; width: 40px; height: 40px; background: radial-gradient(circle, rgbjpgorder-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); filter: blur(4px); animation: smokeAnim 0.6s ease-out forwards; z-index: 9999; }
         @keyframes smokeAnim { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -150%) scale(2.5); opacity: 0; } }
         .size-btn.active { background-color: rgba(57, 255, 20, 0.15); border-color: var(--neon); color: var(--neon); }
     </style>
@@ -89,10 +89,10 @@
         // --- 🟢 ข้อมูลสินค้าทั้ง 30 รายการ (แก้ไขชื่อและลิงก์รูปที่นี่) ---
         const productsData = [
             { id: 1, name: "OG Kush", stock: 10, img: "https://i.postimg.cc/6QyRD3jD/Gemini-Generated-Image-sgwjy4sgwjy4sgwj.png", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 2, name: "Amnesia Haze", stock: 12, img: "https://via.placeholder.com/200/111111/39ff14?text=Amnesia", prices: { "25g": 450, "50g": 800, "100g": 1500 } },
-            { id: 3, name: "Gelato #41", stock: 8, img: "https://via.placeholder.com/200/111111/39ff14?text=Gelato", prices: { "25g": 500, "50g": 900, "100g": 1700 } },
-            { id: 4, name: "Blue Dream", stock: 15, img: "https://via.placeholder.com/200/111111/39ff14?text=Blue+Dream", prices: { "25g": 350, "50g": 650, "100g": 1200 } },
-            { id: 5, name: "Sour Diesel", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Sour+Diesel", prices: { "25g": 420, "50g": 780, "100g": 1450 } },
+            { id: 2, name: "Amnesia Haze", stock: 12, img: "https://i.postimg.cc/DywdLsR9/images-(2).jpg", prices: { "25g": 450, "50g": 800, "100g": 1500 } },
+            { id: 3, name: "Gelato #41", stock: 8, img: "https://i.postimg.cc/cLQHJkXL/images-(1).jpg", prices: { "25g": 500, "50g": 900, "100g": 1700 } },
+            { id: 4, name: "Blue Dream", stock: 15, img: "https://i.postimg.cc/4Np7K33G/108583552-32d208b5-3b6a-4bdb-aecc-299ff7bf622f.jpg", prices: { "25g": 350, "50g": 650, "100g": 1200 } },
+            { id: 5, name: "Sour Diesel", stock: 10, img: "https://i.postimg.cc/ZRJjQQDV/images.jpg", prices: { "25g": 420, "50g": 780, "100g": 1450 } },
             { id: 6, name: "Girl Scout Cookies", stock: 5, img: "https://via.placeholder.com/200/111111/39ff14?text=GSC", prices: { "25g": 550, "50g": 1000, "100g": 1900 } },
             { id: 7, name: "White Widow", stock: 20, img: "https://via.placeholder.com/200/111111/39ff14?text=White+Widow", prices: { "25g": 380, "50g": 700, "100g": 1300 } },
             { id: 8, name: "Purple Haze", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Purple+Haze", prices: { "25g": 480, "50g": 850, "100g": 1600 } },
