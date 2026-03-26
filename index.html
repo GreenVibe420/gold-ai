@@ -426,11 +426,11 @@
         return alert("กรุณากรอกข้อมูลจัดส่งให้ครบถ้วน");
     }
 
-    // แก้ไขบรรทัดนี้ที่เคยสะกดผิด
+    // จุดสำคัญ: ต้องมี .join('%0A') ปิดท้ายแบบนี้ครับ
     let itemsText = cart.map(item => `- ${item.name} (${item.size}) x${item.qty}`).join('%0A');
     let total = document.getElementById('checkout-total').innerText;
 
-    let lineMessage = encodeURIComponent(`📌 *NEW ORDER* %0A------------------%0Aชื่อ: ${name}%0Aเบอร์: ${tel}%0Aที่อยู่: ${addr}%0A------------------%0Aรายการ:%0A${itemsText}%0A------------------%0Aยอดรวม: ${total}`);
+    let lineMessage = encodeURIComponent(`📌 *NEW ORDER* \n------------------\nชื่อ: ${name}\nเบอร์: ${tel}\nที่อยู่: ${addr}\n------------------\nรายการ:\n${itemsText}\n------------------\nyยอดรวม: ${total}`);
 
     const lineId = "ais_990"; 
     window.open(`https://line.me/ti/p/~${lineId}?text=${lineMessage}`, '_blank');
