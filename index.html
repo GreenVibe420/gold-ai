@@ -426,22 +426,19 @@
         return alert("กรุณากรอกข้อมูลจัดส่งให้ครบถ้วน");
     }
 
-    // สร้างรายการสินค้าจากตะกร้า
+    // แก้ไขบรรทัดนี้ที่เคยสะกดผิด
     let itemsText = cart.map(item => `- ${item.name} (${item.size}) x${item.qty}`).join('%0A');
     let total = document.getElementById('checkout-total').innerText;
 
-    // สร้างข้อความ LINE
-    let lineMessage = encodeURIComponent(`📌 *NEW ORDER: Greencat* %0A------------------%0Aชื่อ: ${name}%0Aเบอร์: ${tel}%0Aที่อยู่: ${addr}%0A------------------%0Aรายการ:%0A${itemsText}%0A------------------%0Aยอดรวม: ${total}`);
+    let lineMessage = encodeURIComponent(`📌 *NEW ORDER* %0A------------------%0Aชื่อ: ${name}%0Aเบอร์: ${tel}%0Aที่อยู่: ${addr}%0A------------------%0Aรายการ:%0A${itemsText}%0A------------------%0Aยอดรวม: ${total}`);
 
-    // เปิดไปที่ LINE พ่อค้า (ใส่ ID LINE ของคุณแทนที่คำว่า your_line_id)
     const lineId = "ais_990"; 
     window.open(`https://line.me/ti/p/~${lineId}?text=${lineMessage}`, '_blank');
 
-    // ล้างตะกร้าและปิดหน้าต่าง
     cart = [];
     updateUI();
     closeCheckout();
-        }
+}
     </script>
 </body>
 </html>
