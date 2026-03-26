@@ -159,8 +159,8 @@
         // ส่วนที่ 1: ตั้งค่าโฆษณา
         // ==========================================
         const adsData = [
-            { img: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1000", title: "โปรโมชั่นประจำเดือน!", desc: "ซื้อครบ 1,000.- รับฟรีสายพันธุ์ลับ 1g" },
-            { img: "https://i.postimg.cc/d1jR1Z8j/images-(1).jpg", title: "ลดแหลกแจกแถม!", desc: "ทุกสายพันธุ์ลด 10% วันนี้เท่านั้น" }
+            { img: "https://i.postimg.cc/8PdzFd35/108583552-32d208b5-3b6a-4bdb-aecc-299ff7bf622f.jpg", title: "โปรโมชั่นประจำเดือน!", desc: "ซื้อครบ 1,000.- รับฟรีสายพันธุ์ลับ 2g" },
+            { img: "https://i.postimg.cc/d1jR1Z8j/images-(1).jpg", title: "ลดแหลกแจกแถม!", desc: "ลดราคาสูงสุดถึง 10% 🎉" }
         ];
 
         let currentAdIndex = 0;
@@ -207,7 +207,7 @@
         // ส่วนที่ 2: ข้อมูลสินค้า 30 รายการ
         // ==========================================
         const productsData = [
-            { id: 1, name: "Strain #1", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 1, name: "Strain #1", stock: 10, img: "https://i.postimg.cc/8PdzFd35/108583552-32d208b5-3b6a-4bdb-aecc-299ff7bf622f.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
             { id: 2, name: "Strain #2", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
             { id: 3, name: "Strain #3", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
             { id: 4, name: "Strain #4", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
@@ -253,7 +253,7 @@
                 this.size = Math.random() * 50 + 30;
                 this.speedX = Math.random() * 1 - 0.5;
                 this.speedY = Math.random() * -1 - 0.5;
-                this.opacity = 0.02;
+                this.opacity = 0.03;
             }
             update() { this.x += this.speedX; this.y += this.speedY; this.opacity -= 0.000; }
             draw() {
