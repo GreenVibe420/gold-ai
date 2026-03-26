@@ -150,7 +150,9 @@
                 <span id="net-label" class="text-gray-400 text-sm">ยอดสุทธิ:</span>
                 <span class="text-neon text-2xl font-bold">฿ <span id="checkout-total">0</span></span>
             </div>
-            <button id="confirm-btn" onclick="confirmPayment()" class="w-full bg-neon text-black py-4 rounded-2xl font-extrabold text-lg shadow-lg active:scale-95 transition">ยืนยันออเดอร์และส่ง LINE</button>
+            <button onclick="confirmPayment()" class="active:scale-95 transition">
+    ยืนยันออเดอร์และส่ง LINE
+</button>
         </div>
     </div>
 
@@ -416,21 +418,30 @@
         }
 
         function confirmPayment() {
-            const name = document.getElementById('cust-name').value;
-            const tel = document.getElementById('cust-tel').value;
-            const addr = document.getElementById('cust-addr').value;
-            if(!name || !tel || !addr) return alert("กรุณากรอกข้อมูลจัดส่งให้ครบถ้วน");
+    const name = document.getElementById('cust-name').value;
+    const tel = document.getElementById('cust-tel').value;
+    const addr = document.getElementById('cust-addr').value;
 
-            let itemsText = cart.map(item => `- ${item.name} (${item.size}) : ฿${item.price}`).join('%0A');
-            let total = document.getElementById('checkout-total').innerText;
-            let lineMessage = `📌 *NEW ORDER: กัญชาบ่*%0A------------------%0A📦 ITEMS:%0A${itemsText}%0A------------------%0A💰 TOTAL: ฿${total}%0A👤 NAME: ${name}%0A📞 TEL: ${tel}%0A🏠 ADDR: ${addr}%0A------------------%0A✅ PAID STATUS: WAITING VERIFY`;
+    if (!name || !tel || !addr) {
+        return alert("กรุณากรอกข้อมูลจัดส่งให้ครบถ้วน");
+    }
 
-            window.open(`https://line.me/R/msg/text/?${lineMessage}`, '_blank');
-            cart = []; updateUI(); closeCheckout();
+    // สร้างรายการสินค้าจากตะกร้า
+    let itemsText = cart.map(item => `- ${item.name} (${item.size}) x${item.qty}`).join('%0A');
+    let total = document.getElementById('checkout-total').innerText;
+
+    // สร้างข้อความ LINE
+    let lineMessage = encodeURIComponent(`📌 *NEW ORDER: Greencat* %0A------------------%0Aชื่อ: ${name}%0Aเบอร์: ${tel}%0Aที่อยู่: ${addr}%0A------------------%0Aรายการ:%0A${itemsText}%0A------------------%0Aยอดรวม: ${total}`);
+
+    // เปิดไปที่ LINE พ่อค้า (ใส่ ID LINE ของคุณแทนที่คำว่า your_line_id)
+    const lineId = "ais_990"; 
+    window.open(`https://line.me/ti/p/~${lineId}?text=${lineMessage}`, '_blank');
+
+    // ล้างตะกร้าและปิดหน้าต่าง
+    cart = [];
+    updateUI();
+    closeCheckout();
         }
-
-        renderProducts();
-        document.getElementById('stock-count').innerText = `${productsData.length} ${i18n['th'].stock}`;
     </script>
 </body>
 </html>
