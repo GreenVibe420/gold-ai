@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GreenVibe420</title>
+    <title>กัญชาบ่ - POS System Premium</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --neon: #39ff14; --bg-dark: #050505; }
         body { font-family: 'Kanit', sans-serif; background-color: var(--bg-dark); color: white; overflow-x: hidden; user-select: none; }
@@ -13,29 +14,78 @@
         .bg-neon { background-color: var(--neon); box-shadow: 0 0 15px rgba(57, 255, 20, 0.4); color: #000; }
         .border-neon { border-color: var(--neon); box-shadow: 0 0 5px rgba(57, 255, 20, 0.3); }
         .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        /* Grid 3 คอลัมน์ สำหรับ 30 สินค้า */
         .product-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        
+        header { position: sticky; top: 0; z-index: 50; background: rgba(10, 10, 10, 0.95); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(57, 255, 20, 0.2); }
+        
         .sticky-footer { position: fixed; bottom: 0; left: 0; width: 100%; z-index: 50; }
-        .glass-panel { background: rgba(5, 5, 5, 0.9); backdrop-filter: blur(16px); border-top: 1px solid rgba(57, 255, 20, 0.2); }
-        .smoke-effect { position: absolute; width: 40px; height: 40px; background: radial-gradient(circle, rgbjpgorder-radius: 50%; pointer-events: none; transform: translate(-50%, -50%); filter: blur(4px); animation: smokeAnim 0.6s ease-out forwards; z-index: 9999; }
-        @keyframes smokeAnim { 0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; } 100% { transform: translate(-50%, -150%) scale(2.5); opacity: 0; } }
+        .glass-panel { background: rgba(5, 5, 5, 0.95); backdrop-filter: blur(20px); border-top: 1px solid rgba(57, 255, 20, 0.2); }
         .size-btn.active { background-color: rgba(57, 255, 20, 0.15); border-color: var(--neon); color: var(--neon); }
+        
+        input, textarea { background: #111; border: 1px solid #333; color: white; padding: 10px; border-radius: 8px; width: 100%; outline: none; transition: 0.3s; }
+        input:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(57, 255, 20, 0.2); }
+
+        #smoke-canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 9999; filter: blur(8px); opacity: 0.6; }
+        
+        /* Ad Button & Modal */
+        .promo-btn {
+            position: fixed; right: 20px; bottom: 180px; width: 60px; height: 60px;
+            border-radius: 50%; background: var(--neon); color: black;
+            display: flex; align-items: center; justify-content: center; z-index: 60;
+            box-shadow: 0 0 20px rgba(57, 255, 20, 0.5); animation: float 3s ease-in-out infinite;
+            cursor: pointer; border: 2px solid white;
+        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; align-items: center; justify-content: center; padding: 20px; cursor: pointer; }
+        .ad-content { max-width: 400px; width: 100%; position: relative; }
+        
+        .social-link { font-size: 24px; transition: 0.3s; color: #fff; }
+        .social-link:hover { color: var(--neon); transform: scale(1.2); }
+        
+        .fade-slide { animation: fade 0.5s ease-in-out; }
+        @keyframes fade { from { opacity: 0.4; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
-<body class="pb-64">
+<body class="pb-48">
+    <canvas id="smoke-canvas"></canvas>
+
+    <div class="promo-btn" onclick="openAd()">
+        <i class="fa-solid fa-gift text-2xl"></i>
+    </div>
+
+    <div id="ad-modal" class="modal-overlay" onclick="closeAd()">
+        <div class="ad-content">
+            <button class="absolute -top-10 right-0 text-white text-3xl hover:text-neon transition">✕</button>
+            <div class="overflow-hidden rounded-2xl border-2 border-neon bg-black">
+                <div id="ad-render-area" class="fade-slide"></div>
+            </div>
+            <div id="ad-dots" class="flex justify-center gap-2 mt-4"></div>
+        </div>
+    </div>
 
     <div id="cover-page" onclick="enterShop()" class="fixed inset-0 z-[100] flex flex-col items-center justify-center cursor-pointer bg-cover bg-center transition-opacity duration-500" 
-         style="background-image: url('https://i.postimg.cc/pTkmrM6z/20250825084156-22433108.jpg'); background-color: #000;">
+         style="background-image: url('https://i.postimg.cc/YCKGmq8T/20250825084156-22433108.jpg'); background-color: #000;">
         <div class="absolute inset-0 bg-black/60 z-0"></div> 
         <div class="z-10 text-center relative">
             <h1 class="text-7xl font-extrabold text-neon tracking-widest drop-shadow-2xl mb-2">กัญชาบ่</h1>
             <div class="w-24 h-1 bg-neon mx-auto rounded-full shadow-[0_0_10px_#39ff14]"></div>
-            <p class="mt-20 text-gray-300 animate-pulse text-sm font-light tracking-widest">แตะเพื่อเข้าสู่ระบบ</p>
+            <p id="tap-to-enter" class="mt-10 text-gray-300 text-sm font-light tracking-widest animate-pulse">แตะเพื่อเข้าสู่ระบบ</p>
         </div>
     </div>
 
-    <header class="p-4 bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-40 flex justify-between items-center border-b border-green-900/30">
-        <h1 class="text-neon font-bold text-xl tracking-wide">รายการสินค้า</h1>
-        <span class="text-xs text-gray-400 bg-black px-3 py-1 rounded-full border border-gray-800">30 สายพันธ์🌳</span>
+    <header class="p-4 flex justify-between items-center">
+        <div>
+            <h1 class="text-neon font-bold text-xl tracking-wide uppercase">Kanchaba POS</h1>
+            <div class="flex gap-2 mt-2">
+                <button onclick="changeLang('th')" class="w-6 h-6 rounded-full bg-black border border-gray-700 hover:border-neon transition flex items-center justify-center text-xs shadow-md">🇹🇭</button>
+                <button onclick="changeLang('en')" class="w-6 h-6 rounded-full bg-black border border-gray-700 hover:border-neon transition flex items-center justify-center text-xs shadow-md">🇬🇧</button>
+                <button onclick="changeLang('cn')" class="w-6 h-6 rounded-full bg-black border border-gray-700 hover:border-neon transition flex items-center justify-center text-xs shadow-md">🇨🇳</button>
+            </div>
+        </div>
+        <span id="stock-count" class="text-xs text-gray-400 bg-black/50 px-3 py-1 rounded-full border border-green-900/50">30 สินค้า</span>
     </header>
 
     <main class="p-3">
@@ -43,123 +93,256 @@
     </main>
 
     <div class="sticky-footer glass-panel p-4 shadow-[0_-10px_40px_rgba(0,0,0,0.9)]">
-        <div id="cart-items" class="flex gap-2 overflow-x-auto no-scrollbar mb-4 py-2 min-h-[45px] items-center">
-            <span class="text-gray-600 text-sm italic">ยังไม่มีสินค้าในตะกร้า...</span>
+        <div id="cart-items" class="flex gap-2 overflow-x-auto no-scrollbar mb-3 py-1 min-h-[40px] items-center">
+            <span id="empty-cart-msg" class="text-gray-600 text-sm italic">ยังไม่มีสินค้าในตะกร้า...</span>
         </div>
-        <div class="flex justify-between items-end">
+        <div class="flex justify-between items-center">
             <div>
-                <p class="text-gray-400 text-xs mb-1">ยอดรวมทั้งหมด</p>
-                <p class="text-3xl font-bold text-neon leading-none">฿ <span id="total-price">0</span></p>
+                <p id="total-label" class="text-gray-400 text-[10px] mb-0 uppercase tracking-tighter">Total Price</p>
+                <p class="text-2xl font-bold text-neon leading-none">฿ <span id="total-price">0</span></p>
             </div>
             <div class="flex gap-2">
-                <button onclick="clearCart()" class="text-red-500 bg-black border border-red-900/50 px-4 py-3 rounded-xl font-bold active:scale-95 transition">ล้าง🗑️</button>
-                <button onclick="openCheckout()" class="bg-neon px-8 py-3 rounded-xl font-extrabold text-lg active:scale-95 transition text-black">ชำระเงิน</button>
+                <button id="clear-btn" onclick="clearCart()" class="text-red-500 bg-black border border-red-900/50 px-4 py-2 rounded-xl text-xs font-bold active:scale-95 transition">ล้าง</button>
+                <button id="checkout-btn" onclick="openCheckout()" class="bg-neon px-8 py-2 rounded-xl font-extrabold text-md active:scale-95 transition text-black shadow-lg shadow-green-500/20">ชำระเงิน</button>
             </div>
         </div>
     </div>
 
     <div id="checkout-page" class="fixed inset-0 bg-black z-[90] hidden flex-col transition-transform duration-300 transform translate-y-full">
-        <header class="p-5 flex justify-between items-center border-b border-gray-800 bg-[#0a0a0a]">
-            <button onclick="closeCheckout()" class="text-gray-400 font-bold active:scale-95 px-2 py-1">← ย้อนกลับ</button>
-            <h2 class="text-neon font-bold text-xl tracking-wide">สรุปยอดชำระ</h2>
+        <header class="flex-none p-5 flex justify-between items-center border-b border-gray-800 bg-[#0a0a0a]">
+            <button id="back-btn" onclick="closeCheckout()" class="text-gray-400 font-bold active:scale-95 px-2 py-1 text-sm">← ย้อนกลับ</button>
+            <h2 id="summary-label" class="text-neon font-bold text-lg tracking-wide">สรุปออเดอร์</h2>
             <div class="w-16"></div>
         </header>
-        <div class="flex-1 overflow-y-auto p-4 bg-gradient-to-b from-[#0a0a0a] to-[#000]">
-            <div id="checkout-list" class="space-y-3 mb-8"></div>
-            <div class="bg-[#111] border border-green-900/50 rounded-2xl p-6 mb-6 flex flex-col items-center shadow-lg relative overflow-hidden">
-                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-32 bg-neon opacity-10 blur-3xl rounded-full"></div>
-                <p class="text-neon font-bold mb-4 text-lg z-10">สแกนเพื่อชำระเงิน</p>
-                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PROMPTPAY_DATA" alt="QR Code" class="w-48 h-48 object-cover rounded-xl border-2 border-neon mb-4 z-10 bg-white p-2">
-                <div class="text-center z-10">
-                    <p class="text-gray-300 text-sm">พร้อมเพย์: <span class="text-white font-bold">0996360891</span></p>
-                    <p class="text-gray-300 text-sm">ชื่อบัญชี: <span class="text-white font-bold">นาย ทวีทรัพย์ ไตรณรงค์</span></p>    
+        
+        <div class="flex-1 overflow-y-auto p-4">
+            <div id="checkout-list" class="space-y-3 mb-6"></div>
+
+            <div class="bg-[#111] p-5 rounded-2xl border border-gray-800 mb-6 relative">
+                <div class="absolute top-4 right-5 flex gap-3 text-gray-400">
+                    <a href="ใส่ลิงก์Facebookที่นี่" target="_blank" class="hover:text-neon transition"><i class="fa-brands fa-facebook text-xl"></i></a>
+                    <a href="ใส่ลิงก์Instagramที่นี่" target="_blank" class="hover:text-neon transition"><i class="fa-brands fa-instagram text-xl"></i></a>
+                    <a href="ใส่ลิงก์TikTokที่นี่" target="_blank" class="hover:text-neon transition"><i class="fa-brands fa-tiktok text-xl"></i></a>
+                </div>
+
+                <h3 id="addr-label" class="text-neon font-bold mb-4 border-b border-gray-800 pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-truck"></i> ข้อมูลจัดส่ง
+                </h3>
+                <div class="space-y-4">
+                    <input type="text" id="cust-name" placeholder="ชื่อผู้รับ">
+                    <input type="text" id="cust-tel" placeholder="เบอร์โทรศัพท์">
+                    <textarea id="cust-addr" rows="3" placeholder="ที่อยู่โดยละเอียด"></textarea>
+                </div>
+            </div>
+
+            <div class="bg-[#111] border border-neon/30 rounded-2xl p-6 mb-6 flex flex-col items-center">
+                <p id="scan-label" class="text-neon font-bold mb-4">สแกนเพื่อชำระเงิน</p>
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=PROMPTPAY_DATA" class="w-44 h-44 rounded-xl border-2 border-neon bg-white p-2 mb-4">
+                <div class="text-center">
+                    <p class="text-[10px] text-gray-400">ชื่อบัญชี: <span class="text-white">นายไก่โต้ง</span></p>
+                    <p class="text-[10px] text-gray-400">พร้อมเพย์: <span class="text-white">0996360891</span></p>
                 </div>
             </div>
         </div>
-        <div class="p-6 bg-[#050505] border-t border-green-900/50 pb-10 z-10">
-            <div class="flex justify-between items-end mb-4 border-b border-gray-800 pb-4">
-                <span class="text-gray-400 text-lg">ยอดชำระสุทธิ:</span>
-                <span class="text-neon text-4xl font-bold">฿ <span id="checkout-total">0</span></span>
+
+        <div class="flex-none p-4 bg-[#050505] border-t border-gray-800">
+            <div class="flex justify-between items-center mb-4">
+                <span id="net-label" class="text-gray-400 text-sm">ยอดสุทธิ:</span>
+                <span class="text-neon text-2xl font-bold">฿ <span id="checkout-total">0</span></span>
             </div>
-            <button onclick="confirmPayment()" class="w-full bg-neon text-black py-4 rounded-xl font-extrabold text-xl active:scale-95 transition">ยืนยันการโอนเงินแล้ว</button>
+            <button id="confirm-btn" onclick="confirmPayment()" class="w-full bg-neon text-black py-4 rounded-2xl font-extrabold text-lg shadow-lg active:scale-95 transition">ยืนยันออเดอร์และส่ง LINE</button>
         </div>
     </div>
 
     <script>
-        // --- 🟢 ข้อมูลสินค้าทั้ง 30 รายการ (แก้ไขชื่อและลิงก์รูปที่นี่) ---
-        const productsData = [
-            { id: 1, name: "OG Kush", stock: 10, img: "https://i.postimg.cc/6QyRD3jD/Gemini-Generated-Image-sgwjy4sgwjy4sgwj.png", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 2, name: "Amnesia Haze", stock: 12, img: "https://i.postimg.cc/DywdLsR9/images-(2).jpg", prices: { "25g": 450, "50g": 800, "100g": 1500 } },
-            { id: 3, name: "Gelato #41", stock: 8, img: "https://i.postimg.cc/cLQHJkXL/images-(1).jpg", prices: { "25g": 500, "50g": 900, "100g": 1700 } },
-            { id: 4, name: "Blue Dream", stock: 15, img: "https://i.postimg.cc/4Np7K33G/108583552-32d208b5-3b6a-4bdb-aecc-299ff7bf622f.jpg", prices: { "25g": 350, "50g": 650, "100g": 1200 } },
-            { id: 5, name: "Sour Diesel", stock: 10, img: "https://i.postimg.cc/ZRJjQQDV/images.jpg", prices: { "25g": 420, "50g": 780, "100g": 1450 } },
-            { id: 6, name: "Girl Scout Cookies", stock: 5, img: "https://via.placeholder.com/200/111111/39ff14?text=GSC", prices: { "25g": 550, "50g": 1000, "100g": 1900 } },
-            { id: 7, name: "White Widow", stock: 20, img: "https://via.placeholder.com/200/111111/39ff14?text=White+Widow", prices: { "25g": 380, "50g": 700, "100g": 1300 } },
-            { id: 8, name: "Purple Haze", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Purple+Haze", prices: { "25g": 480, "50g": 850, "100g": 1600 } },
-            { id: 9, name: "Northern Lights", stock: 9, img: "https://via.placeholder.com/200/111111/39ff14?text=Northern", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 10, name: "Gorilla Glue #4", stock: 4, img: "https://via.placeholder.com/200/111111/39ff14?text=GG4", prices: { "25g": 520, "50g": 950, "100g": 1800 } },
-            { id: 11, name: "Jack Herer", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Jack", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 12, name: "Pineapple Express", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Pineapple", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 13, name: "Wedding Cake", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Wedding", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 14, name: "Granddaddy Purple", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=GDP", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 15, name: "Strawberry Cough", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Strawberry", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 16, name: "AK-47", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=AK47", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 17, name: "Bubble Gum", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=BubbleGum", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 18, name: "Lemon Skunk", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Lemon", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 19, name: "Cherry Pie", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=CherryPie", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 20, name: "Zkittlez", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Zkittlez", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 21, name: "Durban Poison", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Durban", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 22, name: "Afghan Kush", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Afghan", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 23, name: "Chemdawg", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Chemdawg", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 24, name: "Banana Kush", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Banana", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 25, name: "Master Kush", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Master", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 26, name: "Trainwreck", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Trainwreck", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 27, name: "Blackberry Kush", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Blackberry", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 28, name: "Maui Wowie", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Maui", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 29, name: "Super Lemon Haze", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=SLH", prices: { "25g": 400, "50g": 750, "100g": 1400 } },
-            { id: 30, name: "Skywalker OG", stock: 10, img: "https://via.placeholder.com/200/111111/39ff14?text=Skywalker", prices: { "25g": 400, "50g": 750, "100g": 1400 } }
+        // ==========================================
+        // ส่วนที่ 1: ตั้งค่าโฆษณา
+        // ==========================================
+        const adsData = [
+            { img: "https://images.unsplash.com/photo-1550989460-0adf9ea622e2?q=80&w=1000", title: "โปรโมชั่นประจำเดือน!", desc: "ซื้อครบ 1,000.- รับฟรีสายพันธุ์ลับ 1g" },
+            { img: "https://i.postimg.cc/d1jR1Z8j/images-(1).jpg", title: "ลดแหลกแจกแถม!", desc: "ทุกสายพันธุ์ลด 10% วันนี้เท่านั้น" }
         ];
 
+        let currentAdIndex = 0;
+        let adInterval;
+
+        function renderAd() {
+            const adArea = document.getElementById('ad-render-area');
+            const adDots = document.getElementById('ad-dots');
+            const ad = adsData[currentAdIndex];
+            
+            adArea.classList.remove('fade-slide');
+            void adArea.offsetWidth;
+            adArea.classList.add('fade-slide');
+
+            adArea.innerHTML = `
+                <img src="${ad.img}" class="w-full h-[400px] object-cover">
+                <div class="p-4 bg-black/90 text-center">
+                    <h3 class="text-neon font-bold text-xl">${ad.title}</h3>
+                    <p class="text-gray-300 text-sm mt-1">${ad.desc}</p>
+                </div>
+            `;
+
+            adDots.innerHTML = adsData.map((_, index) => `<div class="w-2 h-2 rounded-full transition-all ${index === currentAdIndex ? 'bg-neon w-4' : 'bg-gray-600'}"></div>`).join('');
+        }
+
+        function nextAd() {
+            currentAdIndex = (currentAdIndex + 1) % adsData.length;
+            renderAd();
+        }
+
+        function openAd() { 
+            document.getElementById('ad-modal').style.display = 'flex'; 
+            renderAd();
+            clearInterval(adInterval);
+            adInterval = setInterval(nextAd, 4000); 
+        }
+        
+        function closeAd() { 
+            document.getElementById('ad-modal').style.display = 'none'; 
+            clearInterval(adInterval);
+        }
+
+        // ==========================================
+        // ส่วนที่ 2: ข้อมูลสินค้า 30 รายการ
+        // ==========================================
+        const productsData = [
+            { id: 1, name: "Strain #1", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 2, name: "Strain #2", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 3, name: "Strain #3", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 4, name: "Strain #4", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 5, name: "Strain #5", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 6, name: "Strain #6", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 7, name: "Strain #7", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 8, name: "Strain #8", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 9, name: "Strain #9", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            { id: 10, name: "Strain #10", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "25g": 400, "50g": 1100, "100g": 1800 } },
+            
+            { id: 11, name: "Strain #11", stock: 10, img: "https://i.postimg.cc/d1jR1Z8j/images-(1).jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 12, name: "Strain #12", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 13, name: "Strain #13", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 14, name: "Strain #14", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 15, name: "Strain #15", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 16, name: "Strain #16", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 17, name: "Strain #17", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 18, name: "Strain #18", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 19, name: "Strain #19", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 20, name: "Strain #20", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            
+            { id: 21, name: "Strain #21", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 22, name: "Strain #22", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 23, name: "Strain #23", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 24, name: "Strain #24", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 25, name: "Strain #25", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 26, name: "Strain #26", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 27, name: "Strain #27", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 28, name: "Strain #28", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 29, name: "Strain #29", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } },
+            { id: 30, name: "Strain #30", stock: 10, img: "ใส่รูปที่นี่.jpg", prices: { "1g": 400, "3g": 1100, "5g": 1800 } }
+        ];
+
+        const canvas = document.getElementById('smoke-canvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resizeCanvas); resizeCanvas();
+
+        class Particle {
+            constructor(x, y) {
+                this.x = x; this.y = y;
+                this.size = Math.random() * 50 + 30;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * -1 - 0.5;
+                this.opacity = 0.02;
+            }
+            update() { this.x += this.speedX; this.y += this.speedY; this.opacity -= 0.000; }
+            draw() {
+                ctx.save();
+                ctx.globalAlpha = this.opacity;
+                ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fillStyle = '#666'; ctx.fill(); ctx.restore();
+            }
+        }
+        function createSmoke(e) {
+            let x = e.clientX || (e.touches ? e.touches[0].clientX : 0);
+            let y = e.clientY || (e.touches ? e.touches[0].clientY : 0);
+            for(let i=0; i<2; i++) particles.push(new Particle(x, y));
+        }
+        window.addEventListener('mousemove', createSmoke);
+        window.addEventListener('touchmove', createSmoke);
+        
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach((p, i) => { p.update(); p.draw(); if(p.opacity<=0) particles.splice(i,1); });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        const i18n = {
+            th: { tap: "แตะเพื่อเข้าสู่ระบบ", stock: "สินค้าทั้งหมด", total: "Total Price", clear: "ล้าง", checkout: "ชำระเงิน", back: "← ย้อนกลับ", summary: "สรุปออเดอร์", addr: "ข้อมูลจัดส่ง", scan: "สแกนเพื่อชำระเงิน", net: "ยอดสุทธิ:", confirm: "ยืนยันออเดอร์และส่ง LINE", empty: "ยังไม่มีสินค้าในตะกร้า...", name: "ชื่อผู้รับ", tel: "เบอร์โทรศัพท์", address: "ที่อยู่โดยละเอียด", addCart: "+ ใส่ตะกร้า" },
+            en: { tap: "Tap to Enter", stock: "Total Items", total: "Total Price", clear: "Clear", checkout: "Checkout", back: "← Back", summary: "Summary", addr: "Shipping Info", scan: "Scan to Pay", net: "Net Total:", confirm: "Confirm & Send to LINE", empty: "Cart is empty...", name: "Full Name", tel: "Phone", address: "Address", addCart: "+ Add" },
+            cn: { tap: "点击进入", stock: "全部商品", total: "总金额", clear: "清除", checkout: "結帳", back: "← 返回", summary: "結帳明細", addr: "收货信息", scan: "掃碼付款", net: "净计:", confirm: "確認並發送到 LINE", empty: "购物车是空的...", name: "姓名", tel: "电话", address: "地址", addCart: "+ 加入" }
+        };
+
+        let currentLang = 'th';
         let cart = [];
-        let selectedSizes = {}; 
-        productsData.forEach(p => { selectedSizes[p.id] = "25g"; });
+        let selectedSizes = {};
+        
+        productsData.forEach(p => { 
+            selectedSizes[p.id] = Object.keys(p.prices)[0]; 
+        });
 
         function enterShop() {
             const cover = document.getElementById('cover-page');
             cover.style.opacity = '0';
             setTimeout(() => { cover.style.display = 'none'; }, 500);
+            setTimeout(openAd, 1000);
         }
 
-        // เอฟเฟกต์ควันตอนคลิก
-        document.addEventListener('click', function(e) {
-            if(e.target.tagName === 'BUTTON' || e.target.closest('a')) return; 
-            const smoke = document.createElement('div');
-            smoke.className = 'smoke-effect';
-            smoke.style.left = e.pageX + 'px';
-            smoke.style.top = e.pageY + 'px';
-            document.body.appendChild(smoke);
-            setTimeout(() => smoke.remove(), 600);
-        });
+        function changeLang(lang) {
+            currentLang = lang;
+            const t = i18n[lang];
+            document.getElementById('tap-to-enter').innerText = t.tap;
+            document.getElementById('stock-count').innerText = `${productsData.length} ${t.stock}`;
+            document.getElementById('total-label').innerText = t.total;
+            document.getElementById('clear-btn').innerText = t.clear;
+            document.getElementById('checkout-btn').innerText = t.checkout;
+            document.getElementById('back-btn').innerText = t.back;
+            document.getElementById('summary-label').innerText = t.summary;
+            document.getElementById('addr-label').innerHTML = `<i class="fa-solid fa-truck"></i> ${t.addr}`;
+            document.getElementById('scan-label').innerText = t.scan;
+            document.getElementById('net-label').innerText = t.net;
+            document.getElementById('confirm-btn').innerText = t.confirm;
+            document.getElementById('cust-name').placeholder = t.name;
+            document.getElementById('cust-tel').placeholder = t.tel;
+            document.getElementById('cust-addr').placeholder = t.address;
+            renderProducts(); updateUI();
+        }
 
         function renderProducts() {
             const container = document.getElementById('product-list');
+            document.getElementById('stock-count').innerText = `${productsData.length} ${i18n[currentLang].stock}`;
+            
             container.innerHTML = productsData.map(p => {
                 const currentSize = selectedSizes[p.id];
-                const currentPrice = p.prices[currentSize];
+                const availableSizes = Object.keys(p.prices);
+                
+                const imgSrc = p.img.includes('ใส่รูป') ? 'https://via.placeholder.com/200/111111/39ff14?text=NO+IMAGE' : p.img;
+
                 return `
-                <div class="bg-[#0f0f0f] rounded-2xl p-2 border border-gray-800 flex flex-col relative overflow-hidden shadow-lg">
+                <div class="bg-[#0f0f0f] rounded-2xl p-2 border border-gray-800 flex flex-col relative overflow-hidden shadow-lg transition hover:border-neon/50">
                     <div class="relative mb-2">
-                        <img src="${p.img}" class="w-full h-24 object-cover rounded-xl border border-gray-800" onerror="this.src='https://via.placeholder.com/150/111111/333333?text=No+Image'">
-                        <div class="absolute top-1 right-1 bg-black/80 px-2 py-0.5 rounded text-[10px] text-gray-300 border border-gray-700">คลัง: <span id="stock-${p.id}" class="text-neon font-bold">${p.stock}</span></div>
+                        <img src="${imgSrc}" class="w-full h-24 object-cover rounded-xl border border-gray-800 bg-[#111]">
+                        <div class="absolute top-1 right-1 bg-black/80 px-2 py-0.5 rounded text-[8px] text-gray-300">คลัง: <span class="text-neon">${p.stock}</span></div>
                     </div>
-                    <h3 class="text-[11px] font-bold truncate text-gray-200 mb-1 px-1">${p.name}</h3>
-                    <p class="text-neon font-bold text-sm mb-2 text-center" id="price-display-${p.id}">฿${currentPrice.toLocaleString()}</p>
-                    <div class="flex gap-1 mb-2 bg-black p-1 rounded-lg border border-gray-800">
-                        ${['25g', '50g', '100g'].map(size => `
-                            <button onclick="changeSize(${p.id}, '${size}')" id="btn-size-${p.id}-${size}" class="size-btn flex-1 text-[9px] py-1 rounded-md text-gray-500 ${currentSize === size ? 'active' : ''}">${size}</button>
+                    <h3 class="text-[10px] font-bold truncate text-gray-200 mb-1 px-1 uppercase">${p.name}</h3>
+                    <p class="text-neon font-bold text-xs mb-2 text-center" id="price-display-${p.id}">฿${p.prices[currentSize].toLocaleString()}</p>
+                    <div class="flex gap-1 mb-2 bg-black p-1 rounded-lg">
+                        ${availableSizes.map(size => `
+                            <button onclick="changeSize(${p.id}, '${size}')" class="size-btn flex-1 text-[8px] py-1 rounded-md text-gray-500 ${currentSize === size ? 'active' : ''}">${size}</button>
                         `).join('')}
                     </div>
-                    <button onclick="addToCart(${p.id})" class="w-full border border-neon/30 bg-transparent text-neon text-xs font-bold py-1.5 rounded-lg active:scale-95 transition hover:bg-neon hover:text-black">+ ใส่ตะกร้า</button>
+                    <button onclick="addToCart(${p.id})" class="w-full border border-neon/30 bg-transparent text-neon text-[10px] font-bold py-1.5 rounded-lg active:scale-95 transition hover:bg-neon hover:text-black">${i18n[currentLang].addCart}</button>
                 </div>
             `}).join('');
         }
@@ -168,10 +351,7 @@
             selectedSizes[productId] = size;
             const product = productsData.find(p => p.id === productId);
             document.getElementById(`price-display-${productId}`).innerText = `฿${product.prices[size].toLocaleString()}`;
-            ['25g', '50g', '100g'].forEach(s => {
-                const btn = document.getElementById(`btn-size-${productId}-${s}`);
-                if (btn) btn.classList.toggle('active', s === size);
-            });
+            renderProducts();
         }
 
         function addToCart(productId) {
@@ -179,73 +359,78 @@
             if (product.stock > 0) {
                 const size = selectedSizes[productId];
                 product.stock -= 1;
-                document.getElementById(`stock-${productId}`).innerText = product.stock;
-                cart.push({ cartId: Date.now() + Math.random(), productId, name: product.name, size, price: product.prices[size], img: product.img });
+                const imgSrc = product.img.includes('ใส่รูป') ? 'https://via.placeholder.com/200/111111/39ff14?text=NO+IMAGE' : product.img;
+                cart.push({ cartId: Date.now() + Math.random(), productId, name: product.name, size, price: product.prices[size], img: imgSrc });
                 updateUI();
-            } else { alert("สินค้าหมดครับ!"); }
+            } else { alert("สินค้าหมด!"); }
         }
 
         function removeFromCart(cartId, productId) {
             const product = productsData.find(p => p.id === productId);
             product.stock += 1;
-            document.getElementById(`stock-${productId}`).innerText = product.stock;
             cart = cart.filter(item => item.cartId !== cartId);
             updateUI();
         }
 
         function clearCart() {
-            cart.forEach(item => {
-                const p = productsData.find(prod => prod.id === item.productId);
-                p.stock += 1;
-                document.getElementById(`stock-${p.id}`).innerText = p.stock;
-            });
-            cart = [];
-            updateUI();
+            cart.forEach(item => { productsData.find(p => p.id === item.productId).stock += 1; });
+            cart = []; updateUI();
         }
 
         function updateUI() {
             const cartContainer = document.getElementById('cart-items');
             if(cart.length === 0) {
-                cartContainer.innerHTML = `<span class="text-gray-600 text-sm italic">ยังไม่มีสินค้าในตะกร้า...</span>`;
+                cartContainer.innerHTML = `<span class="text-gray-600 text-sm italic">${i18n[currentLang].empty}</span>`;
             } else {
                 cartContainer.innerHTML = cart.map(item => `
-                    <div class="bg-[#111] text-neon px-3 py-1.5 rounded-full flex items-center gap-2 whitespace-nowrap border border-neon/20">
-                        <span class="text-[11px] font-bold">${item.name} (${item.size})</span>
-                        <button onclick="removeFromCart(${item.cartId}, ${item.productId})" class="text-red-500 font-bold px-1">✕</button>
+                    <div class="bg-[#111] text-neon px-3 py-1.5 rounded-full flex items-center gap-2 border border-neon/20 flex-shrink-0">
+                        <span class="text-[10px] font-bold">${item.name} (${item.size})</span>
+                        <button onclick="removeFromCart(${item.cartId}, ${item.productId})" class="text-red-500 text-xs">✕</button>
                     </div>
                 `).join('');
             }
             const total = cart.reduce((sum, item) => sum + item.price, 0);
             document.getElementById('total-price').innerText = total.toLocaleString();
             document.getElementById('checkout-total').innerText = total.toLocaleString();
+            renderProducts();
         }
 
         function openCheckout() {
-            if (cart.length === 0) return alert("หยิบสินค้าใส่ตะกร้าก่อนครับ");
-            const checkoutPage = document.getElementById('checkout-page');
-            checkoutPage.style.display = 'flex';
-            setTimeout(() => { checkoutPage.classList.remove('translate-y-full'); }, 10);
+            if (cart.length === 0) return alert("กรุณาเลือกสินค้า");
+            const cp = document.getElementById('checkout-page');
+            cp.style.display = 'flex';
+            setTimeout(() => cp.classList.remove('translate-y-full'), 10);
             document.getElementById('checkout-list').innerHTML = cart.map(item => `
                 <div class="flex items-center gap-4 bg-[#111] p-3 rounded-xl border border-gray-800">
-                    <img src="${item.img}" class="w-12 h-12 rounded-lg object-cover border border-gray-700" onerror="this.src='https://via.placeholder.com/150/111111/333333'">
-                    <div class="flex-1 text-sm"><p class="font-bold text-gray-200">${item.name}</p><p class="text-[10px] text-gray-500">ขนาด: ${item.size}</p></div>
+                    <img src="${item.img}" class="w-10 h-10 rounded-lg object-cover">
+                    <div class="flex-1 text-xs"><p class="font-bold text-gray-200">${item.name}</p><p class="text-gray-500">ขนาด: ${item.size}</p></div>
                     <p class="text-neon font-bold">฿${item.price.toLocaleString()}</p>
                 </div>
             `).join('');
         }
 
         function closeCheckout() {
-            const checkoutPage = document.getElementById('checkout-page');
-            checkoutPage.classList.add('translate-y-full');
-            setTimeout(() => { checkoutPage.style.display = 'none'; }, 300);
+            const cp = document.getElementById('checkout-page');
+            cp.classList.add('translate-y-full');
+            setTimeout(() => cp.style.display = 'none', 300);
         }
 
         function confirmPayment() {
-            alert("🙇 ขอบคุณที่อุดหนุนครับ! แอดมินจะตรวจสอบสลิปและจัดส่งให้เร็วที่สุด");
+            const name = document.getElementById('cust-name').value;
+            const tel = document.getElementById('cust-tel').value;
+            const addr = document.getElementById('cust-addr').value;
+            if(!name || !tel || !addr) return alert("กรุณากรอกข้อมูลจัดส่งให้ครบถ้วน");
+
+            let itemsText = cart.map(item => `- ${item.name} (${item.size}) : ฿${item.price}`).join('%0A');
+            let total = document.getElementById('checkout-total').innerText;
+            let lineMessage = `📌 *NEW ORDER: กัญชาบ่*%0A------------------%0A📦 ITEMS:%0A${itemsText}%0A------------------%0A💰 TOTAL: ฿${total}%0A👤 NAME: ${name}%0A📞 TEL: ${tel}%0A🏠 ADDR: ${addr}%0A------------------%0A✅ PAID STATUS: WAITING VERIFY`;
+
+            window.open(`https://line.me/R/msg/text/?${lineMessage}`, '_blank');
             cart = []; updateUI(); closeCheckout();
         }
 
         renderProducts();
+        document.getElementById('stock-count').innerText = `${productsData.length} ${i18n['th'].stock}`;
     </script>
 </body>
-    </html>
+</html>
