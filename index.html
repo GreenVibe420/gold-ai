@@ -253,9 +253,9 @@
                 this.size = Math.random() * 50 + 30;
                 this.speedX = Math.random() * 1 - 0.5;
                 this.speedY = Math.random() * -1 - 0.5;
-                this.opacity = 0.03;
+                this.opacity = 0.01;
             }
-            update() { this.x += this.speedX; this.y += this.speedY; this.opacity -= 0.000; }
+            update() { this.x += this.speedX; this.y += this.speedY; this.opacity -= 0.00; }
             draw() {
                 ctx.save();
                 ctx.globalAlpha = this.opacity;
