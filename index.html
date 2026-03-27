@@ -1,275 +1,146 @@
-<!DOCTYPE html>  <html lang="th">  
-<head>  
-    <meta charset="UTF-8">  
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">  
-    <title>GREENCAT V15 - MASTER ADMIN</title>  
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">  <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>  
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>  
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>  
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop Auto</title>
 
-<style>  
-    :root {   
-        --neon-green: #39ff14; --gold: #fbbf24; --violet: #4c1d95;   
-        --bg: #0f071a; --card: #1e1135; --border: #332152; --text: #f3f4f6;  
-    }  
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }  
-    body { background: var(--bg); color: var(--text); overflow: hidden; width: 100vw; height: 100vh; }  
-
-    /* Canvas Particle */  
-    #particle-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; }  
-
-    .page { display: none; height: 100vh; width: 100%; position: absolute; background: var(--bg); overflow-y: auto; padding-bottom: 90px; }  
-    .page.active { display: block; }  
-
-    /* Admin UI */  
-    .admin-box { background: #2d1b4d; padding: 15px; border-radius: 15px; border: 1px solid var(--neon-green); margin: 10px; }  
-      
-    /* Grid & Cards */  
-    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 10px; }  
-    .card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 10px; text-align: center; position: relative; }  
-    .card img { width: 100%; aspect-ratio: 1; border-radius: 10px; object-fit: cover; }  
-      
-    /* Buttons & Inputs */  
-    input, textarea { width: 100%; background: var(--card); border: 1px solid var(--border); padding: 12px; color: #fff; border-radius: 10px; margin-bottom: 8px; font-size: 14px; }  
-    .btn-main { width: 100%; background: var(--gold); color: #000; padding: 15px; border: none; border-radius: 12px; font-weight: bold; margin-top: 5px; }  
-    .btn-social { width: 40px; height: 40px; border-radius: 50%; display: inline-flex; justify-content: center; align-items: center; background: var(--card); color: #fff; margin: 0 5px; border: 1px solid var(--border); text-decoration: none; }  
-
-    /* Floating Nav */  
-    .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(30,17,53,0.95); backdrop-filter: blur(10px); border-top: 1px solid var(--border); display: flex; z-index: 1000; }  
-    .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #6d4baf; font-size: 11px; }  
-    .nav-item.active { color: var(--neon-green); }  
-
-    #win-msg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; flex-direction: column; justify-content: center; align-items: center; text-align: center; }  
+<style>
+body{margin:0;font-family:sans-serif;background:#0f172a;color:#fff}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px}
+.product{background:#1e293b;padding:10px;border-radius:10px;text-align:center}
+.product img{width:100%;height:80px;object-fit:cover;border-radius:8px}
+.admin{background:#111827;padding:10px;margin-top:5px;border-radius:8px}
+button{margin:5px;padding:8px;border:none;border-radius:6px;background:#22c55e;color:#fff}
+input{width:100%;margin:3px 0;padding:5px;border-radius:6px;border:none}
+.empty{opacity:0.3}
 </style>
+</head>
 
-</head>  
-<body onmousedown="createSmoke(event)" ontouchstart="createSmoke(event)">  <canvas id="particle-canvas"></canvas>  
+<body>
 
-<div id="page-auth" class="page active" style="z-index: 9000; display: flex; flex-direction: column; justify-content: center; padding: 30px;">  
-    <h1 style="color:var(--neon-green); text-align:center; margin-bottom:20px;">GREENCAT V15</h1>  
-    <input type="email" id="auth-email" placeholder="อีเมล">  
-    <input type="password" id="auth-pass" placeholder="รหัสผ่าน">  
-    <button class="btn-main" onclick="handleAuth('login')">เข้าสู่ระบบ</button>  
-    <button style="background:none; border:none; color:var(--gold); margin-top:15px;" onclick="handleAuth('reg')">สมัครสมาชิกใหม่</button>  
-</div>  
+<h2 style="text-align:center">ร้านค้า</h2>
 
-<div id="page-shop" class="page">  
-    <div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">  
-        <div>  
-            <h3 id="h-name">---</h3>  
-            <p style="font-size:10px; color:var(--neon-green)">LV.<span id="h-lv">1</span> <span id="max-tag" style="display:none;">(GOD MODE ♾️)</span></p>  
-        </div>  
-        <div style="text-align:right">  
-            <a href="#" class="btn-social"><i class="fab fa-facebook-f"></i></a>  
-            <a href="#" class="btn-social"><i class="fab fa-instagram"></i></a>  
-            <a href="#" class="btn-social"><i class="fab fa-tiktok"></i></a>  
-        </div>  
-    </div>  
-    <div class="grid" id="shop-items"></div>  
-</div>  
+<div style="text-align:center">
+  <button onclick="toggleAdmin()">โหมดแอดมิน</button>
+</div>
 
-<div id="page-admin" class="page">  
-    <div style="padding:20px;">  
-        <button onclick="nav('page-profile')" style="color:var(--gold); background:none; border:none; margin-bottom:20px;"><i class="fas fa-arrow-left"></i> กลับ</button>  
-        <h2 style="color:var(--neon-green)">จัดการร้านค้า (แอดมิน)</h2>  
-        <div class="admin-box">  
-            <p style="margin-bottom:10px;">เพิ่มสินค้าใหม่</p>  
-            <input type="text" id="new-item-name" placeholder="ชื่อสินค้า">  
-            <input type="number" id="new-item-price" placeholder="ราคา">  
-            <input type="text" id="new-item-img" placeholder="URL รูปภาพ (เช่น https://...)">  
-            <button class="btn-main" style="background:var(--neon-green)" onclick="addItem()">ตกลง เพิ่มสินค้า</button>  
-        </div>  
-        <div id="admin-product-list"></div>  
-    </div>  
-</div>  
+<div id="products" class="grid"></div>
 
-<div id="page-profile" class="page">  
-    <div style="padding:30px; text-align:center;">  
-        <img id="p-img" src="" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--neon-green);">  
-        <h2 id="p-name" style="margin-top:10px;">Player</h2>  
-        <p id="p-email" style="font-size:12px; opacity:0.5;"></p>  
-          
-        <div style="background:var(--card); padding:20px; border-radius:15px; margin-top:20px; text-align:left;">  
-            <p>ที่อยู่จัดส่ง:</p>  
-            <textarea id="p-address" placeholder="ยังไม่มีข้อมูลที่อยู่..." onchange="updateAddress()"></textarea>  
-        </div>  
+<script type="module">
 
-        <button id="admin-btn" class="btn-main" style="display:none; background:#5b21b6; color:#fff;" onclick="nav('page-admin')">เปิดหน้าแอดมิน</button>  
-        <button class="btn-main" style="background:#ef4444; color:#fff; margin-top:10px;" onclick="auth.signOut().then(()=>location.reload())">ออกจากระบบ</button>  
-    </div>  
-</div>  
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-<div id="page-spin" class="page">  
-    <div style="padding:20px; text-align:center;">  
-        <h2 style="color:var(--gold)">LUCKY SPIN</h2>  
-        <div id="spin-status" style="margin:10px 0; color:var(--neon-green);">สิทธิ์คงเหลือ: <span id="s-count">0</span></div>  
-        <div id="wheel-container" style="width:280px; height:280px; margin:20px auto; border:5px solid var(--violet); border-radius:50%; position:relative;">  
-            <canvas id="wheel-canvas" width="500" height="500" style="width:100%; transition:5s cubic-bezier(0.1, 0, 0.1, 1)"></canvas>  
-        </div>  
-        <button class="btn-main" onclick="spin()">หมุนเลย!</button>  
-    </div>  
-</div>  
+const firebaseConfig = {
+  apiKey: "ใส่ของคุณ",
+  authDomain: "ใส่ของคุณ",
+  projectId: "ใส่ของคุณ",
+  storageBucket: "ใส่ของคุณ",
+};
 
-<nav class="nav">  
-    <div class="nav-item" onclick="nav('page-shop')"><i class="fas fa-store"></i><span>ร้านค้า</span></div>  
-    <div class="nav-item" onclick="nav('page-spin')"><i class="fas fa-sync"></i><span>วงล้อ</span></div>  
-    <div class="nav-item" onclick="nav('page-profile')"><i class="fas fa-user"></i><span>โปรไฟล์</span></div>  
-</nav>  
+const app = initializeApp(firebaseConfig);
+const db = getFirestore();
+const storage = getStorage();
 
-<script>  
-    const firebaseConfig = {  
-        apiKey: "AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",  
-        authDomain: "greencat-c40c6.firebaseapp.com",  
-        projectId: "greencat-c40c6",  
-        storageBucket: "greencat-c40c6.firebasestorage.app",  
-        messagingSenderId: "574032692697",  
-        appId: "1:574032692697:web:8479887ece1df85115c5c8"  
-    };  
-    firebase.initializeApp(firebaseConfig);  
-    const db = firebase.database();  
-    const auth = firebase.auth();  
+let admin = false;
 
-    let userData = { name: "Player", spend: 0, spins: 0, address: "", img: "https://via.placeholder.com/150" };  
-    let curUid = null;  
-    const ADMIN_EMAIL = "admin@greencat.com"; // **แก้เป็นอีเมลของคุณเพื่อใช้หน้าแอดมิน**  
+window.toggleAdmin = ()=>{
+  admin = !admin;
+  loadProducts();
+}
 
-    // --- AUTH ---  
-    auth.onAuthStateChanged(user => {  
-        if(user) {  
-            curUid = user.uid;  
-            document.getElementById('page-auth').style.display = 'none';  
-            if(user.email === ADMIN_EMAIL) document.getElementById('admin-btn').style.display = 'block';  
-            document.getElementById('p-email').innerText = user.email;  
-            syncData();  
-            loadProducts();  
-        } else {  
-            document.getElementById('page-auth').style.display = 'flex';  
-        }  
-    });  
+async function loadProducts(){
+  const div = document.getElementById("products");
+  div.innerHTML="";
 
-    function handleAuth(mode) {  
-        const e = document.getElementById('auth-email').value;  
-        const p = document.getElementById('auth-pass').value;  
-        if(mode==='reg') auth.createUserWithEmailAndPassword(e,p).then(res => db.ref('players/'+res.user.uid).set(userData));  
-        else auth.signInWithEmailAndPassword(e,p).catch(err => alert("ลองใหม่อีกครั้ง"));  
-    }  
+  for(let i=1;i<=30;i++){
+    const id = "product"+i;
 
-    // --- DATA SYNC ---  
-    function syncData() {  
-        db.ref('players/' + curUid).on('value', snap => {  
-            if(snap.val()) {  
-                userData = snap.val();  
-                updateUI();  
-            }  
-        });  
-    }  
+    let data = {
+      name:"",
+      price25:"",
+      price50:"",
+      price100:"",
+      image:""
+    };
 
-    function updateUI() {  
-        const lv = Math.floor(userData.spend / 1000) + 1;  
-        document.getElementById('h-name').innerText = userData.name;  
-        document.getElementById('h-lv').innerText = lv;  
-        document.getElementById('p-name').innerText = userData.name;  
-        document.getElementById('p-img').src = userData.img;  
-        document.getElementById('p-address').value = userData.address || "";  
-          
-        // GOD MODE: LV 100 ตัน สิทธิ์หมุนไม่จำกัด  
-        if(lv >= 100) {  
-            document.getElementById('max-tag').style.display = 'inline';  
-            document.getElementById('s-count').innerText = "♾️";  
-        } else {  
-            document.getElementById('s-count').innerText = userData.spins;  
-        }  
-    }  
+    const snap = await getDoc(doc(db,"products",id));
+    if(snap.exists()){
+      data = snap.data();
+    }
 
-    // --- ADMIN: PRODUCT MANAGEMENT ---  
-    function addItem() {  
-        const n = document.getElementById('new-item-name').value;  
-        const p = document.getElementById('new-item-price').value;  
-        const i = document.getElementById('new-item-img').value;  
-        if(n && p && i) {  
-            db.ref('products').push({ name: n, price: parseInt(p), img: i });  
-            alert("เพิ่มสินค้าแล้ว!");  
-        }  
-    }  
+    const el = document.createElement("div");
+    el.className="product";
 
-    function loadProducts() {  
-        db.ref('products').on('value', snap => {  
-            const shop = document.getElementById('shop-items');  
-            const adminList = document.getElementById('admin-product-list');  
-            shop.innerHTML = ""; adminList.innerHTML = "<h3>รายการสินค้าปัจจุบัน</h3>";  
-              
-            snap.forEach(child => {  
-                const item = child.val();  
-                // หน้า Shop  
-                shop.innerHTML += `  
-                    <div class="card" onclick="buy(${item.price})">  
-                        <img src="${item.img}">  
-                        <p style="font-size:12px; margin:5px 0;">${item.name}</p>  
-                        <p style="color:var(--neon-green)">${item.price} ฿</p>  
-                    </div>`;  
-                // หน้า Admin (ลบได้)  
-                adminList.innerHTML += `  
-                    <div style="display:flex; justify-content:space-between; margin-top:10px;">  
-                        <span>${item.name}</span>  
-                        <button onclick="db.ref('products/${child.key}').remove()" style="color:red; background:none; border:none;">ลบ</button>  
-                    </div>`;  
-            });  
-        });  
-    }  
+    if(!data.name){
+      el.classList.add("empty");
+    }
 
-    function buy(amt) {  
-        if(!confirm(`ซื้อสินค้าราคา ${amt} ฿?`)) return;  
-        db.ref('players/'+curUid).update({  
-            spend: userData.spend + amt,  
-            spins: userData.spins + (amt >= 1000 ? 2 : 0)  
-        });  
-        alert("สั่งซื้อสำเร็จ!");  
-    }  
+    el.innerHTML = `
+      <img src="${data.image || 'https://via.placeholder.com/150'}">
+      <h4>${data.name || 'ยังไม่มีสินค้า'}</h4>
+      25g ${data.price25 || '-'}฿<br>
+      50g ${data.price50 || '-'}฿<br>
+      100g ${data.price100 || '-'}฿
+    `;
 
-    function updateAddress() {  
-        db.ref('players/'+curUid).update({ address: document.getElementById('p-address').value });  
-    }  
+    if(admin){
+      const box = document.createElement("div");
+      box.className="admin";
 
-    // --- SPIN SYSTEM ---  
-    function spin() {  
-        const lv = Math.floor(userData.spend / 1000) + 1;  
-        if(lv < 100 && userData.spins <= 0) return alert("สิทธิ์ไม่พอ!");  
-          
-        if(lv < 100) db.ref('players/'+curUid).update({ spins: userData.spins - 1 });  
+      box.innerHTML = `
+        <input id="name${i}" placeholder="ชื่อสินค้า" value="${data.name}">
+        <input id="p25${i}" placeholder="25g" value="${data.price25}">
+        <input id="p50${i}" placeholder="50g" value="${data.price50}">
+        <input id="p100${i}" placeholder="100g" value="${data.price100}">
+        <input type="file" id="file${i}">
+        <button onclick="save(${i})">บันทึก</button>
+      `;
 
-        const deg = 3600 + Math.random() * 360;  
-        document.getElementById('wheel-canvas').style.transform = `rotate(${deg}deg)`;  
-        setTimeout(() => alert("ยินดีด้วย! คุณได้รับรางวัลสุ่ม"), 5500);  
-    }  
+      el.appendChild(box);
+    }
 
-    // Smoke Effect  
-    const c = document.getElementById('particle-canvas');  
-    const ctx = c.getContext('2d');  
-    c.width = window.innerWidth; c.height = window.innerHeight;  
-    let ps = [];  
-    function createSmoke(e) {  
-        const x = e.clientX || e.touches[0].clientX;  
-        const y = e.clientY || e.touches[0].clientY;  
-        for(let i=0; i<8; i++) ps.push({x, y, s: Math.random()*15+5, ox: Math.random()*2-1, oy: Math.random()*-2-1, a: 1});  
-    }  
-    function draw() {  
-        ctx.clearRect(0,0,c.width,c.height);  
-        ps.forEach((p,i) => {  
-            p.x+=p.ox; p.y+=p.oy; p.a-=0.02;  
-            ctx.fillStyle=`rgba(57,255,20,${p.a})`;  
-            ctx.beginPath(); ctx.arc(p.x,p.y,p.s,0,Math.PI*2); ctx.fill();  
-            if(p.a<=0) ps.splice(i,1);  
-        });  
-        requestAnimationFrame(draw);  
-    }  
-    draw();  
+    div.appendChild(el);
+  }
+}
 
-    function nav(id) {  
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));  
-        document.getElementById(id).classList.add('active');  
-    }  
+window.save = async (i)=>{
+  const id="product"+i;
+
+  const name = document.getElementById("name"+i).value;
+  const p25 = document.getElementById("p25"+i).value;
+  const p50 = document.getElementById("p50"+i).value;
+  const p100 = document.getElementById("p100"+i).value;
+
+  let imageUrl="";
+
+  const file = document.getElementById("file"+i).files[0];
+  if(file){
+    const storageRef = ref(storage,"products/"+id);
+    await uploadBytes(storageRef,file);
+    imageUrl = await getDownloadURL(storageRef);
+  }
+
+  const data = {
+    name,
+    price25,
+    price50,
+    price100
+  };
+
+  if(imageUrl) data.image = imageUrl;
+
+  await setDoc(doc(db,"products",id),data);
+
+  alert("บันทึกแล้ว");
+  loadProducts();
+}
+
+loadProducts();
 
 </script>
 
-</body>  
-</html>   
+</body>
+</html>
