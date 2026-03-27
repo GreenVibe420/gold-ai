@@ -1,144 +1,15 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Product Grid 30 Items</title>
-<style>
-  body {
-    background-color: #000; /* พื้นหลังสีดำ */
-    color: #fff;
-    font-family: sans-serif;
-    margin: 0;
-    padding: 20px;
-  }
+      cart = []; updateUI(); closeCheckout();
 
-  .product-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* จัดเรียง 3 คอลัมน์ */
-    gap: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
+        }
 
-  .product-card {
-    border: 1px solid #39ff14; /* กรอบสีเขียวนีออน */
-    border-radius: 8px;
-    padding: 15px;
-    background-color: #111;
-    text-align: center;
-    box-shadow: 0 0 10px rgba(57, 255, 20, 0.15);
-  }
 
-  .product-card img {
-    width: 100%;
-    height: 250px;
-    object-fit: cover;
-    background-color: #222; /* สีพื้นหลังรอโหลดรูป */
-    border-radius: 4px;
-    margin-bottom: 15px;
-  }
 
-  .product-info {
-    margin-bottom: 15px;
-  }
+        renderProducts();
 
-  .product-info p {
-    margin: 5px 0;
-  }
+        document.getElementById('stock-count').innerText = `${productsData.length} ${i18n['th'].stock}`;
 
-  .price {
-    color: #39ff14;
-    font-size: 1.2em;
-    font-weight: bold;
-  }
+    </script>
 
-  .add-to-cart-btn {
-    width: 100%;
-    padding: 10px;
-    background-color: #39ff14 !important; /* บังคับพื้นหลังเขียวตลอดเวลา */
-    color: #000 !important; /* ตัวหนังสือสีดำให้ตัดกับปุ่ม */
-    border: none;
-    border-radius: 4px;
-    font-size: 1em;
-    font-weight: bold;
-    cursor: pointer;
-    transition: transform 0.1s, box-shadow 0.2s;
-  }
-
-  .add-to-cart-btn:hover {
-    box-shadow: 0 0 15px rgba(57, 255, 20, 0.6);
-  }
-
-  .add-to-cart-btn:active {
-    transform: scale(0.95); /* เอฟเฟกต์ย่อปุ่มเวลากด โดยสีไม่เปลี่ยนเป็นดำ */
-  }
-</style>
-</head>
-<body>
-
-<div class="product-grid" id="product-container">
-  </div>
-
-<script>
-  // ไล่ใส่ข้อมูลของคุณลงใน array 30 ช่องนี้ได้เลยครับ
-  const products = [
-    { id: 1, img: "ใส่_URL_รูปที่_1", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 2, img: "ใส่_URL_รูปที่_2", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 3, img: "ใส่_URL_รูปที่_3", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 4, img: "ใส่_URL_รูปที่_4", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 5, img: "ใส่_URL_รูปที่_5", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 6, img: "ใส่_URL_รูปที่_6", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 7, img: "ใส่_URL_รูปที่_7", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 8, img: "ใส่_URL_รูปที่_8", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 9, img: "ใส่_URL_รูปที่_9", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 10, img: "ใส่_URL_รูปที่_10", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 11, img: "ใส่_URL_รูปที่_11", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 12, img: "ใส่_URL_รูปที่_12", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 13, img: "ใส่_URL_รูปที่_13", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 14, img: "ใส่_URL_รูปที่_14", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 15, img: "ใส่_URL_รูปที่_15", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 16, img: "ใส่_URL_รูปที่_16", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 17, img: "ใส่_URL_รูปที่_17", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 18, img: "ใส่_URL_รูปที่_18", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 19, img: "ใส่_URL_รูปที่_19", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 20, img: "ใส่_URL_รูปที่_20", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 21, img: "ใส่_URL_รูปที่_21", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 22, img: "ใส่_URL_รูปที่_22", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 23, img: "ใส่_URL_รูปที่_23", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 24, img: "ใส่_URL_รูปที่_24", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 25, img: "ใส่_URL_รูปที่_25", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 26, img: "ใส่_URL_รูปที่_26", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 27, img: "ใส่_URL_รูปที่_27", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 28, img: "ใส่_URL_รูปที่_28", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 29, img: "ใส่_URL_รูปที่_29", size: "ระบุขนาด", price: "ระบุราคา" },
-    { id: 30, img: "ใส่_URL_รูปที่_30", size: "ระบุขนาด", price: "ระบุราคา" }
-  ];
-
-  const container = document.getElementById('product-container');
-
-  // ฟังก์ชันสร้างการ์ดสินค้าอัตโนมัติ
-  products.forEach(product => {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.innerHTML = `
-      <img src="${product.img}" alt="Product ${product.id}">
-      <div class="product-info">
-        <p><strong>ขนาด:</strong> ${product.size}</p>
-        <p class="price">฿${product.price}</p>
-      </div>
-      <button class="add-to-cart-btn" onclick="addToCart(${product.id}, '${product.size}', '${product.price}')">
-        + ใส่ตะกร้า
-      </button>
-    `;
-    container.appendChild(card);
-  });
-
-  // ฟังก์ชันเมื่อกดปุ่มใส่ตะกร้า
-  function addToCart(id, size, price) {
-    console.log(`กดเพิ่มสินค้า ${id} (ขนาด: ${size}, ราคา: ฿${price}) ลงตะกร้าแล้ว`);
-    // โค้ดระบบตะกร้าของคุณสามารถนำมาเชื่อมต่อตรงนี้ได้เลย
-  }
-</script>
 </body>
+
 </html>
