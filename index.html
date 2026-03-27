@@ -3,144 +3,142 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Shop Auto</title>
-
+<title>Product Grid 30 Items</title>
 <style>
-body{margin:0;font-family:sans-serif;background:#0f172a;color:#fff}
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:10px}
-.product{background:#1e293b;padding:10px;border-radius:10px;text-align:center}
-.product img{width:100%;height:80px;object-fit:cover;border-radius:8px}
-.admin{background:#111827;padding:10px;margin-top:5px;border-radius:8px}
-button{margin:5px;padding:8px;border:none;border-radius:6px;background:#22c55e;color:#fff}
-input{width:100%;margin:3px 0;padding:5px;border-radius:6px;border:none}
-.empty{opacity:0.3}
+  body {
+    background-color: #000; /* พื้นหลังสีดำ */
+    color: #fff;
+    font-family: sans-serif;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .product-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* จัดเรียง 3 คอลัมน์ */
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .product-card {
+    border: 1px solid #39ff14; /* กรอบสีเขียวนีออน */
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #111;
+    text-align: center;
+    box-shadow: 0 0 10px rgba(57, 255, 20, 0.15);
+  }
+
+  .product-card img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    background-color: #222; /* สีพื้นหลังรอโหลดรูป */
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+
+  .product-info {
+    margin-bottom: 15px;
+  }
+
+  .product-info p {
+    margin: 5px 0;
+  }
+
+  .price {
+    color: #39ff14;
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+
+  .add-to-cart-btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #39ff14 !important; /* บังคับพื้นหลังเขียวตลอดเวลา */
+    color: #000 !important; /* ตัวหนังสือสีดำให้ตัดกับปุ่ม */
+    border: none;
+    border-radius: 4px;
+    font-size: 1em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.2s;
+  }
+
+  .add-to-cart-btn:hover {
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.6);
+  }
+
+  .add-to-cart-btn:active {
+    transform: scale(0.95); /* เอฟเฟกต์ย่อปุ่มเวลากด โดยสีไม่เปลี่ยนเป็นดำ */
+  }
 </style>
 </head>
-
 <body>
 
-<h2 style="text-align:center">ร้านค้า</h2>
+<div class="product-grid" id="product-container">
+  </div>
 
-<div style="text-align:center">
-  <button onclick="toggleAdmin()">โหมดแอดมิน</button>
-</div>
+<script>
+  // ไล่ใส่ข้อมูลของคุณลงใน array 30 ช่องนี้ได้เลยครับ
+  const products = [
+    { id: 1, img: "ใส่_URL_รูปที่_1", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 2, img: "ใส่_URL_รูปที่_2", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 3, img: "ใส่_URL_รูปที่_3", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 4, img: "ใส่_URL_รูปที่_4", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 5, img: "ใส่_URL_รูปที่_5", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 6, img: "ใส่_URL_รูปที่_6", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 7, img: "ใส่_URL_รูปที่_7", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 8, img: "ใส่_URL_รูปที่_8", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 9, img: "ใส่_URL_รูปที่_9", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 10, img: "ใส่_URL_รูปที่_10", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 11, img: "ใส่_URL_รูปที่_11", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 12, img: "ใส่_URL_รูปที่_12", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 13, img: "ใส่_URL_รูปที่_13", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 14, img: "ใส่_URL_รูปที่_14", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 15, img: "ใส่_URL_รูปที่_15", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 16, img: "ใส่_URL_รูปที่_16", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 17, img: "ใส่_URL_รูปที่_17", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 18, img: "ใส่_URL_รูปที่_18", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 19, img: "ใส่_URL_รูปที่_19", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 20, img: "ใส่_URL_รูปที่_20", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 21, img: "ใส่_URL_รูปที่_21", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 22, img: "ใส่_URL_รูปที่_22", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 23, img: "ใส่_URL_รูปที่_23", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 24, img: "ใส่_URL_รูปที่_24", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 25, img: "ใส่_URL_รูปที่_25", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 26, img: "ใส่_URL_รูปที่_26", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 27, img: "ใส่_URL_รูปที่_27", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 28, img: "ใส่_URL_รูปที่_28", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 29, img: "ใส่_URL_รูปที่_29", size: "ระบุขนาด", price: "ระบุราคา" },
+    { id: 30, img: "ใส่_URL_รูปที่_30", size: "ระบุขนาด", price: "ระบุราคา" }
+  ];
 
-<div id="products" class="grid"></div>
+  const container = document.getElementById('product-container');
 
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
-
-const firebaseConfig = {
-  apiKey: "ใส่ของคุณ",
-  authDomain: "ใส่ของคุณ",
-  projectId: "ใส่ของคุณ",
-  storageBucket: "ใส่ของคุณ",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore();
-const storage = getStorage();
-
-let admin = false;
-
-window.toggleAdmin = ()=>{
-  admin = !admin;
-  loadProducts();
-}
-
-async function loadProducts(){
-  const div = document.getElementById("products");
-  div.innerHTML="";
-
-  for(let i=1;i<=30;i++){
-    const id = "product"+i;
-
-    let data = {
-      name:"",
-      price25:"",
-      price50:"",
-      price100:"",
-      image:""
-    };
-
-    const snap = await getDoc(doc(db,"products",id));
-    if(snap.exists()){
-      data = snap.data();
-    }
-
-    const el = document.createElement("div");
-    el.className="product";
-
-    if(!data.name){
-      el.classList.add("empty");
-    }
-
-    el.innerHTML = `
-      <img src="${data.image || 'https://via.placeholder.com/150'}">
-      <h4>${data.name || 'ยังไม่มีสินค้า'}</h4>
-      25g ${data.price25 || '-'}฿<br>
-      50g ${data.price50 || '-'}฿<br>
-      100g ${data.price100 || '-'}฿
+  // ฟังก์ชันสร้างการ์ดสินค้าอัตโนมัติ
+  products.forEach(product => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+      <img src="${product.img}" alt="Product ${product.id}">
+      <div class="product-info">
+        <p><strong>ขนาด:</strong> ${product.size}</p>
+        <p class="price">฿${product.price}</p>
+      </div>
+      <button class="add-to-cart-btn" onclick="addToCart(${product.id}, '${product.size}', '${product.price}')">
+        + ใส่ตะกร้า
+      </button>
     `;
+    container.appendChild(card);
+  });
 
-    if(admin){
-      const box = document.createElement("div");
-      box.className="admin";
-
-      box.innerHTML = `
-        <input id="name${i}" placeholder="ชื่อสินค้า" value="${data.name}">
-        <input id="p25${i}" placeholder="25g" value="${data.price25}">
-        <input id="p50${i}" placeholder="50g" value="${data.price50}">
-        <input id="p100${i}" placeholder="100g" value="${data.price100}">
-        <input type="file" id="file${i}">
-        <button onclick="save(${i})">บันทึก</button>
-      `;
-
-      el.appendChild(box);
-    }
-
-    div.appendChild(el);
+  // ฟังก์ชันเมื่อกดปุ่มใส่ตะกร้า
+  function addToCart(id, size, price) {
+    console.log(`กดเพิ่มสินค้า ${id} (ขนาด: ${size}, ราคา: ฿${price}) ลงตะกร้าแล้ว`);
+    // โค้ดระบบตะกร้าของคุณสามารถนำมาเชื่อมต่อตรงนี้ได้เลย
   }
-}
-
-window.save = async (i)=>{
-  const id="product"+i;
-
-  const name = document.getElementById("name"+i).value;
-  const p25 = document.getElementById("p25"+i).value;
-  const p50 = document.getElementById("p50"+i).value;
-  const p100 = document.getElementById("p100"+i).value;
-
-  let imageUrl="";
-
-  const file = document.getElementById("file"+i).files[0];
-  if(file){
-    const storageRef = ref(storage,"products/"+id);
-    await uploadBytes(storageRef,file);
-    imageUrl = await getDownloadURL(storageRef);
-  }
-
-  const data = {
-    name,
-    price25,
-    price50,
-    price100
-  };
-
-  if(imageUrl) data.image = imageUrl;
-
-  await setDoc(doc(db,"products",id),data);
-
-  alert("บันทึกแล้ว");
-  loadProducts();
-}
-
-loadProducts();
-
 </script>
-
 </body>
 </html>
