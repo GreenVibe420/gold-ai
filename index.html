@@ -3,443 +3,531 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GREENCAT V23 - PERFECT VISION</title>
+    <title>GREENCAT V.41 STABLE (GACHA & RANK)</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
     <style>
-        :root { --neon: #39ff14; --gold: #ffd700; --diamond: #b9f2ff; --dark: #000; --card: #0d0d0d; --border: #1a1a1a; --text: #fff; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
-        body { background: var(--dark); color: var(--text); overflow-x: hidden; height: 100vh; }
+        :root { --neon: #39ff14; --gold: #ffd700; --dark: #000; --card: #0d0d0d; --border: #1a1a1a; --soft-gray: #555; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background: var(--dark); color: #fff; overflow-x: hidden; }
 
-        /* Social Header */
-        .social-header { display: flex; justify-content: center; gap: 20px; padding: 10px; background: #050505; border-bottom: 1px solid var(--border); }
-        .social-header a { color: var(--neon); font-size: 18px; transition: 0.3s; }
-        .social-header a:hover { text-shadow: 0 0 10px var(--neon); }
+        /* --- Auth Layer --- */
+        #auth-screen { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; }
+        .auth-box { width: 100%; max-width: 360px; text-align: center; background: #050505; padding: 35px; border-radius: 25px; border: 1px solid var(--border); box-shadow: 0 0 30px rgba(57, 255, 20, 0.1); }
+        .auth-nav { display: flex; margin-bottom: 25px; gap: 10px; }
+        .auth-nav div { flex: 1; padding: 10px; cursor: pointer; color: #444; font-weight: 800; border-bottom: 2px solid #111; transition: 0.3s; }
+        .auth-nav div.active { color: var(--neon); border-color: var(--neon); }
 
-        .page { display: none; height: calc(100vh - 120px); width: 100%; position: absolute; background: var(--dark); overflow-y: auto; padding-bottom: 100px; }
-        .page.active { display: block; }
+        /* --- App Header --- */
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #050505; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+        .user-pill { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--neon); padding: 4px 12px; border-radius: 25px; background: rgba(57, 255, 20, 0.05); }
+        .avatar-small { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #fff; object-fit: cover; }
 
-        /* Frame System */
-        .profile-frame { position: relative; width: 100px; height: 100px; margin: 0 auto; padding: 5px; border-radius: 50%; }
-        .frame-gold { border: 4px solid var(--gold); box-shadow: 0 0 15px var(--gold); }
-        .frame-diamond { border: 4px solid var(--diamond); box-shadow: 0 0 15px var(--diamond); }
-        .frame-default { border: 2px solid var(--neon); }
-        .profile-frame img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+        /* --- Promo Banner --- */
+        .promo-slider { margin: 12px; border-radius: 15px; overflow: hidden; background: linear-gradient(45deg, #001a00, #0d0d0d); border: 1px solid #1a331a; height: 65px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .promo-card { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 13px; text-align: center; }
+        .promo-card i { font-size: 20px; }
+        .promo-card.news { color: var(--neon); }
+        .promo-card.sale { color: #ff4444; }
+        .pulse { animation: pulse-green 2s infinite; }
+        @keyframes pulse-green { 0% { text-shadow: 0 0 0 rgba(57, 255, 20, 0.7); } 70% { text-shadow: 0 0 15px rgba(57, 255, 20, 0); } 100% { text-shadow: 0 0 0 rgba(57, 255, 20, 0); } }
+        .bounce { animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-5px);} 60% {transform: translateY(-3px);} }
+        .fade { animation: fadeEffect 1s ease; }
+        @keyframes fadeEffect { from {opacity: 0} to {opacity: 1} }
 
-        /* Shop Grid 3-Columns */
-        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 10px; }
-        .item-card { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 8px; text-align: center; font-size: 10px; position: relative; }
-        .item-card img { width: 100%; border-radius: 6px; height: 80px; object-fit: cover; margin-bottom: 5px; border: 1px solid #222; }
-        
-        .size-picker { display: flex; flex-direction: column; gap: 3px; margin-bottom: 5px; }
-        .size-btn { background: #1a1a1a; border: 1px solid #333; color: #999; font-size: 9px; padding: 3px; border-radius: 3px; cursor: pointer; }
-        .size-btn.active { background: var(--neon); color: #000; font-weight: bold; border-color: var(--neon); }
+        /* --- Page System --- */
+        /* แก้ไข padding-bottom ให้เยอะขึ้นเพื่อไม่ให้เมนูด้านล่างบังปุ่ม */
+        .page { display: none; min-height: 100vh; padding-bottom: 140px; }
+        .page.active { display: block; animation: slideUp 0.4s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Inputs & Buttons */
-        .neon-input { background: #000; border: 1px solid var(--border); color: var(--neon); padding: 15px; border-radius: 8px; width: 100%; margin-bottom: 10px; outline: none; font-size: 14px; }
-        .neon-input:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(57,255,20,0.2); }
-        .btn-neon { background: var(--neon); color: #000; font-weight: bold; border: none; border-radius: 8px; cursor: pointer; padding: 15px; width: 100%; font-size: 14px; box-shadow: 0 0 15px rgba(57,255,20,0.3); }
-        .btn-outline { background: transparent; color: var(--neon); border: 1px solid var(--neon); border-radius: 8px; cursor: pointer; padding: 15px; width: 100%; font-size: 14px; }
-        
-        /* Pass Eye Wrapper */
-        .pass-wrapper { position: relative; width: 100%; }
-        .eye-icon { position: absolute; right: 15px; top: 18px; color: var(--neon); cursor: pointer; font-size: 16px; }
+        /* --- Shop --- */
+        .shop-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; }
+        .product-card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 8px; text-align: center; }
+        .product-card img { width: 100%; height: 75px; object-fit: cover; border-radius: 10px; margin-bottom: 8px; background: #111; }
+        .size-picker { display: flex; gap: 3px; margin-bottom: 8px; }
+        .size-btn { flex: 1; font-size: 8px; background: #111; border: 1px solid #222; color: #666; padding: 5px 0; border-radius: 5px; font-weight: bold; }
+        .size-btn.active { background: var(--neon); color: #000; border-color: var(--neon); }
+        .btn-add { width: 100%; background: var(--neon); color: #000; border: none; font-size: 10px; padding: 8px; font-weight: 900; border-radius: 8px; cursor: pointer; }
 
-        /* Cart */
-        .cart-item { display: flex; align-items: center; gap: 10px; background: #0a0a0a; padding: 10px; border-radius: 10px; margin-bottom: 10px; border: 1px solid #222; }
-        .cart-item img { width: 60px; height: 60px; border-radius: 5px; object-fit: cover; }
-        .btn-delete { background: #ff3131; color: #fff; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer; }
+        /* --- Gacha 30 Boxes --- */
+        .gacha-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 15px; }
+        .gacha-box { background: #111; border: 2px solid #222; border-radius: 10px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.3s; }
+        .gacha-box.opened { background: #050505; border-color: #333; cursor: not-allowed; opacity: 0.5; }
 
-        .nav { position: fixed; bottom: 0; width: 100%; height: 70px; background: #000; border-top: 1px solid var(--border); display: flex; z-index: 1000; }
-        .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #555; font-size: 11px; cursor: pointer; }
-        .nav-item.active { color: var(--neon); text-shadow: 0 0 5px var(--neon); }
+        /* --- Ranking --- */
+        .rank-card { display: flex; align-items: center; justify-content: space-between; background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 10px; border-radius: 12px; }
+        .rank-number { font-size: 18px; font-weight: 900; color: var(--gold); width: 40px; }
+
+        /* --- Checkout UI --- */
+        .checkout-card { background: #050505; border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-top: 15px; margin-bottom: 30px; }
+        .cart-item { display:flex; align-items:center; justify-content:space-between; padding:12px; background:#0a0a0a; border:1px solid #111; border-radius:10px; margin-bottom:8px; font-size:13px; }
+        .cart-img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; margin-right: 12px; border: 1px solid #222; }
+        .slip-area { width: 100%; height: 200px; border: 2px dashed #222; border-radius: 15px; margin: 15px 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #080808; }
+        .slip-area img { width: 100%; height: 100%; object-fit: contain; }
+
+        /* --- Inputs --- */
+        .input-neon { width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 14px; border-radius: 12px; margin-bottom: 12px; outline: none; border-left: 5px solid var(--neon); font-size: 14px; }
+        .btn-block { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .btn-neon { background: var(--neon); color: #000; box-shadow: 0 5px 15px rgba(57, 255, 20, 0.2); }
+        .btn-neon:disabled { opacity: 0.5; filter: grayscale(1); }
+
+        /* --- Nav --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; border-top: 1px solid var(--border); display: flex; z-index: 1000; }
+        .nav-link { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #444; font-size: 9px; font-weight: bold; transition: 0.3s; cursor: pointer; }
+        .nav-link.active { color: var(--neon); }
+        .nav-link i { font-size: 20px; margin-bottom: 5px; }
     </style>
 </head>
 <body>
 
-    <div class="social-header">
-        <a href="#"><i class="fab fa-facebook"></i></a>
-        <a href="#"><i class="fab fa-instagram"></i></a>
-        <a href="#"><i class="fab fa-tiktok"></i></a>
+<div id="auth-screen">
+    <div class="auth-box">
+        <h1 style="color:var(--neon); margin-bottom:10px; font-weight:900; letter-spacing: -1px;">GREENCAT</h1>
+        <div class="auth-nav">
+            <div id="tab-login" class="active" onclick="switchAuth('login')">LOGIN</div>
+            <div id="tab-reg" onclick="switchAuth('reg')">REGISTER</div>
+        </div>
+        <input type="email" id="email" class="input-neon" placeholder="Email">
+        <input type="password" id="pass" class="input-neon" placeholder="Password">
+        <button id="btn-auth" class="btn-block btn-neon" onclick="handleAuth()">CONFIRM</button>
+        <p id="auth-err" style="color:#ff3333; font-size:11px; margin-top:10px;"></p>
     </div>
+</div>
 
-    <div id="page-auth" class="page active" style="height: 100vh; z-index: 9999; padding-top: 50px;">
-        <div style="padding: 20px; text-align: center;">
-            <h1 style="color:var(--neon); font-size: 45px; text-shadow: 0 0 20px var(--neon); margin-bottom: 5px;">GREENCAT</h1>
-            <p style="opacity:0.5; font-size:12px; margin-bottom:40px; letter-spacing: 2px;">SECURE LOGIN</p>
-            
-            <input type="email" id="auth-email" class="neon-input" placeholder="ใส่อีเมลของคุณ">
-            
-            <div class="pass-wrapper">
-                <input type="password" id="auth-pass" class="neon-input" placeholder="ใส่รหัสผ่าน" style="padding-right: 45px;">
-                <i class="fas fa-eye eye-icon" id="toggle-eye" onclick="togglePass()"></i>
-            </div>
-
-            <button class="btn-neon" style="margin-bottom: 15px;" onclick="login()">เข้าสู่ระบบ</button>
-            <button class="btn-outline" onclick="register()">สมัครสมาชิกใหม่</button>
+<div id="main-app" style="display:none;">
+    <div class="header">
+        <div style="font-weight: 900; color: var(--neon); font-size:18px;">GREENCAT <span id="ui-lv" style="color:var(--gold);">LV.1</span></div>
+        <div class="user-pill" onclick="goPage('p-profile')">
+            <span id="ui-name" style="font-size: 12px; font-weight:600;">Member</span>
+            <img id="ui-avatar" class="avatar-small" src="https://via.placeholder.com/50">
         </div>
     </div>
 
-    <div id="page-shop" class="page">
-        <div style="padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #000; z-index: 10;">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div id="h-frame" class="profile-frame" style="width:40px; height:40px; padding:2px;">
-                    <img id="h-img" src="https://via.placeholder.com/150">
-                </div>
-                <b id="h-name" style="color:var(--neon); font-size:14px;">---</b>
-            </div>
-            <div onclick="nav('page-cart')" style="position:relative; cursor: pointer;">
-                <i class="fas fa-shopping-cart" style="font-size:22px; color:var(--neon);"></i>
-                <span id="cart-count" style="position:absolute; top:-8px; right:-8px; background:#ff3131; color:#fff; font-size:10px; padding:2px 6px; border-radius:50%; font-weight: bold;">0</span>
+    <div id="promo-banner" class="promo-slider">
+        <div class="slide fade">
+            <div class="promo-card news">
+                <i class="fas fa-leaf pulse"></i>
+                <span>NEW ARRIVAL: Green Elite V.2 พร้อมส่ง!</span>
             </div>
         </div>
-        <div class="grid" id="main-grid">
-            </div>
-    </div>
-
-    <div id="page-cart" class="page">
-        <div style="padding: 20px;">
-            <h2 style="color:var(--neon); margin-bottom:20px; border-bottom: 1px solid #222; padding-bottom: 10px;"><i class="fas fa-shopping-basket"></i> ตะกร้าของฉัน</h2>
-            <div id="cart-list"></div>
-            <div id="cart-empty" style="text-align:center; padding:50px 20px; opacity:0.3; font-size: 14px;">ยังไม่มีสินค้าในตะกร้า</div>
-            
-            <div id="checkout-section" style="display:none; margin-top: 20px;">
-                <div style="display:flex; justify-content:space-between; font-size:18px; background: #111; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid var(--neon);">
-                    <b>ยอดรวมทั้งหมด:</b>
-                    <b style="color:var(--neon)" id="cart-total">0 ฿</b>
-                </div>
-                
-                <p style="font-size: 12px; color: var(--neon); margin-bottom: 5px;">ข้อมูลสำหรับจัดส่ง</p>
-                <textarea id="order-address" class="neon-input" rows="4" placeholder="พิมพ์ชื่อ-นามสกุล ที่อยู่ และเบอร์โทรศัพท์ที่ติดต่อได้..."></textarea>
-                
-                <button class="btn-neon" onclick="sendToLine()"><i class="fab fa-line" style="font-size: 16px; margin-right: 5px;"></i> แจ้งยอดชำระผ่าน LINE</button>
-                
-                <div style="text-align:center; margin-top:30px;">
-                    <p style="font-size:12px; margin-bottom: 10px; color: var(--neon);">สแกนสอบถามพ่อค้า</p>
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=https://line.me/ti/p/YOUR_LINE_ID" style="width:100px; border:2px solid #fff; border-radius: 5px;">
-                </div>
+        <div class="slide fade" style="display:none;">
+            <div class="promo-card sale">
+                <i class="fas fa-fire-alt bounce"></i>
+                <span>FLASH SALE: ซื้อครบ 2,000.- ลดทันที 10%</span>
             </div>
         </div>
     </div>
 
-    <div id="page-profile" class="page">
-        <div style="padding:40px 20px; text-align:center;">
-            <div id="p-frame-box" class="profile-frame frame-default">
-                <img id="p-img" src="https://via.placeholder.com/150">
-                <label style="position:absolute; bottom:0; right:0; background:var(--neon); width:32px; height:32px; border-radius:50%; display:flex; justify-content:center; align-items:center; color:#000; cursor: pointer;">
+    <div id="p-shop" class="page active">
+        <div class="shop-container" id="product-list"></div>
+    </div>
+
+    <div id="p-gacha" class="page" style="padding-top: 20px;">
+        <h2 style="color:var(--neon); text-align:center; margin-bottom:5px;">สุ่ม 30 ช่องมหาสนุก</h2>
+        <p style="text-align:center; color:#888; font-size:12px; margin-bottom:20px;">จิ้มกล่องเพื่อลุ้นรับรางวัลพิเศษ!</p>
+        <div class="gacha-grid" id="gacha-board">
+            </div>
+        <button class="btn-block" style="background:#111; color:#fff; width:90%; margin:20px auto; display:block;" onclick="resetGacha()">รีเซ็ตกระดาน</button>
+    </div>
+
+    <div id="p-rank" class="page" style="padding: 20px;">
+        <h2 style="color:var(--gold); text-align:center; margin-bottom:20px;"><i class="fas fa-trophy"></i> LEADERBOARD</h2>
+        <div id="rank-list">
+            <p style="text-align:center; color:#555;">กำลังโหลดข้อมูลแรงค์...</p>
+        </div>
+    </div>
+
+    <div id="p-cart" class="page" style="padding:20px;">
+        <h2 style="color:var(--neon); margin-bottom:20px;">ตะกร้าของฉัน</h2>
+        <div id="cart-content"></div>
+        
+        <div id="checkout-section" style="display:none;">
+            <div class="checkout-card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                    <span>ยอดรวมทั้งหมด:</span>
+                    <b style="color:var(--neon); font-size:26px;"><span id="total-price">0</span> ฿</b>
+                </div>
+                <textarea id="order-address" class="input-neon" placeholder="ชื่อและที่อยู่สำหรับจัดส่ง" style="height:90px;"></textarea>
+                
+                <p style="font-size:12px; color:var(--gold); margin-top:10px;">📸 แนบหลักฐานการโอนเงิน:</p>
+                <input type="file" id="slip-file" class="input-neon" accept="image/*" onchange="handleSlip(event)">
+                <div class="slip-area" id="slip-preview">
+                    <span style="color:#222;">ตัวอย่างสลิป</span>
+                </div>
+                
+                <button id="btn-finish" class="btn-block btn-neon" onclick="finishOrder()">ยืนยันสั่งซื้อ & อัปเดตเลเวล</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="p-profile" class="page" style="padding:40px; text-align:center;">
+        <div style="width:130px; height:130px; border:4px solid var(--neon); border-radius:50%; margin:0 auto; padding:5px; position:relative; box-shadow: 0 0 20px rgba(57,255,20,0.2);">
+            <img id="prof-img" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+        </div>
+        <h2 id="prof-name" style="margin-top:20px; color:var(--neon); font-size:24px;">Member</h2>
+        <p style="color:gray; font-size:14px;">ยอดสะสม: <span id="prof-spend" style="color:var(--gold);">0</span> ฿</p>
+        
+        <div style="margin-top:40px; display:flex; flex-direction:column; gap:12px;">
+            <button class="btn-block" style="background:#111; color:#fff;" onclick="goPage('p-settings')">แก้ไขข้อมูลส่วนตัว</button>
+            <button class="btn-block" style="background:none; color:#ff4444; font-weight:bold;" onclick="logOut()">ออกจากระบบ</button>
+        </div>
+    </div>
+
+    <div id="p-settings" class="page" style="padding:25px;">
+        <h3 onclick="goPage('p-profile')" style="margin-bottom:30px; cursor:pointer;"><i class="fas fa-chevron-left"></i> กลับไปที่หน้าโปรไฟล์</h3>
+        <div style="text-align:center; margin-bottom:30px;">
+            <div style="position:relative; width:110px; height:110px; margin: 0 auto;">
+                <img id="set-img-preview" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; border:2.5px solid var(--neon); object-fit:cover;">
+                <div onclick="document.getElementById('set-file').click()" style="position:absolute; bottom:0; right:0; background:var(--neon); color:#000; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
                     <i class="fas fa-camera"></i>
-                    <input type="file" hidden onchange="uploadAvatar(event)">
-                </label>
+                </div>
             </div>
-            
-            <p style="font-size: 10px; color: var(--neon); margin-top: 20px;">ชื่อเล่น / นามแฝง</p>
-            <input type="text" id="p-name-input" class="neon-input" style="text-align:center; font-weight:bold; font-size:18px; margin-top: 5px;" placeholder="ตั้งชื่อของคุณ" onchange="saveProfile()">
-            <p id="p-email" style="font-size:12px; opacity:0.5;">email@test.com</p>
-            
-            <div style="background:var(--card); padding:20px; border-radius:10px; margin-top:20px; text-align:left; border: 1px solid #222;">
-                <p style="font-size:14px; color:var(--text);">ยอดสะสมของคุณ</p>
-                <h2 style="color:var(--neon); margin: 5px 0;"><span id="p-spend">0</span> ฿</h2>
-                <div style="width: 100%; height: 4px; background: #222; border-radius: 2px; margin-bottom: 10px;"><div id="p-bar" style="height: 100%; background: var(--neon); width: 0%;"></div></div>
-                <p style="font-size:10px; opacity:0.5;">สะสมครบ 10,000฿ รับกรอบทอง | 50,000฿ รับกรอบเพชร</p>
-            </div>
-            
-            <button class="btn-outline" style="border-color:#ff3131; color:#ff3131; margin-top:30px;" onclick="auth.signOut().then(()=>location.reload())">ออกจากระบบ</button>
+            <input type="file" id="set-file" hidden onchange="handleProfileUpload(event)">
         </div>
+        <input type="text" id="set-nickname" class="input-neon" placeholder="ชื่อเล่น">
+        <textarea id="set-addr" class="input-neon" placeholder="ที่อยู่ส่งของประจำ" style="height:120px;"></textarea>
+        <button id="btn-save-prof" class="btn-block btn-neon" onclick="saveNewProfile()">บันทึกข้อมูลและซิงค์</button>
     </div>
 
-    <nav class="nav">
-        <div class="nav-item active" onclick="nav('page-shop')"><i class="fas fa-home" style="font-size: 18px; margin-bottom: 3px;"></i><span>หน้าร้าน</span></div>
-        <div class="nav-item" onclick="nav('page-cart')"><i class="fas fa-shopping-basket" style="font-size: 18px; margin-bottom: 3px;"></i><span>ตะกร้า</span></div>
-        <div class="nav-item" onclick="nav('page-profile')"><i class="fas fa-user" style="font-size: 18px; margin-bottom: 3px;"></i><span>โปรไฟล์</span></div>
-    </nav>
+    <div class="bottom-nav">
+        <div class="nav-link active" onclick="goPage('p-shop')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
+        <div class="nav-link" onclick="goPage('p-gacha')"><i class="fas fa-box-open"></i><span>สุ่มของ</span></div>
+        <div class="nav-link" onclick="goPage('p-cart')"><i class="fas fa-shopping-bag"></i><span>ตะกร้า</span></div>
+        <div class="nav-link" onclick="goPage('p-rank')"><i class="fas fa-trophy"></i><span>แรงค์</span></div>
+        <div class="nav-link" onclick="goPage('p-profile')"><i class="fas fa-user-circle"></i><span>โปรไฟล์</span></div>
+    </div>
+</div>
 
-    <script>
-        // ---------------------------------
-        // 1. FIREBASE CONFIG
-        // ---------------------------------
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",
-  authDomain: "greencat-c40c6.firebaseapp.com",
-  databaseURL: "https://greencat-c40c6-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "greencat-c40c6",
-  storageBucket: "greencat-c40c6.firebasestorage.app",
-  messagingSenderId: "574032692697",
-  appId: "1:574032692697:web:8479887ece1df85115c5c8",
-  measurementId: "G-4N42Y7W2RK"
-};
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database(), auth = firebase.auth();
+<script>
+    // 1. Firebase Configuration
+    const config = {
+        apiKey: "AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",
+        authDomain: "greencat-c40c6.firebaseapp.com",
+        projectId: "greencat-c40c6",
+        databaseURL: "https://greencat-c40c6-default-rtdb.firebaseio.com",
+        appId: "1:574032692697:web:8479887ece1df85115c5c8"
+    };
+    firebase.initializeApp(config);
+    const db = firebase.database(), auth = firebase.auth();
 
-        let userData = { name: "", img: "https://via.placeholder.com/150", spend: 0 };
-        let cart = [];
-        let curUid = null;
+    // 2. Global State
+    let cart = [], curUid = null, userData = {}, mode = 'login', tempProfile = null, tempSlip = null;
+    const items = [];
+    for(let i=1; i<=30; i++) items.push({id:i, name:"Green Elite #"+i, p25:420, p50:800, p100:1500});
 
-        // ---------------------------------
-        // 2. ข้อมูลสินค้า 30 ชิ้น (คละราคา คละชื่อ เปลี่ยนรูปได้อิสระ)
-        // p25=ราคา25g | p50=ราคา50g | p100=ราคา100g
-        // i25=รูป25g | i50=รูป50g | i100=รูป100g
-        // ---------------------------------
-        const products = [
-            { id: 1, name: "Green Magic", p25: 350, p50: 650, p100: 1200, i25: "https://via.placeholder.com/200?text=IMG1", i50: "https://via.placeholder.com/200?text=IMG1", i100: "https://via.placeholder.com/200?text=IMG1" },
-            { id: 2, name: "Neon Dream", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG2", i50: "https://via.placeholder.com/200?text=IMG2", i100: "https://via.placeholder.com/200?text=IMG2" },
-            { id: 3, name: "Dark Cat", p25: 450, p50: 800, p100: 1500, i25: "https://via.placeholder.com/200?text=IMG3", i50: "https://via.placeholder.com/200?text=IMG3", i100: "https://via.placeholder.com/200?text=IMG3" },
-            { id: 4, name: "Special Leaf", p25: 350, p50: 650, p100: 1200, i25: "https://via.placeholder.com/200?text=IMG4", i50: "https://via.placeholder.com/200?text=IMG4", i100: "https://via.placeholder.com/200?text=IMG4" },
-            { id: 5, name: "Exotic Green", p25: 500, p50: 950, p100: 1800, i25: "https://via.placeholder.com/200?text=IMG5", i50: "https://via.placeholder.com/200?text=IMG5", i100: "https://via.placeholder.com/200?text=IMG5" },
-            { id: 6, name: "Cyber Weed", p25: 400, p50: 750, p100: 1400, i25: "https://via.placeholder.com/200?text=IMG6", i50: "https://via.placeholder.com/200?text=IMG6", i100: "https://via.placeholder.com/200?text=IMG6" },
-            { id: 7, name: "Thai Local", p25: 250, p50: 450, p100: 800, i25: "https://via.placeholder.com/200?text=IMG7", i50: "https://via.placeholder.com/200?text=IMG7", i100: "https://via.placeholder.com/200?text=IMG7" },
-            { id: 8, name: "Premium S", p25: 600, p50: 1100, p100: 2000, i25: "https://via.placeholder.com/200?text=IMG8", i50: "https://via.placeholder.com/200?text=IMG8", i100: "https://via.placeholder.com/200?text=IMG8" },
-            { id: 9, name: "Gold Strain", p25: 550, p50: 1000, p100: 1900, i25: "https://via.placeholder.com/200?text=IMG9", i50: "https://via.placeholder.com/200?text=IMG9", i100: "https://via.placeholder.com/200?text=IMG9" },
-            { id: 10, name: "Catnip Pro", p25: 300, p50: 550, p100: 1000, i25: "https://via.placeholder.com/200?text=IMG10", i50: "https://via.placeholder.com/200?text=IMG10", i100: "https://via.placeholder.com/200?text=IMG10" },
-            { id: 11, name: "Item 11", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG11", i50: "https://via.placeholder.com/200?text=IMG11", i100: "https://via.placeholder.com/200?text=IMG11" },
-            { id: 12, name: "Item 12", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG12", i50: "https://via.placeholder.com/200?text=IMG12", i100: "https://via.placeholder.com/200?text=IMG12" },
-            { id: 13, name: "Item 13", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG13", i50: "https://via.placeholder.com/200?text=IMG13", i100: "https://via.placeholder.com/200?text=IMG13" },
-            { id: 14, name: "Item 14", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG14", i50: "https://via.placeholder.com/200?text=IMG14", i100: "https://via.placeholder.com/200?text=IMG14" },
-            { id: 15, name: "Item 15", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG15", i50: "https://via.placeholder.com/200?text=IMG15", i100: "https://via.placeholder.com/200?text=IMG15" },
-            { id: 16, name: "Item 16", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG16", i50: "https://via.placeholder.com/200?text=IMG16", i100: "https://via.placeholder.com/200?text=IMG16" },
-            { id: 17, name: "Item 17", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG17", i50: "https://via.placeholder.com/200?text=IMG17", i100: "https://via.placeholder.com/200?text=IMG17" },
-            { id: 18, name: "Item 18", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG18", i50: "https://via.placeholder.com/200?text=IMG18", i100: "https://via.placeholder.com/200?text=IMG18" },
-            { id: 19, name: "Item 19", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG19", i50: "https://via.placeholder.com/200?text=IMG19", i100: "https://via.placeholder.com/200?text=IMG19" },
-            { id: 20, name: "Item 20", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG20", i50: "https://via.placeholder.com/200?text=IMG20", i100: "https://via.placeholder.com/200?text=IMG20" },
-            { id: 21, name: "Item 21", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG21", i50: "https://via.placeholder.com/200?text=IMG21", i100: "https://via.placeholder.com/200?text=IMG21" },
-            { id: 22, name: "Item 22", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG22", i50: "https://via.placeholder.com/200?text=IMG22", i100: "https://via.placeholder.com/200?text=IMG22" },
-            { id: 23, name: "Item 23", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG23", i50: "https://via.placeholder.com/200?text=IMG23", i100: "https://via.placeholder.com/200?text=IMG23" },
-            { id: 24, name: "Item 24", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG24", i50: "https://via.placeholder.com/200?text=IMG24", i100: "https://via.placeholder.com/200?text=IMG24" },
-            { id: 25, name: "Item 25", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG25", i50: "https://via.placeholder.com/200?text=IMG25", i100: "https://via.placeholder.com/200?text=IMG25" },
-            { id: 26, name: "Item 26", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG26", i50: "https://via.placeholder.com/200?text=IMG26", i100: "https://via.placeholder.com/200?text=IMG26" },
-            { id: 27, name: "Item 27", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG27", i50: "https://via.placeholder.com/200?text=IMG27", i100: "https://via.placeholder.com/200?text=IMG27" },
-            { id: 28, name: "Item 28", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG28", i50: "https://via.placeholder.com/200?text=IMG28", i100: "https://via.placeholder.com/200?text=IMG28" },
-            { id: 29, name: "Item 29", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG29", i50: "https://via.placeholder.com/200?text=IMG29", i100: "https://via.placeholder.com/200?text=IMG29" },
-            { id: 30, name: "Item 30", p25: 400, p50: 700, p100: 1300, i25: "https://via.placeholder.com/200?text=IMG30", i50: "https://via.placeholder.com/200?text=IMG30", i100: "https://via.placeholder.com/200?text=IMG30" }
-        ];
+    // 3. Auth Management
+    function switchAuth(m) {
+        mode = m;
+        document.getElementById('tab-login').className = m === 'login' ? 'active' : '';
+        document.getElementById('tab-reg').className = m === 'reg' ? 'active' : '';
+    }
 
-        // ---------------------------------
-        // 3. ระบบแสดงผล (RENDER)
-        // ---------------------------------
-        function initShop() {
-            const grid = document.getElementById('main-grid');
-            grid.innerHTML = "";
-            products.forEach(p => {
-                grid.innerHTML += `
-                    <div class="item-card" id="card-${p.id}">
-                        <img id="img-${p.id}" src="${p.i25}">
-                        <p style="font-size: 11px; margin-bottom: 5px; color: var(--neon); font-weight: bold;">${p.name}</p>
-                        <div class="size-picker">
-                            <button class="size-btn active" onclick="setSize(${p.id}, '25g', ${p.p25}, '${p.i25}')">25g</button>
-                            <button class="size-btn" onclick="setSize(${p.id}, '50g', ${p.p50}, '${p.i50}')">50g</button>
-                            <button class="size-btn" onclick="setSize(${p.id}, '100g', ${p.p100}, '${p.i100}')">100g</button>
-                        </div>
-                        <b style="color:#fff; font-size: 14px; margin-top: 5px; display: block;" id="price-${p.id}">${p.p25} ฿</b>
-                        <button class="btn-neon" style="width:100%; font-size:10px; padding:6px; margin-top:8px;" onclick="addToCart(${p.id})"><i class="fas fa-plus"></i> เพิ่มลงตะกร้า</button>
-                    </div>`;
+    function handleAuth() {
+        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+        const btn = document.getElementById('btn-auth');
+        if(!e || !p) return alert("กรุณากรอกข้อมูลให้ครบครับ");
+        btn.disabled = true; btn.innerText = "WAIT...";
+
+        if(mode === 'login') {
+            auth.signInWithEmailAndPassword(e, p).catch(err => {
+                document.getElementById('auth-err').innerText = "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบข้อมูล";
+                btn.disabled = false; btn.innerText = "CONFIRM";
+            });
+        } else {
+            auth.createUserWithEmailAndPassword(e, p).then(res => {
+                db.ref('players/' + res.user.uid).set({ name: "Member", spend: 0, img: "https://via.placeholder.com/150", address: "" });
+            }).catch(err => {
+                document.getElementById('auth-err').innerText = "สมัครไม่สำเร็จ: " + err.message;
+                btn.disabled = false; btn.innerText = "CONFIRM";
             });
         }
+    }
 
-        function setSize(id, sizeLabel, price, imgUrl) {
-            const card = document.getElementById(`card-${id}`);
-            card.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            document.getElementById(`img-${id}`).src = imgUrl;
-            const priceEl = document.getElementById(`price-${id}`);
-            priceEl.innerText = price + " ฿";
-            
-            // เก็บข้อมูลที่เลือกลง dataset เพื่อดึงตอนกดใส่ตะกร้า
-            priceEl.dataset.selectedSize = sizeLabel;
-            priceEl.dataset.selectedPrice = price;
-            priceEl.dataset.selectedImg = imgUrl;
-        }
-
-        // ---------------------------------
-        // 4. ระบบตะกร้า & สั่งซื้อ (CART & CHECKOUT)
-        // ---------------------------------
-        function addToCart(id) {
-            const p = products.find(x => x.id === id);
-            const priceEl = document.getElementById(`price-${id}`);
-            
-            // ดึงค่าตามที่ลูกค้ากดเลือก (ถ้าไม่ได้กด ค่าเริ่มต้นคือ 25g)
-            const size = priceEl.dataset.selectedSize || '25g';
-            const price = parseInt(priceEl.dataset.selectedPrice || p.p25);
-            const img = priceEl.dataset.selectedImg || p.i25;
-
-            cart.push({ id: p.id, name: p.name, size: size, price: price, img: img });
-            updateCartUI();
-            
-            // Effect เด้งเตือนเบาๆ
-            const cartIcon = document.getElementById('cart-count');
-            cartIcon.style.transform = "scale(1.5)";
-            setTimeout(() => cartIcon.style.transform = "scale(1)", 200);
-        }
-
-        function updateCartUI() {
-            const list = document.getElementById('cart-list');
-            const totalEl = document.getElementById('cart-total');
-            document.getElementById('cart-count').innerText = cart.length;
-            
-            if(cart.length === 0) {
-                document.getElementById('cart-empty').style.display = 'block';
-                document.getElementById('checkout-section').style.display = 'none';
-                list.innerHTML = "";
-                totalEl.innerText = "0 ฿";
-                return;
-            }
-
-            document.getElementById('cart-empty').style.display = 'none';
-            document.getElementById('checkout-section').style.display = 'block';
-            list.innerHTML = "";
-            let total = 0;
-            
-            cart.forEach((item, idx) => {
-                total += item.price;
-                list.innerHTML += `
-                    <div class="cart-item">
-                        <img src="${item.img}">
-                        <div style="flex:1">
-                            <p style="font-size:13px; color: var(--neon); font-weight: bold;">${item.name}</p>
-                            <p style="font-size:11px; color: #888;">ขนาด: ${item.size}</p>
-                            <b style="color:#fff; font-size: 14px;">${item.price} ฿</b>
-                        </div>
-                        <button class="btn-delete" onclick="removeItem(${idx})"><i class="fas fa-trash"></i></button>
-                    </div>`;
-            });
-            totalEl.innerText = total.toLocaleString() + " ฿";
-        }
-
-        function removeItem(idx) {
-            cart.splice(idx, 1);
-            updateCartUI();
-        }
-
-        function sendToLine() {
-            const address = document.getElementById('order-address').value;
-            if(!address) return alert("รบกวนกรอกที่อยู่สำหรับจัดส่งด้วยครับ 📦");
-            
-            let total = 0;
-            let msg = "🛒 แจ้งยอดสั่งซื้อจากระบบ GREENCAT\n------------------------\n";
-            cart.forEach(item => {
-                msg += `▪️ ${item.name} (${item.size}) : ${item.price}฿\n`;
-                total += item.price;
-            });
-            msg += `------------------------\n💵 ยอดโอนรวม: ${total} ฿\n📍 ที่อยู่จัดส่ง:\n${address}`;
-            
-            // อัปเดตยอดการใช้จ่ายให้ผู้เล่น (จำลองว่าซื้อสำเร็จ)
-            db.ref('players/'+curUid).update({ spend: (userData.spend || 0) + total });
-
-            // เด้งไป Line
-            const lineUrl = `https://line.me/R/msg/text/?${encodeURIComponent(msg)}`;
-            window.location.href = lineUrl;
-        }
-
-        // ---------------------------------
-        // 5. ระบบสมาชิก & โปรไฟล์ (AUTH & PROFILE)
-        // ---------------------------------
-        auth.onAuthStateChanged(user => {
-            if(user) { 
-                curUid = user.uid; 
-                document.getElementById('page-auth').style.display = 'none'; 
-                syncData(); 
-            } else { 
-                document.getElementById('page-auth').style.display = 'block'; 
-            }
-        });
-
-        function togglePass() {
-            const pInput = document.getElementById('auth-pass');
-            const eye = document.getElementById('toggle-eye');
-            if(pInput.type === "password") {
-                pInput.type = "text";
-                eye.classList.remove('fa-eye');
-                eye.classList.add('fa-eye-slash');
-            } else {
-                pInput.type = "password";
-                eye.classList.remove('fa-eye-slash');
-                eye.classList.add('fa-eye');
-            }
-        }
-
-        function login() {
-            const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value;
-            if(!e || !p) return alert("กรุณากรอกอีเมลและรหัสผ่านให้ครบครับ");
-            auth.signInWithEmailAndPassword(e, p).catch(err => alert("อีเมลหรือรหัสผ่านไม่ถูกต้องครับ"));
-        }
-
-        function register() {
-            const e = document.getElementById('auth-email').value, p = document.getElementById('auth-pass').value;
-            if(!e || !p) return alert("กรุณากรอกอีเมลและรหัสผ่านก่อนกดสมัครครับ");
-            if(p.length < 6) return alert("รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษรครับ");
-            
-            auth.createUserWithEmailAndPassword(e, p)
-                .then(res => {
-                    db.ref('players/' + res.user.uid).set({ name: e.split('@')[0], img: "https://via.placeholder.com/150", spend: 0 });
-                    alert("สมัครสมาชิกสำเร็จ!");
-                })
-                .catch(err => alert("เกิดข้อผิดพลาด: " + err.message));
-        }
-
-        function syncData() {
+    auth.onAuthStateChanged(user => {
+        if(user) {
+            curUid = user.uid;
+            document.getElementById('auth-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
             db.ref('players/' + curUid).on('value', snap => {
-                if(snap.val()) { 
-                    userData = snap.val(); 
-                    updateProfileUI(); 
-                }
+                userData = snap.val() || {};
+                syncEverything();
             });
+            loadRankings(); // โหลดตารางแรงค์
+        } else {
+            document.getElementById('auth-screen').style.display = 'flex';
+            document.getElementById('main-app').style.display = 'none';
         }
+    });
 
-        function updateProfileUI() {
-            // ชื่อและอีเมล
-            document.getElementById('h-name').innerText = userData.name || "สมาชิกใหม่";
-            document.getElementById('h-img').src = document.getElementById('p-img').src = userData.img;
-            document.getElementById('p-name-input').value = userData.name || "";
-            document.getElementById('p-email').innerText = auth.currentUser.email;
-            
-            // ยอดและหลอด Progress
-            const spend = userData.spend || 0;
-            document.getElementById('p-spend').innerText = spend.toLocaleString();
-            let pct = Math.min((spend / 50000) * 100, 100).toFixed(0);
-            document.getElementById('p-bar').style.width = pct + "%";
-            
-            // เช็คกรอบ
-            const hFrame = document.getElementById('h-frame');
-            const pFrame = document.getElementById('p-frame-box');
-            if(spend >= 50000) {
-                hFrame.className = pFrame.className = "profile-frame frame-diamond";
-            } else if (spend >= 10000) {
-                hFrame.className = pFrame.className = "profile-frame frame-gold";
-            } else {
-                hFrame.className = pFrame.className = "profile-frame frame-default";
-            }
+    function logOut() { if(confirm("ออกจากระบบใช่หรือไม่?")) auth.signOut().then(() => location.reload()); }
+
+    function syncEverything() {
+        const spend = userData.spend || 0;
+        const lv = Math.floor(spend / 1000) + 1;
+        const name = userData.name || "Member";
+        const img = userData.img || "https://via.placeholder.com/150";
+
+        document.getElementById('ui-lv').innerText = "LV." + lv;
+        document.getElementById('ui-name').innerText = name;
+        document.getElementById('ui-avatar').src = img;
+        document.getElementById('prof-name').innerText = name;
+        document.getElementById('prof-img').src = img;
+        document.getElementById('prof-spend').innerText = spend.toLocaleString();
+        
+        document.getElementById('set-nickname').value = name;
+        document.getElementById('set-addr').value = userData.address || "";
+        document.getElementById('set-img-preview').src = img;
+    }
+
+    // 4. Shop & Cart Logic (มีรูปภาพแนบในตะกร้า)
+    function buildShop() {
+        document.getElementById('product-list').innerHTML = items.map(p => `
+            <div class="product-card">
+                <img src="https://via.placeholder.com/150?text=G+${p.id}">
+                <b style="font-size:9px; display:block; margin-bottom:5px; color:#fff;">${p.name}</b>
+                <div class="size-picker" id="sz-${p.id}">
+                    <div class="size-btn active" onclick="setSz(this,${p.id},${p.p25})">25g</div>
+                    <div class="size-btn" onclick="setSz(this,${p.id},${p.p50})">50g</div>
+                    <div class="size-btn" onclick="setSz(this,${p.id},${p.p100})">100g</div>
+                </div>
+                <button class="btn-add" onclick="add(${p.id})">ADD TO CART</button>
+            </div>
+        `).join('');
+    }
+
+    function setSz(el, id, price) {
+        document.getElementById('sz-'+id).querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+        el.classList.add('active'); el.dataset.price = price;
+    }
+
+    function add(id) {
+        const p = items.find(x => x.id === id);
+        const active = document.getElementById('sz-'+id).querySelector('.active');
+        cart.push({ id: p.id, name: p.name, size: active.innerText, price: parseInt(active.dataset.price || p.p25) });
+        updateCartUI();
+        const btn = event.target;
+        btn.innerText = "ADDED!"; setTimeout(() => btn.innerText = "ADD TO CART", 1000);
+    }
+
+    function updateCartUI() {
+        const list = document.getElementById('cart-content'), sec = document.getElementById('checkout-section');
+        let total = 0;
+        if(cart.length > 0) {
+            sec.style.display = 'block';
+            list.innerHTML = cart.map((c, i) => {
+                total += c.price;
+                // เพิ่มรูปภาพในตะกร้า
+                return `
+                <div class="cart-item">
+                    <div style="display:flex; align-items:center;">
+                        <img src="https://via.placeholder.com/150?text=G+${c.id}" class="cart-img">
+                        <div><b>${c.name}</b><br><small style="color:var(--neon)">${c.size}</small></div>
+                    </div>
+                    <div style="font-weight:bold;">${c.price}฿ <i class="fas fa-trash" style="color:#ff4444; margin-left:12px; cursor:pointer;" onclick="cart.splice(${i},1);updateCartUI();"></i></div>
+                </div>`;
+            }).join('');
+        } else { 
+            list.innerHTML = "<p style='text-align:center; padding:50px; color:#222;'>ยังไม่มีสินค้าในตะกร้า</p>"; 
+            sec.style.display = 'none'; 
         }
+        document.getElementById('total-price').innerText = total.toLocaleString();
+    }
 
-        function saveProfile() { 
-            db.ref('players/'+curUid).update({ name: document.getElementById('p-name-input').value }); 
-            alert("บันทึกชื่อเรียบร้อย!");
+    // 5. Checkout & Slip
+    function handleSlip(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const cvs = document.createElement('canvas');
+                cvs.width = 500; cvs.height = 700;
+                cvs.getContext('2d').drawImage(img, 0, 0, 500, 700);
+                tempSlip = cvs.toDataURL('image/jpeg', 0.7);
+                document.getElementById('slip-preview').innerHTML = `<img src="${tempSlip}">`;
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function finishOrder() {
+        const addr = document.getElementById('order-address').value;
+        const totalNum = parseInt(document.getElementById('total-price').innerText.replace(/,/g, ''));
+        const btn = document.getElementById('btn-finish');
+
+        if(!addr || !tempSlip) return alert("กรุณากรอกที่อยู่และแนบสลิปโอนเงินครับ!");
+        btn.disabled = true; btn.innerText = "กำลังประมวลผล...";
+
+        const orderId = 'ORD-' + Date.now();
+        const orderData = {
+            orderId: orderId, uid: curUid, customerName: userData.name,
+            items: cart, totalPrice: totalNum, address: addr, slip: tempSlip, 
+            timestamp: firebase.database.ServerValue.TIMESTAMP
+        };
+
+        db.ref('orders/' + orderId).set(orderData).then(() => {
+            const currentSpend = userData.spend || 0;
+            return db.ref('players/' + curUid).update({ spend: currentSpend + totalNum });
+        }).then(() => {
+            confetti({ particleCount: 150, spread: 60, origin: { y: 0.7 } });
+            alert("สั่งซื้อสำเร็จ! รายการของคุณถูกส่งเข้าสู่ระบบหลังบ้านแล้ว ✅");
+            cart = []; tempSlip = null; 
+            document.getElementById('slip-preview').innerHTML = '<span style="color:#222;">ตัวอย่างสลิป</span>';
+            document.getElementById('slip-file').value = '';
+            updateCartUI(); 
+            btn.disabled = false; btn.innerText = "ยืนยันสั่งซื้อ & อัปเดตเลเวล";
+            goPage('p-shop');
+        }).catch(err => {
+            alert("เกิดข้อผิดพลาด: " + err.message);
+            btn.disabled = false;
+        });
+    }
+
+    // 6. Profile Update
+    function handleProfileUpload(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+            const img = new Image();
+            img.onload = () => {
+                const cvs = document.createElement('canvas');
+                cvs.width = 200; cvs.height = 200;
+                cvs.getContext('2d').drawImage(img, 0, 0, 200, 200);
+                tempProfile = cvs.toDataURL('image/jpeg', 0.8);
+                document.getElementById('set-img-preview').src = tempProfile;
+            };
+            img.src = ev.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function saveNewProfile() {
+        const btn = document.getElementById('btn-save-prof');
+        const newName = document.getElementById('set-nickname').value;
+        const newAddr = document.getElementById('set-addr').value;
+
+        if(!newName) return alert("กรุณาใส่ชื่อเล่นด้วยครับ");
+
+        btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
+        const updates = { name: newName, address: newAddr };
+        if(tempProfile) updates.img = tempProfile;
+        
+        db.ref('players/' + curUid).update(updates).then(() => {
+            alert("บันทึกข้อมูลและซิงค์เรียบร้อย!");
+            btn.innerText = "บันทึกข้อมูลและซิงค์"; btn.disabled = false;
+            goPage('p-profile');
+        }).catch(err => {
+            alert("บันทึกไม่สำเร็จ: " + err.message);
+            btn.disabled = false;
+        });
+    }
+
+    // 7. Gacha System (สุ่ม 30 ช่อง)
+    function buildGacha() {
+        const board = document.getElementById('gacha-board');
+        let html = '';
+        for(let i=1; i<=30; i++) html += `<div class="gacha-box" id="box-${i}" onclick="openBox(${i})"><i class="fas fa-gift"></i></div>`;
+        board.innerHTML = html;
+    }
+
+    function openBox(id) {
+        const box = document.getElementById('box-'+id);
+        if(box.classList.contains('opened')) return; // กดซ้ำไม่ได้
+
+        box.classList.add('opened');
+        
+        // โอกาสออกของ: เกลือ 80%, รางวัลเล็ก 15%, รางวัลใหญ่ 5%
+        const rand = Math.random() * 100;
+        let result = "";
+        
+        if(rand <= 80) {
+            result = "เกลือ! ไม่ได้อะไรเลย 😢";
+            box.innerHTML = '<i class="fas fa-times" style="color:#444;"></i>';
+        } else if(rand <= 95) {
+            result = "ยินดีด้วย! คุณได้ส่วนลด 50 บาท 🎉";
+            box.innerHTML = '<i class="fas fa-ticket-alt" style="color:var(--gold);"></i>';
+            confetti({ particleCount: 50, spread: 30 });
+        } else {
+            result = "JACKPOT! คุณได้รับ Green Elite ฟรี 1 กรัม! 🌿";
+            box.innerHTML = '<i class="fas fa-leaf" style="color:var(--neon);"></i>';
+            confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } });
         }
         
-        function uploadAvatar(e) {
-            const f = e.target.files[0];
-            if(f) {
-                const r = new FileReader();
-                r.onload = ev => db.ref('players/'+curUid).update({ img: ev.target.result });
-                r.readAsDataURL(f);
+        setTimeout(() => alert(result), 300);
+    }
+
+    function resetGacha() {
+        if(confirm("ต้องการรีเซ็ตกระดานสุ่มใหม่หรือไม่?")) buildGacha();
+    }
+
+    // 8. Leaderboard (ตารางแรงค์)
+    function loadRankings() {
+        // ดึงข้อมูลผู้เล่น 20 อันดับแรกที่ยอดใช้จ่ายสูงสุด
+        db.ref('players').orderByChild('spend').limitToLast(20).on('value', snap => {
+            let arr = [];
+            snap.forEach(child => { arr.push(child.val()); });
+            arr.reverse(); // เรียงจากมากไปน้อย
+            
+            if(arr.length > 0) {
+                document.getElementById('rank-list').innerHTML = arr.map((p, i) => {
+                    let medal = `<span class="rank-number">#${i+1}</span>`;
+                    if(i===0) medal = `<span class="rank-number" style="color:#FFD700"><i class="fas fa-crown"></i></span>`; // ที่ 1 ทอง
+                    if(i===1) medal = `<span class="rank-number" style="color:#C0C0C0"><i class="fas fa-medal"></i></span>`; // ที่ 2 เงิน
+                    if(i===2) medal = `<span class="rank-number" style="color:#CD7F32"><i class="fas fa-medal"></i></span>`; // ที่ 3 ทองแดง
+
+                    return `
+                    <div class="rank-card">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            ${medal}
+                            <img src="${p.img || 'https://via.placeholder.com/150'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid #444;">
+                            <b style="font-size:14px;">${p.name}</b>
+                        </div>
+                        <span style="color:var(--neon); font-weight:bold;">${(p.spend || 0).toLocaleString()} ฿</span>
+                    </div>`;
+                }).join('');
+            } else {
+                document.getElementById('rank-list').innerHTML = "<p style='text-align:center; color:#555;'>ยังไม่มีข้อมูลผู้เล่น</p>";
             }
-        }
+        });
+    }
 
-        // ---------------------------------
-        // 6. เปลี่ยนหน้า (NAVIGATION)
-        // ---------------------------------
-        function nav(id) {
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById(id).classList.add('active');
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            event.currentTarget.classList.add('active');
-        }
+    // 9. Navigation & Animation Logic
+    function goPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        document.querySelectorAll('.nav-link').forEach(l => {
+            l.classList.remove('active');
+            if(l.getAttribute('onclick').includes(id)) l.classList.add('active');
+        });
+        window.scrollTo(0,0);
+    }
 
-        // เริ่มต้นเรนเดอร์สินค้า
-        initShop();
-    </script>
+    // Banner Slider
+    let slideIdx = 0;
+    function runSlider() {
+        const slides = document.getElementsByClassName("slide");
+        for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
+        slideIdx++;
+        if (slideIdx > slides.length) slideIdx = 1;
+        slides[slideIdx-1].style.display = "block";
+        setTimeout(runSlider, 4000);
+    }
+
+    // Start App
+    buildShop();
+    buildGacha();
+    runSlider();
+</script>
 </body>
 </html>
