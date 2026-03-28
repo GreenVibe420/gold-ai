@@ -19,94 +19,111 @@
 
         /* --- Auth Layer --- */
         #auth-screen { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; }
-        .auth-box { width: 100%; max-width: 360px; text-align: center; background: #050505; padding: 35px; border-radius: 25px; border: 1px solid var(--border); box-shadow: 0 0 30px rgba(57, 255, 20, 0.1); }
+        .auth-box { width: 100%; max-width: 360px; text-align: center; background: #050505; padding: 35px; border-radius: 25px; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(57, 255, 20, 0.15); }
         .auth-nav { display: flex; margin-bottom: 25px; gap: 10px; }
         .auth-nav div { flex: 1; padding: 10px; cursor: pointer; color: #444; font-weight: 800; border-bottom: 2px solid #111; transition: 0.3s; }
-        .auth-nav div.active { color: var(--neon); border-color: var(--neon); }
+        .auth-nav div.active { color: var(--neon); border-color: var(--neon); text-shadow: 0 0 10px rgba(57,255,20,0.5); }
 
         /* --- App Header --- */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #050505; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
-        .user-pill { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--neon); padding: 4px 12px; border-radius: 25px; background: rgba(57, 255, 20, 0.05); }
+        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(5,5,5,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
+        .user-pill { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--neon); padding: 4px 12px; border-radius: 25px; background: rgba(57, 255, 20, 0.05); cursor: pointer; transition: 0.3s; }
+        .user-pill:hover { background: rgba(57, 255, 20, 0.15); }
         .avatar-small { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #fff; object-fit: cover; }
 
-        /* --- Promo Banner --- */
-        .promo-slider { margin: 12px; border-radius: 15px; overflow: hidden; background: linear-gradient(45deg, #001a00, #0d0d0d); border: 1px solid #1a331a; height: 65px; display: flex; align-items: center; justify-content: center; position: relative; }
-        .promo-card { display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 13px; text-align: center; }
-        .promo-card i { font-size: 20px; }
+        /* --- Promo Banner (PREMIUM UPGRADE) --- */
+        .promo-slider { margin: 15px; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #0a1a0a, #000); border: 1px solid #1a331a; height: 80px; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
+        .promo-slider::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(57,255,20,0.1) 0%, transparent 60%); animation: spinGlow 10s linear infinite; }
+        @keyframes spinGlow { 100% { transform: rotate(360deg); } }
+        .promo-card { display: flex; align-items: center; gap: 15px; font-weight: 800; font-size: 14px; text-align: center; position: relative; z-index: 2; }
+        .promo-card i { font-size: 24px; }
         .promo-card.news { color: var(--neon); }
         .promo-card.sale { color: #ff4444; }
         .pulse { animation: pulse-green 2s infinite; }
-        @keyframes pulse-green { 0% { text-shadow: 0 0 0 rgba(57, 255, 20, 0.7); } 70% { text-shadow: 0 0 15px rgba(57, 255, 20, 0); } 100% { text-shadow: 0 0 0 rgba(57, 255, 20, 0); } }
-        .bounce { animation: bounce 2s infinite; }
-        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-5px);} 60% {transform: translateY(-3px);} }
-        .fade { animation: fadeEffect 1s ease; }
-        @keyframes fadeEffect { from {opacity: 0} to {opacity: 1} }
+        @keyframes pulse-green { 0% { filter: drop-shadow(0 0 0 rgba(57,255,20,0.8)); } 50% { filter: drop-shadow(0 0 10px rgba(57,255,20,0.5)); transform: scale(1.1); } 100% { filter: drop-shadow(0 0 0 transparent); } }
+        .fade { animation: fadeEffect 0.8s ease-in-out; }
+        @keyframes fadeEffect { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
 
         /* --- Page System --- */
-        /* แก้ไข padding-bottom ให้เยอะขึ้นเพื่อไม่ให้เมนูด้านล่างบังปุ่ม */
         .page { display: none; min-height: 100vh; padding-bottom: 140px; }
-        .page.active { display: block; animation: slideUp 0.4s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .page.active { display: block; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
         /* --- Shop --- */
         .shop-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; }
-        .product-card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 8px; text-align: center; }
+        .product-card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 8px; text-align: center; position: relative; overflow: hidden; }
+        .product-card::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); transition: 0.5s; }
+        .product-card:hover::after { left: 150%; }
         .product-card img { width: 100%; height: 75px; object-fit: cover; border-radius: 10px; margin-bottom: 8px; background: #111; }
         .size-picker { display: flex; gap: 3px; margin-bottom: 8px; }
-        .size-btn { flex: 1; font-size: 8px; background: #111; border: 1px solid #222; color: #666; padding: 5px 0; border-radius: 5px; font-weight: bold; }
+        .size-btn { flex: 1; font-size: 8px; background: #111; border: 1px solid #222; color: #666; padding: 5px 0; border-radius: 5px; font-weight: bold; cursor: pointer; }
         .size-btn.active { background: var(--neon); color: #000; border-color: var(--neon); }
-        .btn-add { width: 100%; background: var(--neon); color: #000; border: none; font-size: 10px; padding: 8px; font-weight: 900; border-radius: 8px; cursor: pointer; }
+        .btn-add { width: 100%; background: var(--neon); color: #000; border: none; font-size: 10px; padding: 8px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-add:active { transform: scale(0.95); }
 
-        /* --- Gacha 30 Boxes --- */
-        .gacha-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 15px; }
-        .gacha-box { background: #111; border: 2px solid #222; border-radius: 10px; height: 60px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.3s; }
-        .gacha-box.opened { background: #050505; border-color: #333; cursor: not-allowed; opacity: 0.5; }
+        /* --- Premium Gacha Board (Monopoly Style) --- */
+        .gacha-wrapper { background: #050505; border: 2px solid #222; border-radius: 20px; padding: 15px; margin: 0 15px; box-shadow: 0 0 30px rgba(255,215,0,0.05); }
+        .gacha-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+        .gacha-box { background: linear-gradient(145deg, #111, #0a0a0a); border: 1.5px solid #333; border-radius: 12px; height: 65px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
+        .gacha-box::before { content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; border: 1px dashed rgba(255,215,0,0.3); border-radius: 10px; }
+        .gacha-box i { color: var(--gold); filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
+        
+        /* Gacha Animations */
+        .gacha-box.spinning { animation: neonFlash 0.1s infinite alternate; border-color: var(--neon); }
+        @keyframes neonFlash { 0% { background: #111; } 100% { background: rgba(57,255,20,0.3); } }
+        
+        .gacha-box.opened-salt { background: #050505; border-color: #222; cursor: not-allowed; opacity: 0.4; }
+        .gacha-box.opened-win { background: rgba(255,215,0,0.1); border-color: var(--gold); box-shadow: inset 0 0 15px rgba(255,215,0,0.2); }
+        .gacha-box.opened-jackpot { background: rgba(57,255,20,0.1); border-color: var(--neon); box-shadow: inset 0 0 20px rgba(57,255,20,0.3); animation: pulse-green 2s infinite; }
 
         /* --- Ranking --- */
-        .rank-card { display: flex; align-items: center; justify-content: space-between; background: #0a0a0a; border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 10px; border-radius: 12px; }
-        .rank-number { font-size: 18px; font-weight: 900; color: var(--gold); width: 40px; }
+        .rank-card { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(90deg, #0a0a0a, #050505); border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 10px; border-radius: 15px; transition: 0.3s; }
+        .rank-card:hover { border-color: #333; transform: translateX(5px); }
+        .rank-number { font-size: 18px; font-weight: 900; color: var(--gold); width: 40px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
-        /* --- Checkout UI --- */
+        /* --- Checkout UI & Core Elements --- */
         .checkout-card { background: #050505; border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-top: 15px; margin-bottom: 30px; }
-        .cart-item { display:flex; align-items:center; justify-content:space-between; padding:12px; background:#0a0a0a; border:1px solid #111; border-radius:10px; margin-bottom:8px; font-size:13px; }
-        .cart-img { width: 45px; height: 45px; border-radius: 8px; object-fit: cover; margin-right: 12px; border: 1px solid #222; }
-        .slip-area { width: 100%; height: 200px; border: 2px dashed #222; border-radius: 15px; margin: 15px 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #080808; }
+        .cart-item { display:flex; align-items:center; justify-content:space-between; padding:12px; background:#0a0a0a; border:1px solid #111; border-radius:12px; margin-bottom:8px; font-size:13px; }
+        .cart-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 12px; border: 1px solid #222; }
+        .slip-area { width: 100%; height: 200px; border: 2px dashed #333; border-radius: 15px; margin: 15px 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #080808; transition: 0.3s; }
+        .slip-area:hover { border-color: var(--neon); }
         .slip-area img { width: 100%; height: 100%; object-fit: contain; }
-
-        /* --- Inputs --- */
-        .input-neon { width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 14px; border-radius: 12px; margin-bottom: 12px; outline: none; border-left: 5px solid var(--neon); font-size: 14px; }
-        .btn-block { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; }
+        .input-neon { width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 14px; border-radius: 12px; margin-bottom: 12px; outline: none; border-left: 5px solid var(--neon); font-size: 14px; transition: 0.3s; }
+        .input-neon:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(57,255,20,0.1); }
+        .btn-block { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; letter-spacing: 0.5px; }
         .btn-neon { background: var(--neon); color: #000; box-shadow: 0 5px 15px rgba(57, 255, 20, 0.2); }
         .btn-neon:disabled { opacity: 0.5; filter: grayscale(1); }
 
         /* --- Nav --- */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: #000; border-top: 1px solid var(--border); display: flex; z-index: 1000; }
-        .nav-link { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #444; font-size: 9px; font-weight: bold; transition: 0.3s; cursor: pointer; }
-        .nav-link.active { color: var(--neon); }
-        .nav-link i { font-size: 20px; margin-bottom: 5px; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); border-top: 1px solid #1a1a1a; display: flex; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
+        .nav-link { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; font-size: 9px; font-weight: 800; transition: 0.3s; cursor: pointer; text-transform: uppercase; }
+        .nav-link.active { color: var(--neon); transform: translateY(-3px); text-shadow: 0 0 10px rgba(57,255,20,0.3); }
+        .nav-link i { font-size: 22px; margin-bottom: 5px; transition: 0.3s; }
+        .nav-link.active i { transform: scale(1.1); }
     </style>
 </head>
 <body>
 
 <div id="auth-screen">
     <div class="auth-box">
-        <h1 style="color:var(--neon); margin-bottom:10px; font-weight:900; letter-spacing: -1px;">GREENCAT</h1>
+        <h1 style="color:var(--neon); margin-bottom:10px; font-weight:900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(57,255,20,0.3);">GREENCAT</h1>
         <div class="auth-nav">
             <div id="tab-login" class="active" onclick="switchAuth('login')">LOGIN</div>
             <div id="tab-reg" onclick="switchAuth('reg')">REGISTER</div>
         </div>
-        <input type="email" id="email" class="input-neon" placeholder="Email">
+        <input type="email" id="email" class="input-neon" placeholder="Email Address">
         <input type="password" id="pass" class="input-neon" placeholder="Password">
         <button id="btn-auth" class="btn-block btn-neon" onclick="handleAuth()">CONFIRM</button>
-        <p id="auth-err" style="color:#ff3333; font-size:11px; margin-top:10px;"></p>
+        <p id="auth-err" style="color:#ff3333; font-size:12px; margin-top:15px; font-weight:bold;"></p>
     </div>
 </div>
 
 <div id="main-app" style="display:none;">
     <div class="header">
-        <div style="font-weight: 900; color: var(--neon); font-size:18px;">GREENCAT <span id="ui-lv" style="color:var(--gold);">LV.1</span></div>
+        <div style="font-weight: 900; color: var(--neon); font-size:18px; display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-cat"></i> GREENCAT <span id="ui-lv" style="color:var(--gold); font-size:14px; background:#111; padding:2px 8px; border-radius:10px; border:1px solid #333;">LV.1</span>
+        </div>
         <div class="user-pill" onclick="goPage('p-profile')">
-            <span id="ui-name" style="font-size: 12px; font-weight:600;">Member</span>
+            <span id="ui-name" style="font-size: 12px; font-weight:800;">Member</span>
             <img id="ui-avatar" class="avatar-small" src="https://via.placeholder.com/50">
         </div>
     </div>
@@ -115,13 +132,19 @@
         <div class="slide fade">
             <div class="promo-card news">
                 <i class="fas fa-leaf pulse"></i>
-                <span>NEW ARRIVAL: Green Elite V.2 พร้อมส่ง!</span>
+                <span>NEW ARRIVAL: Premium Elite Series พร้อมส่ง!</span>
             </div>
         </div>
         <div class="slide fade" style="display:none;">
             <div class="promo-card sale">
                 <i class="fas fa-fire-alt bounce"></i>
-                <span>FLASH SALE: ซื้อครบ 2,000.- ลดทันที 10%</span>
+                <span>FLASH SALE: พิเศษ! ซื้อครบ 2,000.- ลดทันที 10%</span>
+            </div>
+        </div>
+        <div class="slide fade" style="display:none;">
+            <div class="promo-card" style="color:var(--gold);">
+                <i class="fas fa-crown"></i>
+                <span>VIP REWARDS: สะสมยอดเพื่อปลดล็อกยศและของรางวัล</span>
             </div>
         </div>
     </div>
@@ -130,37 +153,45 @@
         <div class="shop-container" id="product-list"></div>
     </div>
 
-    <div id="p-gacha" class="page" style="padding-top: 20px;">
-        <h2 style="color:var(--neon); text-align:center; margin-bottom:5px;">สุ่ม 30 ช่องมหาสนุก</h2>
-        <p style="text-align:center; color:#888; font-size:12px; margin-bottom:20px;">จิ้มกล่องเพื่อลุ้นรับรางวัลพิเศษ!</p>
-        <div class="gacha-grid" id="gacha-board">
+    <div id="p-gacha" class="page" style="padding-top: 10px;">
+        <div style="text-align:center; margin-bottom:15px;">
+            <h2 style="color:var(--gold); text-shadow: 0 0 15px rgba(255,215,0,0.3); font-style:italic;"><i class="fas fa-dice"></i> PREMIUM GACHA</h2>
+            <p style="color:#888; font-size:12px; margin-top:5px;">สุ่มกระดาน 30 ช่องมหาสนุก ลุ้นรับแรร์ไอเทม!</p>
+            <div id="gacha-status" style="margin-top:10px; font-size:12px; color:var(--neon); display:none; font-weight:bold;">
+                <i class="fas fa-infinity"></i> โหมดสุ่มไม่จำกัด (Admin)
             </div>
-        <button class="btn-block" style="background:#111; color:#fff; width:90%; margin:20px auto; display:block;" onclick="resetGacha()">รีเซ็ตกระดาน</button>
+        </div>
+        
+        <div class="gacha-wrapper">
+            <div class="gacha-grid" id="gacha-board">
+                </div>
+        </div>
+        <button class="btn-block" style="background:#111; border: 1px solid #333; color:#fff; width:80%; margin:25px auto; display:block; font-size:13px;" onclick="resetGacha()"><i class="fas fa-sync-alt"></i> ล้างกระดานสุ่มใหม่</button>
     </div>
 
     <div id="p-rank" class="page" style="padding: 20px;">
-        <h2 style="color:var(--gold); text-align:center; margin-bottom:20px;"><i class="fas fa-trophy"></i> LEADERBOARD</h2>
+        <h2 style="color:var(--gold); text-align:center; margin-bottom:25px; text-shadow:0 0 10px rgba(255,215,0,0.2);"><i class="fas fa-trophy"></i> LEADERBOARD</h2>
         <div id="rank-list">
-            <p style="text-align:center; color:#555;">กำลังโหลดข้อมูลแรงค์...</p>
+            <p style="text-align:center; color:#555;"><i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูลแรงค์...</p>
         </div>
     </div>
 
     <div id="p-cart" class="page" style="padding:20px;">
-        <h2 style="color:var(--neon); margin-bottom:20px;">ตะกร้าของฉัน</h2>
+        <h2 style="color:var(--neon); margin-bottom:20px;"><i class="fas fa-shopping-cart"></i> ตะกร้าของฉัน</h2>
         <div id="cart-content"></div>
         
         <div id="checkout-section" style="display:none;">
             <div class="checkout-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                    <span>ยอดรวมทั้งหมด:</span>
-                    <b style="color:var(--neon); font-size:26px;"><span id="total-price">0</span> ฿</b>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:15px;">
+                    <span style="color:#888; font-weight:bold;">ยอดรวมทั้งหมด:</span>
+                    <b style="color:var(--neon); font-size:28px; text-shadow:0 0 10px rgba(57,255,20,0.2);"><span id="total-price">0</span> ฿</b>
                 </div>
-                <textarea id="order-address" class="input-neon" placeholder="ชื่อและที่อยู่สำหรับจัดส่ง" style="height:90px;"></textarea>
+                <textarea id="order-address" class="input-neon" placeholder="ชื่อและที่อยู่สำหรับจัดส่ง (จำเป็น)" style="height:90px;"></textarea>
                 
-                <p style="font-size:12px; color:var(--gold); margin-top:10px;">📸 แนบหลักฐานการโอนเงิน:</p>
+                <p style="font-size:12px; color:var(--gold); margin-top:10px; font-weight:bold;"><i class="fas fa-camera"></i> แนบหลักฐานการโอนเงิน:</p>
                 <input type="file" id="slip-file" class="input-neon" accept="image/*" onchange="handleSlip(event)">
                 <div class="slip-area" id="slip-preview">
-                    <span style="color:#222;">ตัวอย่างสลิป</span>
+                    <span style="color:#333; font-weight:bold;"><i class="fas fa-image" style="font-size:24px; display:block; text-align:center; margin-bottom:5px;"></i>ตัวอย่างสลิป</span>
                 </div>
                 
                 <button id="btn-finish" class="btn-block btn-neon" onclick="finishOrder()">ยืนยันสั่งซื้อ & อัปเดตเลเวล</button>
@@ -169,32 +200,33 @@
     </div>
 
     <div id="p-profile" class="page" style="padding:40px; text-align:center;">
-        <div style="width:130px; height:130px; border:4px solid var(--neon); border-radius:50%; margin:0 auto; padding:5px; position:relative; box-shadow: 0 0 20px rgba(57,255,20,0.2);">
+        <div style="width:140px; height:140px; border:4px solid var(--neon); border-radius:50%; margin:0 auto; padding:5px; position:relative; box-shadow: 0 0 30px rgba(57,255,20,0.15);">
             <img id="prof-img" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
+            <div id="admin-badge" style="display:none; position:absolute; bottom:-5px; right:10px; background:#ff0000; color:#fff; font-size:10px; padding:3px 8px; border-radius:10px; font-weight:bold; border:2px solid #000;">ADMIN</div>
         </div>
-        <h2 id="prof-name" style="margin-top:20px; color:var(--neon); font-size:24px;">Member</h2>
-        <p style="color:gray; font-size:14px;">ยอดสะสม: <span id="prof-spend" style="color:var(--gold);">0</span> ฿</p>
+        <h2 id="prof-name" style="margin-top:25px; color:var(--neon); font-size:26px; text-transform:uppercase;">Member</h2>
+        <p style="color:gray; font-size:14px; margin-top:5px; font-weight:bold;">ยอดสะสม: <span id="prof-spend" style="color:var(--gold); font-size:18px;">0</span> ฿</p>
         
-        <div style="margin-top:40px; display:flex; flex-direction:column; gap:12px;">
-            <button class="btn-block" style="background:#111; color:#fff;" onclick="goPage('p-settings')">แก้ไขข้อมูลส่วนตัว</button>
-            <button class="btn-block" style="background:none; color:#ff4444; font-weight:bold;" onclick="logOut()">ออกจากระบบ</button>
+        <div style="margin-top:40px; display:flex; flex-direction:column; gap:15px;">
+            <button class="btn-block" style="background:#111; color:#fff; border:1px solid #333;" onclick="goPage('p-settings')"><i class="fas fa-cog"></i> แก้ไขข้อมูลส่วนตัว</button>
+            <button class="btn-block" style="background:rgba(255,68,68,0.1); color:#ff4444; border:1px solid rgba(255,68,68,0.3);" onclick="logOut()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
         </div>
     </div>
 
     <div id="p-settings" class="page" style="padding:25px;">
-        <h3 onclick="goPage('p-profile')" style="margin-bottom:30px; cursor:pointer;"><i class="fas fa-chevron-left"></i> กลับไปที่หน้าโปรไฟล์</h3>
+        <h3 onclick="goPage('p-profile')" style="margin-bottom:30px; cursor:pointer; color:#888;"><i class="fas fa-chevron-left"></i> กลับไปที่หน้าโปรไฟล์</h3>
         <div style="text-align:center; margin-bottom:30px;">
-            <div style="position:relative; width:110px; height:110px; margin: 0 auto;">
-                <img id="set-img-preview" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; border:2.5px solid var(--neon); object-fit:cover;">
-                <div onclick="document.getElementById('set-file').click()" style="position:absolute; bottom:0; right:0; background:var(--neon); color:#000; width:30px; height:30px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+            <div style="position:relative; width:120px; height:120px; margin: 0 auto;">
+                <img id="set-img-preview" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; border:3px solid var(--neon); object-fit:cover;">
+                <div onclick="document.getElementById('set-file').click()" style="position:absolute; bottom:0; right:0; background:var(--neon); color:#000; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
                     <i class="fas fa-camera"></i>
                 </div>
             </div>
             <input type="file" id="set-file" hidden onchange="handleProfileUpload(event)">
         </div>
-        <input type="text" id="set-nickname" class="input-neon" placeholder="ชื่อเล่น">
-        <textarea id="set-addr" class="input-neon" placeholder="ที่อยู่ส่งของประจำ" style="height:120px;"></textarea>
-        <button id="btn-save-prof" class="btn-block btn-neon" onclick="saveNewProfile()">บันทึกข้อมูลและซิงค์</button>
+        <input type="text" id="set-nickname" class="input-neon" placeholder="ชื่อเล่นใหม่ของคุณ">
+        <textarea id="set-addr" class="input-neon" placeholder="ที่อยู่จัดส่งแบบละเอียด" style="height:120px;"></textarea>
+        <button id="btn-save-prof" class="btn-block btn-neon" onclick="saveNewProfile()">บันทึกข้อมูล</button>
     </div>
 
     <div class="bottom-nav">
@@ -218,12 +250,45 @@
     firebase.initializeApp(config);
     const db = firebase.database(), auth = firebase.auth();
 
-    // 2. Global State
+    // 2. Global State & Admin
     let cart = [], curUid = null, userData = {}, mode = 'login', tempProfile = null, tempSlip = null;
-    const items = [];
-    for(let i=1; i<=30; i++) items.push({id:i, name:"Green Elite #"+i, p25:420, p50:800, p100:1500});
+    let isAdmin = false, isSpinUnlimited = false;
 
-    // 3. Auth Management
+    // 3. ข้อมูลสินค้า 30 รายการแบบเตรียมไว้ให้แก้ (สามารถแก้ไข ชื่อ ราคา ไซส์ และลิงก์รูป ได้ตรงนี้เลย)
+    const items = [
+        {id:1, name:"Green OG Kush", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+1"},
+        {id:2, name:"Neon Haze", size25:"25g", p25:450, size50:"50g", p50:850, size100:"100g", p100:1600, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+2"},
+        {id:3, name:"Purple Dream", size25:"25g", p25:500, size50:"50g", p50:900, size100:"100g", p100:1750, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+3"},
+        {id:4, name:"Cyber Gelato", size25:"25g", p25:480, size50:"50g", p50:900, size100:"100g", p100:1700, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+4"},
+        {id:5, name:"Matrix Widow", size25:"25g", p25:420, size50:"50g", p50:800, size100:"100g", p100:1500, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+5"},
+        {id:6, name:"Digital Sour", size25:"25g", p25:460, size50:"50g", p50:880, size100:"100g", p100:1650, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+6"},
+        {id:7, name:"Crypto Punch", size25:"25g", p25:490, size50:"50g", p50:920, size100:"100g", p100:1800, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+7"},
+        {id:8, name:"Glitch Mint", size25:"25g", p25:430, size50:"50g", p50:820, size100:"100g", p100:1550, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+8"},
+        {id:9, name:"Neon Cookies", size25:"25g", p25:470, size50:"50g", p50:890, size100:"100g", p100:1680, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+9"},
+        {id:10, name:"Pixel Runtz", size25:"25g", p25:550, size50:"50g", p50:1000, size100:"100g", p100:1900, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+10"},
+        {id:11, name:"Item Slot 11", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+11"},
+        {id:12, name:"Item Slot 12", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+12"},
+        {id:13, name:"Item Slot 13", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+13"},
+        {id:14, name:"Item Slot 14", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+14"},
+        {id:15, name:"Item Slot 15", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+15"},
+        {id:16, name:"Item Slot 16", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+16"},
+        {id:17, name:"Item Slot 17", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+17"},
+        {id:18, name:"Item Slot 18", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+18"},
+        {id:19, name:"Item Slot 19", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+19"},
+        {id:20, name:"Item Slot 20", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+20"},
+        {id:21, name:"Item Slot 21", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+21"},
+        {id:22, name:"Item Slot 22", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+22"},
+        {id:23, name:"Item Slot 23", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+23"},
+        {id:24, name:"Item Slot 24", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+24"},
+        {id:25, name:"Item Slot 25", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+25"},
+        {id:26, name:"Item Slot 26", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+26"},
+        {id:27, name:"Item Slot 27", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+27"},
+        {id:28, name:"Item Slot 28", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+28"},
+        {id:29, name:"Item Slot 29", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+29"},
+        {id:30, name:"Grand Jackpot", size25:"25g", p25:999, size50:"50g", p50:1800, size100:"100g", p100:3000, img:"https://via.placeholder.com/300x200/111/ffd700?text=Premium"}
+    ];
+
+    // 4. Auth Management
     function switchAuth(m) {
         mode = m;
         document.getElementById('tab-login').className = m === 'login' ? 'active' : '';
@@ -243,7 +308,7 @@
             });
         } else {
             auth.createUserWithEmailAndPassword(e, p).then(res => {
-                db.ref('players/' + res.user.uid).set({ name: "Member", spend: 0, img: "https://via.placeholder.com/150", address: "" });
+                db.ref('players/' + res.user.uid).set({ name: "Member", spend: 0, img: "https://via.placeholder.com/150", address: "", admin_level: 1, spin_unlimited: false });
             }).catch(err => {
                 document.getElementById('auth-err').innerText = "สมัครไม่สำเร็จ: " + err.message;
                 btn.disabled = false; btn.innerText = "CONFIRM";
@@ -260,7 +325,7 @@
                 userData = snap.val() || {};
                 syncEverything();
             });
-            loadRankings(); // โหลดตารางแรงค์
+            loadRankings();
         } else {
             document.getElementById('auth-screen').style.display = 'flex';
             document.getElementById('main-app').style.display = 'none';
@@ -269,13 +334,39 @@
 
     function logOut() { if(confirm("ออกจากระบบใช่หรือไม่?")) auth.signOut().then(() => location.reload()); }
 
+    // 5. Sync Data & ADMIN LOGIC 🔥
     function syncEverything() {
         const spend = userData.spend || 0;
-        const lv = Math.floor(spend / 1000) + 1;
+        let lv = Math.floor(spend / 1000) + 1;
         const name = userData.name || "Member";
         const img = userData.img || "https://via.placeholder.com/150";
 
-        document.getElementById('ui-lv').innerText = "LV." + lv;
+        // เช็กสถานะ Admin จากฐานข้อมูล
+        isAdmin = userData.admin_level >= 50;
+        isSpinUnlimited = userData.spin_unlimited === true;
+
+        let lvDisplay = "LV." + lv;
+        let lvColor = "var(--gold)";
+
+        if(isAdmin) {
+            lvDisplay = "ADMIN MAX";
+            lvColor = "#ff4444";
+            document.getElementById('admin-badge').style.display = 'block';
+        } else {
+            document.getElementById('admin-badge').style.display = 'none';
+        }
+
+        if(isSpinUnlimited) {
+            document.getElementById('gacha-status').style.display = 'block';
+        } else {
+            document.getElementById('gacha-status').style.display = 'none';
+        }
+
+        const uiLv = document.getElementById('ui-lv');
+        uiLv.innerText = lvDisplay;
+        uiLv.style.color = lvColor;
+        uiLv.style.borderColor = lvColor;
+        
         document.getElementById('ui-name').innerText = name;
         document.getElementById('ui-avatar').src = img;
         document.getElementById('prof-name').innerText = name;
@@ -287,34 +378,41 @@
         document.getElementById('set-img-preview').src = img;
     }
 
-    // 4. Shop & Cart Logic (มีรูปภาพแนบในตะกร้า)
+    // 6. Shop & Cart Logic
     function buildShop() {
         document.getElementById('product-list').innerHTML = items.map(p => `
             <div class="product-card">
-                <img src="https://via.placeholder.com/150?text=G+${p.id}">
-                <b style="font-size:9px; display:block; margin-bottom:5px; color:#fff;">${p.name}</b>
+                <img src="${p.img}" alt="${p.name}">
+                <b style="font-size:10px; display:block; margin-bottom:6px; color:#fff; text-shadow: 0 0 5px rgba(255,255,255,0.2);">${p.name}</b>
                 <div class="size-picker" id="sz-${p.id}">
-                    <div class="size-btn active" onclick="setSz(this,${p.id},${p.p25})">25g</div>
-                    <div class="size-btn" onclick="setSz(this,${p.id},${p.p50})">50g</div>
-                    <div class="size-btn" onclick="setSz(this,${p.id},${p.p100})">100g</div>
+                    <div class="size-btn active" onclick="setSz(this,${p.id},${p.p25}, '${p.size25}')">${p.size25}</div>
+                    <div class="size-btn" onclick="setSz(this,${p.id},${p.p50}, '${p.size50}')">${p.size50}</div>
+                    <div class="size-btn" onclick="setSz(this,${p.id},${p.p100}, '${p.size100}')">${p.size100}</div>
                 </div>
                 <button class="btn-add" onclick="add(${p.id})">ADD TO CART</button>
             </div>
         `).join('');
     }
 
-    function setSz(el, id, price) {
+    function setSz(el, id, price, sizeStr) {
         document.getElementById('sz-'+id).querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-        el.classList.add('active'); el.dataset.price = price;
+        el.classList.add('active'); 
+        el.dataset.price = price;
+        el.dataset.size = sizeStr;
     }
 
     function add(id) {
         const p = items.find(x => x.id === id);
         const active = document.getElementById('sz-'+id).querySelector('.active');
-        cart.push({ id: p.id, name: p.name, size: active.innerText, price: parseInt(active.dataset.price || p.p25) });
+        const sizeSelected = active.dataset.size || p.size25;
+        const priceSelected = parseInt(active.dataset.price || p.p25);
+        
+        cart.push({ id: p.id, name: p.name, size: sizeSelected, price: priceSelected, img: p.img });
         updateCartUI();
+        
         const btn = event.target;
-        btn.innerText = "ADDED!"; setTimeout(() => btn.innerText = "ADD TO CART", 1000);
+        btn.innerText = "ADDED!"; btn.style.background = "#fff"; 
+        setTimeout(() => { btn.innerText = "ADD TO CART"; btn.style.background = "var(--neon)"; }, 800);
     }
 
     function updateCartUI() {
@@ -324,24 +422,23 @@
             sec.style.display = 'block';
             list.innerHTML = cart.map((c, i) => {
                 total += c.price;
-                // เพิ่มรูปภาพในตะกร้า
                 return `
                 <div class="cart-item">
                     <div style="display:flex; align-items:center;">
-                        <img src="https://via.placeholder.com/150?text=G+${c.id}" class="cart-img">
-                        <div><b>${c.name}</b><br><small style="color:var(--neon)">${c.size}</small></div>
+                        <img src="${c.img}" class="cart-img">
+                        <div><b style="font-size:14px;">${c.name}</b><br><small style="color:var(--neon); font-weight:bold;">Size: ${c.size}</small></div>
                     </div>
-                    <div style="font-weight:bold;">${c.price}฿ <i class="fas fa-trash" style="color:#ff4444; margin-left:12px; cursor:pointer;" onclick="cart.splice(${i},1);updateCartUI();"></i></div>
+                    <div style="font-weight:900; font-size:15px;">${c.price.toLocaleString()} ฿ <i class="fas fa-trash" style="color:#ff4444; margin-left:15px; cursor:pointer;" onclick="cart.splice(${i},1);updateCartUI();"></i></div>
                 </div>`;
             }).join('');
         } else { 
-            list.innerHTML = "<p style='text-align:center; padding:50px; color:#222;'>ยังไม่มีสินค้าในตะกร้า</p>"; 
+            list.innerHTML = "<p style='text-align:center; padding:50px; color:#444; font-weight:bold;'><i class="fas fa-box-open" style="font-size:30px; display:block; margin-bottom:10px;"></i>ยังไม่มีสินค้าในตะกร้า</p>"; 
             sec.style.display = 'none'; 
         }
         document.getElementById('total-price').innerText = total.toLocaleString();
     }
 
-    // 5. Checkout & Slip
+    // 7. Checkout & Slip
     function handleSlip(e) {
         const file = e.target.files[0];
         if(!file) return;
@@ -354,6 +451,7 @@
                 cvs.getContext('2d').drawImage(img, 0, 0, 500, 700);
                 tempSlip = cvs.toDataURL('image/jpeg', 0.7);
                 document.getElementById('slip-preview').innerHTML = `<img src="${tempSlip}">`;
+                document.getElementById('slip-preview').style.borderColor = "var(--neon)";
             };
             img.src = ev.target.result;
         };
@@ -379,11 +477,13 @@
             const currentSpend = userData.spend || 0;
             return db.ref('players/' + curUid).update({ spend: currentSpend + totalNum });
         }).then(() => {
-            confetti({ particleCount: 150, spread: 60, origin: { y: 0.7 } });
+            confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
             alert("สั่งซื้อสำเร็จ! รายการของคุณถูกส่งเข้าสู่ระบบหลังบ้านแล้ว ✅");
             cart = []; tempSlip = null; 
-            document.getElementById('slip-preview').innerHTML = '<span style="color:#222;">ตัวอย่างสลิป</span>';
+            document.getElementById('slip-preview').innerHTML = '<span style="color:#333; font-weight:bold;"><i class="fas fa-image" style="font-size:24px; display:block; text-align:center; margin-bottom:5px;"></i>ตัวอย่างสลิป</span>';
+            document.getElementById('slip-preview').style.borderColor = "#333";
             document.getElementById('slip-file').value = '';
+            document.getElementById('order-address').value = '';
             updateCartUI(); 
             btn.disabled = false; btn.innerText = "ยืนยันสั่งซื้อ & อัปเดตเลเวล";
             goPage('p-shop');
@@ -393,7 +493,7 @@
         });
     }
 
-    // 6. Profile Update
+    // 8. Profile Update
     function handleProfileUpload(e) {
         const file = e.target.files[0];
         if(!file) return;
@@ -402,8 +502,8 @@
             const img = new Image();
             img.onload = () => {
                 const cvs = document.createElement('canvas');
-                cvs.width = 200; cvs.height = 200;
-                cvs.getContext('2d').drawImage(img, 0, 0, 200, 200);
+                cvs.width = 250; cvs.height = 250;
+                cvs.getContext('2d').drawImage(img, 0, 0, 250, 250);
                 tempProfile = cvs.toDataURL('image/jpeg', 0.8);
                 document.getElementById('set-img-preview').src = tempProfile;
             };
@@ -424,8 +524,8 @@
         if(tempProfile) updates.img = tempProfile;
         
         db.ref('players/' + curUid).update(updates).then(() => {
-            alert("บันทึกข้อมูลและซิงค์เรียบร้อย!");
-            btn.innerText = "บันทึกข้อมูลและซิงค์"; btn.disabled = false;
+            alert("บันทึกข้อมูลเรียบร้อย!");
+            btn.innerText = "บันทึกข้อมูล"; btn.disabled = false;
             goPage('p-profile');
         }).catch(err => {
             alert("บันทึกไม่สำเร็จ: " + err.message);
@@ -433,67 +533,92 @@
         });
     }
 
-    // 7. Gacha System (สุ่ม 30 ช่อง)
+    // 9. Premium Gacha System (สุ่ม 30 ช่อง มีอนิเมชัน)
+    let isSpinning = false;
     function buildGacha() {
         const board = document.getElementById('gacha-board');
         let html = '';
-        for(let i=1; i<=30; i++) html += `<div class="gacha-box" id="box-${i}" onclick="openBox(${i})"><i class="fas fa-gift"></i></div>`;
+        // สร้าง 30 กล่องพรีเมียม
+        for(let i=1; i<=30; i++) {
+            html += `<div class="gacha-box" id="box-${i}" onclick="openBox(${i})"><i class="fas fa-gift"></i></div>`;
+        }
         board.innerHTML = html;
     }
 
     function openBox(id) {
+        if(isSpinning) return; // กำลังสุ่มอยู่ห้ามกดซ้ำ
         const box = document.getElementById('box-'+id);
-        if(box.classList.contains('opened')) return; // กดซ้ำไม่ได้
-
-        box.classList.add('opened');
         
-        // โอกาสออกของ: เกลือ 80%, รางวัลเล็ก 15%, รางวัลใหญ่ 5%
-        const rand = Math.random() * 100;
-        let result = "";
-        
-        if(rand <= 80) {
-            result = "เกลือ! ไม่ได้อะไรเลย 😢";
-            box.innerHTML = '<i class="fas fa-times" style="color:#444;"></i>';
-        } else if(rand <= 95) {
-            result = "ยินดีด้วย! คุณได้ส่วนลด 50 บาท 🎉";
-            box.innerHTML = '<i class="fas fa-ticket-alt" style="color:var(--gold);"></i>';
-            confetti({ particleCount: 50, spread: 30 });
-        } else {
-            result = "JACKPOT! คุณได้รับ Green Elite ฟรี 1 กรัม! 🌿";
-            box.innerHTML = '<i class="fas fa-leaf" style="color:var(--neon);"></i>';
-            confetti({ particleCount: 200, spread: 100, origin: { y: 0.5 } });
+        // ถ้าเคยเปิดแล้ว และ ไม่ใช่วงล้อไม่จำกัด (Admin)
+        if(box.classList.contains('opened-salt') || box.classList.contains('opened-win') || box.classList.contains('opened-jackpot')) {
+            if(!isSpinUnlimited) {
+                return; // กดซ้ำไม่ได้ถ้าไม่ใช่ Admin
+            } else {
+                // ถ้าเป็นแอดมิน ให้ล้างคลาสเดิมเพื่อสุ่มใหม่ได้ช่องเดิม
+                box.className = "gacha-box";
+                box.innerHTML = '<i class="fas fa-gift"></i>';
+            }
         }
-        
-        setTimeout(() => alert(result), 300);
+
+        isSpinning = true;
+        box.classList.add('spinning'); // ใส่เอฟเฟกต์กระพริบตอนกำลังหาของ
+
+        // ดีเลย์สร้างความตื่นเต้น 1.5 วินาที
+        setTimeout(() => {
+            box.classList.remove('spinning');
+            
+            // โอกาสออกของ: เกลือ 80%, รางวัลเล็ก 15%, แจ็คพอต 5%
+            const rand = Math.random() * 100;
+            let result = "";
+            
+            if(rand <= 80) {
+                result = "เกลือ! ไม่ได้อะไรเลย 😢";
+                box.classList.add('opened-salt');
+                box.innerHTML = '<i class="fas fa-times" style="color:#444;"></i>';
+            } else if(rand <= 95) {
+                result = "ยินดีด้วย! คุณได้ส่วนลด 50 บาท 🎉";
+                box.classList.add('opened-win');
+                box.innerHTML = '<i class="fas fa-ticket-alt" style="color:var(--gold);"></i>';
+                confetti({ particleCount: 50, spread: 40 });
+            } else {
+                result = "JACKPOT! คุณได้รับ Green Elite ฟรี 1 กรัม! 🌿";
+                box.classList.add('opened-jackpot');
+                box.innerHTML = '<i class="fas fa-leaf" style="color:var(--neon);"></i>';
+                confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 }, colors: ['#39ff14', '#ffd700', '#ffffff'] });
+            }
+            
+            setTimeout(() => { alert(result); isSpinning = false; }, 300);
+        }, 1500);
     }
 
     function resetGacha() {
-        if(confirm("ต้องการรีเซ็ตกระดานสุ่มใหม่หรือไม่?")) buildGacha();
+        if(confirm("ต้องการล้างกระดานพรีเมียมสุ่มใหม่หรือไม่?")) buildGacha();
     }
 
-    // 8. Leaderboard (ตารางแรงค์)
+    // 10. Leaderboard (ตารางแรงค์)
     function loadRankings() {
-        // ดึงข้อมูลผู้เล่น 20 อันดับแรกที่ยอดใช้จ่ายสูงสุด
         db.ref('players').orderByChild('spend').limitToLast(20).on('value', snap => {
             let arr = [];
             snap.forEach(child => { arr.push(child.val()); });
-            arr.reverse(); // เรียงจากมากไปน้อย
+            arr.reverse(); 
             
             if(arr.length > 0) {
                 document.getElementById('rank-list').innerHTML = arr.map((p, i) => {
                     let medal = `<span class="rank-number">#${i+1}</span>`;
-                    if(i===0) medal = `<span class="rank-number" style="color:#FFD700"><i class="fas fa-crown"></i></span>`; // ที่ 1 ทอง
-                    if(i===1) medal = `<span class="rank-number" style="color:#C0C0C0"><i class="fas fa-medal"></i></span>`; // ที่ 2 เงิน
-                    if(i===2) medal = `<span class="rank-number" style="color:#CD7F32"><i class="fas fa-medal"></i></span>`; // ที่ 3 ทองแดง
+                    if(i===0) medal = `<span class="rank-number" style="color:#FFD700"><i class="fas fa-crown"></i></span>`; 
+                    if(i===1) medal = `<span class="rank-number" style="color:#C0C0C0"><i class="fas fa-medal"></i></span>`; 
+                    if(i===2) medal = `<span class="rank-number" style="color:#CD7F32"><i class="fas fa-medal"></i></span>`; 
+
+                    let adminTag = (p.admin_level >= 50) ? `<i class="fas fa-check-circle" style="color:#ff4444; font-size:10px; margin-left:5px;"></i>` : '';
 
                     return `
                     <div class="rank-card">
                         <div style="display:flex; align-items:center; gap:15px;">
                             ${medal}
-                            <img src="${p.img || 'https://via.placeholder.com/150'}" style="width:35px; height:35px; border-radius:50%; object-fit:cover; border:1px solid #444;">
-                            <b style="font-size:14px;">${p.name}</b>
+                            <img src="${p.img || 'https://via.placeholder.com/150'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid ${i===0?'#FFD700':(i===1?'#C0C0C0':(i===2?'#CD7F32':'#444'))};">
+                            <b style="font-size:15px; color:${i<3?'#fff':'#ccc'};">${p.name} ${adminTag}</b>
                         </div>
-                        <span style="color:var(--neon); font-weight:bold;">${(p.spend || 0).toLocaleString()} ฿</span>
+                        <span style="color:var(--neon); font-weight:900; font-size:16px;">${(p.spend || 0).toLocaleString()} <small style="font-size:10px;">฿</small></span>
                     </div>`;
                 }).join('');
             } else {
@@ -502,7 +627,7 @@
         });
     }
 
-    // 9. Navigation & Animation Logic
+    // 11. Navigation & Banner Logic
     function goPage(id) {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById(id).classList.add('active');
@@ -513,7 +638,6 @@
         window.scrollTo(0,0);
     }
 
-    // Banner Slider
     let slideIdx = 0;
     function runSlider() {
         const slides = document.getElementsByClassName("slide");
@@ -521,7 +645,7 @@
         slideIdx++;
         if (slideIdx > slides.length) slideIdx = 1;
         slides[slideIdx-1].style.display = "block";
-        setTimeout(runSlider, 4000);
+        setTimeout(runSlider, 4500); // เปลี่ยนทุก 4.5 วิ
     }
 
     // Start App
