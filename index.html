@@ -240,13 +240,16 @@
 
 <script>
     // 1. Firebase Configuration
-    const config = {
-        apiKey: "AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",
-        authDomain: "greencat-c40c6.firebaseapp.com",
-        projectId: "greencat-c40c6",
-        databaseURL: "https://greencat-c40c6-default-rtdb.firebaseio.com",
-        appId: "1:574032692697:web:8479887ece1df85115c5c8"
-    };
+    const firebaseConfig = {
+  apiKey: "AIzaSyCUd1_Lx_Nk05Hp5KglzJZNR1COk9kCLpw",
+  authDomain: "greencat-d70aa.firebaseapp.com",
+  databaseURL: "https://greencat-d70aa-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "greencat-d70aa",
+  storageBucket: "greencat-d70aa.firebasestorage.app",
+  messagingSenderId: "367227784775",
+  appId: "1:367227784775:web:d7753c0e30f32e6238eb62",
+  measurementId: "G-0V5DF8D1X3"
+};
     firebase.initializeApp(config);
     const db = firebase.database(), auth = firebase.auth();
 
