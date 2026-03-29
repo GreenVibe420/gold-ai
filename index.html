@@ -3,657 +3,372 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GREENCAT V.41 STABLE (GACHA & RANK)</title>
+    <title>Greencat Premium - Official Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;500;700&family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;800&display=swap" rel="stylesheet">
     
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-
     <style>
-        :root { --neon: #39ff14; --gold: #ffd700; --dark: #000; --card: #0d0d0d; --border: #1a1a1a; --soft-gray: #555; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--dark); color: #fff; overflow-x: hidden; }
-
-        /* --- Auth Layer --- */
-        #auth-screen { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 25px; }
-        .auth-box { width: 100%; max-width: 360px; text-align: center; background: #050505; padding: 35px; border-radius: 25px; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(57, 255, 20, 0.15); }
-        .auth-nav { display: flex; margin-bottom: 25px; gap: 10px; }
-        .auth-nav div { flex: 1; padding: 10px; cursor: pointer; color: #444; font-weight: 800; border-bottom: 2px solid #111; transition: 0.3s; }
-        .auth-nav div.active { color: var(--neon); border-color: var(--neon); text-shadow: 0 0 10px rgba(57,255,20,0.5); }
-
-        /* --- App Header --- */
-        .header { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: rgba(5,5,5,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 1000; }
-        .user-pill { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--neon); padding: 4px 12px; border-radius: 25px; background: rgba(57, 255, 20, 0.05); cursor: pointer; transition: 0.3s; }
-        .user-pill:hover { background: rgba(57, 255, 20, 0.15); }
-        .avatar-small { width: 26px; height: 26px; border-radius: 50%; border: 1px solid #fff; object-fit: cover; }
-
-        /* --- Promo Banner (PREMIUM UPGRADE) --- */
-        .promo-slider { margin: 15px; border-radius: 20px; overflow: hidden; background: linear-gradient(135deg, #0a1a0a, #000); border: 1px solid #1a331a; height: 80px; display: flex; align-items: center; justify-content: center; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.5); }
-        .promo-slider::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(57,255,20,0.1) 0%, transparent 60%); animation: spinGlow 10s linear infinite; }
-        @keyframes spinGlow { 100% { transform: rotate(360deg); } }
-        .promo-card { display: flex; align-items: center; gap: 15px; font-weight: 800; font-size: 14px; text-align: center; position: relative; z-index: 2; }
-        .promo-card i { font-size: 24px; }
-        .promo-card.news { color: var(--neon); }
-        .promo-card.sale { color: #ff4444; }
-        .pulse { animation: pulse-green 2s infinite; }
-        @keyframes pulse-green { 0% { filter: drop-shadow(0 0 0 rgba(57,255,20,0.8)); } 50% { filter: drop-shadow(0 0 10px rgba(57,255,20,0.5)); transform: scale(1.1); } 100% { filter: drop-shadow(0 0 0 transparent); } }
-        .fade { animation: fadeEffect 0.8s ease-in-out; }
-        @keyframes fadeEffect { 0% { opacity: 0; transform: scale(0.95); } 100% { opacity: 1; transform: scale(1); } }
-
-        /* --- Page System --- */
-        .page { display: none; min-height: 100vh; padding-bottom: 140px; }
-        .page.active { display: block; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-
-        /* --- Shop --- */
-        .shop-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 12px; }
-        .product-card { background: var(--card); border: 1px solid var(--border); border-radius: 15px; padding: 8px; text-align: center; position: relative; overflow: hidden; }
-        .product-card::after { content: ''; position: absolute; top: 0; left: -100%; width: 50%; height: 100%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent); transform: skewX(-20deg); transition: 0.5s; }
-        .product-card:hover::after { left: 150%; }
-        .product-card img { width: 100%; height: 75px; object-fit: cover; border-radius: 10px; margin-bottom: 8px; background: #111; }
-        .size-picker { display: flex; gap: 3px; margin-bottom: 8px; }
-        .size-btn { flex: 1; font-size: 8px; background: #111; border: 1px solid #222; color: #666; padding: 5px 0; border-radius: 5px; font-weight: bold; cursor: pointer; }
-        .size-btn.active { background: var(--neon); color: #000; border-color: var(--neon); }
-        .btn-add { width: 100%; background: var(--neon); color: #000; border: none; font-size: 10px; padding: 8px; font-weight: 900; border-radius: 8px; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
-        .btn-add:active { transform: scale(0.95); }
-
-        /* --- Premium Gacha Board (Monopoly Style) --- */
-        .gacha-wrapper { background: #050505; border: 2px solid #222; border-radius: 20px; padding: 15px; margin: 0 15px; box-shadow: 0 0 30px rgba(255,215,0,0.05); }
-        .gacha-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-        .gacha-box { background: linear-gradient(145deg, #111, #0a0a0a); border: 1.5px solid #333; border-radius: 12px; height: 65px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.3s; position: relative; overflow: hidden; }
-        .gacha-box::before { content: ''; position: absolute; top: 2px; left: 2px; right: 2px; bottom: 2px; border: 1px dashed rgba(255,215,0,0.3); border-radius: 10px; }
-        .gacha-box i { color: var(--gold); filter: drop-shadow(0 2px 5px rgba(0,0,0,0.8)); }
+        :root { --neon: #39ff14; --neon-glow: rgba(57, 255, 20, 0.4); --gold: #ffd700; }
+        body { background-color: #000; color: #fff; font-family: 'Kanit', sans-serif; touch-action: manipulation; }
+        .neon-font { font-family: 'Orbitron', sans-serif; }
+        .glass { background: rgba(18, 18, 18, 0.95); border: 1px solid #222; border-radius: 20px; }
         
-        /* Gacha Animations */
-        .gacha-box.spinning { animation: neonFlash 0.1s infinite alternate; border-color: var(--neon); }
-        @keyframes neonFlash { 0% { background: #111; } 100% { background: rgba(57,255,20,0.3); } }
+        /* สไตล์สินค้า 3 แถว */
+        .product-card { background: #0f0f0f; border: 1px solid #1a1a1a; padding: 6px; border-radius: 12px; text-align: center; }
+        .size-btn { font-size: 9px; padding: 2px 4px; border: 1px solid #333; border-radius: 4px; cursor: pointer; }
+        .size-btn.active { border-color: var(--neon); color: var(--neon); background: rgba(57, 255, 20, 0.1); }
+
+        /* หน้าจอ */
+        .page { display: none; min-height: 100vh; animation: fadeIn 0.3s ease; }
+        .active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* กระดานสุ่ม 30 ช่อง (Mobile Version) */
+        .monopoly-board {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 4px; width: 100%; max-width: 350px; margin: auto; aspect-ratio: 1/1;
+        }
+        .slot { background: #111; border: 1px solid #222; border-radius: 4px; font-size: 7px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .slot.active-slot { border: 2px solid var(--neon); box-shadow: 0 0 15px var(--neon); background: var(--neon); color: #000; font-weight: bold; }
+
+        /* VIP Aura */
+        .vip-aura { position: relative; }
+        .vip-aura::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--gold); box-shadow: 0 0 15px var(--gold); animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
         
-        .gacha-box.opened-salt { background: #050505; border-color: #222; cursor: not-allowed; opacity: 0.4; }
-        .gacha-box.opened-win { background: rgba(255,215,0,0.1); border-color: var(--gold); box-shadow: inset 0 0 15px rgba(255,215,0,0.2); }
-        .gacha-box.opened-jackpot { background: rgba(57,255,20,0.1); border-color: var(--neon); box-shadow: inset 0 0 20px rgba(57,255,20,0.3); animation: pulse-green 2s infinite; }
-
-        /* --- Ranking --- */
-        .rank-card { display: flex; align-items: center; justify-content: space-between; background: linear-gradient(90deg, #0a0a0a, #050505); border: 1px solid #1a1a1a; padding: 15px; margin-bottom: 10px; border-radius: 15px; transition: 0.3s; }
-        .rank-card:hover { border-color: #333; transform: translateX(5px); }
-        .rank-number { font-size: 18px; font-weight: 900; color: var(--gold); width: 40px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-
-        /* --- Checkout UI & Core Elements --- */
-        .checkout-card { background: #050505; border: 1px solid var(--border); border-radius: 20px; padding: 20px; margin-top: 15px; margin-bottom: 30px; }
-        .cart-item { display:flex; align-items:center; justify-content:space-between; padding:12px; background:#0a0a0a; border:1px solid #111; border-radius:12px; margin-bottom:8px; font-size:13px; }
-        .cart-img { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 12px; border: 1px solid #222; }
-        .slip-area { width: 100%; height: 200px; border: 2px dashed #333; border-radius: 15px; margin: 15px 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; background: #080808; transition: 0.3s; }
-        .slip-area:hover { border-color: var(--neon); }
-        .slip-area img { width: 100%; height: 100%; object-fit: contain; }
-        .input-neon { width: 100%; background: #0a0a0a; border: 1px solid #222; color: #fff; padding: 14px; border-radius: 12px; margin-bottom: 12px; outline: none; border-left: 5px solid var(--neon); font-size: 14px; transition: 0.3s; }
-        .input-neon:focus { border-color: var(--neon); box-shadow: 0 0 10px rgba(57,255,20,0.1); }
-        .btn-block { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800; font-size: 15px; cursor: pointer; transition: 0.2s; letter-spacing: 0.5px; }
-        .btn-neon { background: var(--neon); color: #000; box-shadow: 0 5px 15px rgba(57, 255, 20, 0.2); }
-        .btn-neon:disabled { opacity: 0.5; filter: grayscale(1); }
-
-        /* --- Nav --- */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; height: 75px; background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); border-top: 1px solid #1a1a1a; display: flex; z-index: 1000; padding-bottom: env(safe-area-inset-bottom); }
-        .nav-link { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #555; font-size: 9px; font-weight: 800; transition: 0.3s; cursor: pointer; text-transform: uppercase; }
-        .nav-link.active { color: var(--neon); transform: translateY(-3px); text-shadow: 0 0 10px rgba(57,255,20,0.3); }
-        .nav-link i { font-size: 22px; margin-bottom: 5px; transition: 0.3s; }
-        .nav-link.active i { transform: scale(1.1); }
+        input, textarea { background: #1a1a1a; border: 1px solid #333; color: white; border-radius: 10px; padding: 12px; width: 100%; focus: outline-none; focus: border-color: var(--neon); }
     </style>
 </head>
 <body>
 
-<div id="auth-screen">
-    <div class="auth-box">
-        <h1 style="color:var(--neon); margin-bottom:10px; font-weight:900; letter-spacing: -1px; text-shadow: 0 0 20px rgba(57,255,20,0.3);">GREENCAT</h1>
-        <div class="auth-nav">
-            <div id="tab-login" class="active" onclick="switchAuth('login')">LOGIN</div>
-            <div id="tab-reg" onclick="switchAuth('reg')">REGISTER</div>
-        </div>
-        <input type="email" id="email" class="input-neon" placeholder="Email Address">
-        <input type="password" id="pass" class="input-neon" placeholder="Password">
-        <button id="btn-auth" class="btn-block btn-neon" onclick="handleAuth()">CONFIRM</button>
-        <p id="auth-err" style="color:#ff3333; font-size:12px; margin-top:15px; font-weight:bold;"></p>
-    </div>
-</div>
-
-<div id="main-app" style="display:none;">
-    <div class="header">
-        <div style="font-weight: 900; color: var(--neon); font-size:18px; display:flex; align-items:center; gap:8px;">
-            <i class="fas fa-cat"></i> GREENCAT <span id="ui-lv" style="color:var(--gold); font-size:14px; background:#111; padding:2px 8px; border-radius:10px; border:1px solid #333;">LV.1</span>
-        </div>
-        <div class="user-pill" onclick="goPage('p-profile')">
-            <span id="ui-name" style="font-size: 12px; font-weight:800;">Member</span>
-            <img id="ui-avatar" class="avatar-small" src="https://via.placeholder.com/50">
-        </div>
-    </div>
-
-    <div id="promo-banner" class="promo-slider">
-        <div class="slide fade">
-            <div class="promo-card news">
-                <i class="fas fa-leaf pulse"></i>
-                <span>NEW ARRIVAL: Premium Elite Series พร้อมส่ง!</span>
+    <div id="page-login" class="page active flex items-center justify-center p-6">
+        <div class="glass p-8 w-full max-w-sm text-center border-t-4 border-lime-500">
+            <h1 class="neon-font text-3xl mb-8 tracking-tighter text-lime-400">GREENCAT</h1>
+            <div class="flex mb-6 bg-zinc-900 p-1 rounded-xl text-sm">
+                <button onclick="toggleAuth('login')" id="tab-login" class="flex-1 py-2 rounded-lg bg-zinc-800 text-white font-bold">LOGIN</button>
+                <button onclick="toggleAuth('reg')" id="tab-reg" class="flex-1 py-2 rounded-lg text-zinc-500">REGISTER</button>
             </div>
-        </div>
-        <div class="slide fade" style="display:none;">
-            <div class="promo-card sale">
-                <i class="fas fa-fire-alt bounce"></i>
-                <span>FLASH SALE: พิเศษ! ซื้อครบ 2,000.- ลดทันที 10%</span>
-            </div>
-        </div>
-        <div class="slide fade" style="display:none;">
-            <div class="promo-card" style="color:var(--gold);">
-                <i class="fas fa-crown"></i>
-                <span>VIP REWARDS: สะสมยอดเพื่อปลดล็อกยศและของรางวัล</span>
-            </div>
-        </div>
-    </div>
-
-    <div id="p-shop" class="page active">
-        <div class="shop-container" id="product-list"></div>
-    </div>
-
-    <div id="p-gacha" class="page" style="padding-top: 10px;">
-        <div style="text-align:center; margin-bottom:15px;">
-            <h2 style="color:var(--gold); text-shadow: 0 0 15px rgba(255,215,0,0.3); font-style:italic;"><i class="fas fa-dice"></i> PREMIUM GACHA</h2>
-            <p style="color:#888; font-size:12px; margin-top:5px;">สุ่มกระดาน 30 ช่องมหาสนุก ลุ้นรับแรร์ไอเทม!</p>
-            <div id="gacha-status" style="margin-top:10px; font-size:12px; color:var(--neon); display:none; font-weight:bold;">
-                <i class="fas fa-infinity"></i> โหมดสุ่มไม่จำกัด (Admin)
-            </div>
-        </div>
-        
-        <div class="gacha-wrapper">
-            <div class="gacha-grid" id="gacha-board">
+            <div class="space-y-4">
+                <input type="email" id="auth-email" placeholder="Email">
+                <div class="relative">
+                    <input type="password" id="auth-pass" placeholder="Password">
+                    <i class="fa-solid fa-eye absolute right-4 top-4 text-zinc-500" onclick="togglePass()"></i>
                 </div>
-        </div>
-        <button class="btn-block" style="background:#111; border: 1px solid #333; color:#fff; width:80%; margin:25px auto; display:block; font-size:13px;" onclick="resetGacha()"><i class="fas fa-sync-alt"></i> ล้างกระดานสุ่มใหม่</button>
-    </div>
-
-    <div id="p-rank" class="page" style="padding: 20px;">
-        <h2 style="color:var(--gold); text-align:center; margin-bottom:25px; text-shadow:0 0 10px rgba(255,215,0,0.2);"><i class="fas fa-trophy"></i> LEADERBOARD</h2>
-        <div id="rank-list">
-            <p style="text-align:center; color:#555;"><i class="fas fa-spinner fa-spin"></i> กำลังโหลดข้อมูลแรงค์...</p>
-        </div>
-    </div>
-
-    <div id="p-cart" class="page" style="padding:20px;">
-        <h2 style="color:var(--neon); margin-bottom:20px;"><i class="fas fa-shopping-cart"></i> ตะกร้าของฉัน</h2>
-        <div id="cart-content"></div>
-        
-        <div id="checkout-section" style="display:none;">
-            <div class="checkout-card">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid #222; padding-bottom:15px;">
-                    <span style="color:#888; font-weight:bold;">ยอดรวมทั้งหมด:</span>
-                    <b style="color:var(--neon); font-size:28px; text-shadow:0 0 10px rgba(57,255,20,0.2);"><span id="total-price">0</span> ฿</b>
-                </div>
-                <textarea id="order-address" class="input-neon" placeholder="ชื่อและที่อยู่สำหรับจัดส่ง (จำเป็น)" style="height:90px;"></textarea>
-                
-                <p style="font-size:12px; color:var(--gold); margin-top:10px; font-weight:bold;"><i class="fas fa-camera"></i> แนบหลักฐานการโอนเงิน:</p>
-                <input type="file" id="slip-file" class="input-neon" accept="image/*" onchange="handleSlip(event)">
-                <div class="slip-area" id="slip-preview">
-                    <span style="color:#333; font-weight:bold;"><i class="fas fa-image" style="font-size:24px; display:block; text-align:center; margin-bottom:5px;"></i>ตัวอย่างสลิป</span>
-                </div>
-                
-                <button id="btn-finish" class="btn-block btn-neon" onclick="finishOrder()">ยืนยันสั่งซื้อ & อัปเดตเลเวล</button>
+                <button id="btn-auth" onclick="handleAuth()" class="w-full py-4 bg-lime-500 text-black font-bold rounded-xl shadow-lg shadow-lime-500/20 mt-4 transition active:scale-95">CONFIRM</button>
             </div>
+            <p id="auth-error" class="text-red-500 text-xs mt-4 hidden"></p>
         </div>
     </div>
 
-    <div id="p-profile" class="page" style="padding:40px; text-align:center;">
-        <div style="width:140px; height:140px; border:4px solid var(--neon); border-radius:50%; margin:0 auto; padding:5px; position:relative; box-shadow: 0 0 30px rgba(57,255,20,0.15);">
-            <img id="prof-img" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">
-            <div id="admin-badge" style="display:none; position:absolute; bottom:-5px; right:10px; background:#ff0000; color:#fff; font-size:10px; padding:3px 8px; border-radius:10px; font-weight:bold; border:2px solid #000;">ADMIN</div>
-        </div>
-        <h2 id="prof-name" style="margin-top:25px; color:var(--neon); font-size:26px; text-transform:uppercase;">Member</h2>
-        <p style="color:gray; font-size:14px; margin-top:5px; font-weight:bold;">ยอดสะสม: <span id="prof-spend" style="color:var(--gold); font-size:18px;">0</span> ฿</p>
-        
-        <div style="margin-top:40px; display:flex; flex-direction:column; gap:15px;">
-            <button class="btn-block" style="background:#111; color:#fff; border:1px solid #333;" onclick="goPage('p-settings')"><i class="fas fa-cog"></i> แก้ไขข้อมูลส่วนตัว</button>
-            <button class="btn-block" style="background:rgba(255,68,68,0.1); color:#ff4444; border:1px solid rgba(255,68,68,0.3);" onclick="logOut()"><i class="fas fa-sign-out-alt"></i> ออกจากระบบ</button>
-        </div>
-    </div>
-
-    <div id="p-settings" class="page" style="padding:25px;">
-        <h3 onclick="goPage('p-profile')" style="margin-bottom:30px; cursor:pointer; color:#888;"><i class="fas fa-chevron-left"></i> กลับไปที่หน้าโปรไฟล์</h3>
-        <div style="text-align:center; margin-bottom:30px;">
-            <div style="position:relative; width:120px; height:120px; margin: 0 auto;">
-                <img id="set-img-preview" src="https://via.placeholder.com/150" style="width:100%; height:100%; border-radius:50%; border:3px solid var(--neon); object-fit:cover;">
-                <div onclick="document.getElementById('set-file').click()" style="position:absolute; bottom:0; right:0; background:var(--neon); color:#000; width:35px; height:35px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,0.5);">
-                    <i class="fas fa-camera"></i>
-                </div>
+    <div id="page-shop" class="page bg-black">
+        <nav class="p-4 flex justify-between items-center sticky top-0 bg-black/90 backdrop-blur-md z-40 border-b border-zinc-900">
+            <h2 class="neon-font text-xl text-lime-400">GREENCAT</h2>
+            <div class="flex gap-3">
+                <button onclick="showPage('page-profile')" class="relative"><i class="fa-solid fa-user-circle text-2xl"></i></button>
+                <button onclick="showPage('page-cart')" class="relative bg-zinc-900 px-3 py-1 rounded-lg text-sm border border-zinc-800">🛒 <span id="cart-count">0</span></button>
             </div>
-            <input type="file" id="set-file" hidden onchange="handleProfileUpload(event)">
-        </div>
-        <input type="text" id="set-nickname" class="input-neon" placeholder="ชื่อเล่นใหม่ของคุณ">
-        <textarea id="set-addr" class="input-neon" placeholder="ที่อยู่จัดส่งแบบละเอียด" style="height:120px;"></textarea>
-        <button id="btn-save-prof" class="btn-block btn-neon" onclick="saveNewProfile()">บันทึกข้อมูล</button>
-    </div>
+        </nav>
 
-    <div class="bottom-nav">
-        <div class="nav-link active" onclick="goPage('p-shop')"><i class="fas fa-home"></i><span>หน้าหลัก</span></div>
-        <div class="nav-link" onclick="goPage('p-gacha')"><i class="fas fa-box-open"></i><span>สุ่มของ</span></div>
-        <div class="nav-link" onclick="goPage('p-cart')"><i class="fas fa-shopping-bag"></i><span>ตะกร้า</span></div>
-        <div class="nav-link" onclick="goPage('p-rank')"><i class="fas fa-trophy"></i><span>แรงค์</span></div>
-        <div class="nav-link" onclick="goPage('p-profile')"><i class="fas fa-user-circle"></i><span>โปรไฟล์</span></div>
-    </div>
-</div>
-
-<script>
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyA9SqXG_HpkEj9mZXAzQnG8Oh9c5CiDNQ4",
-  authDomain: "greencat-d6419.firebaseapp.com",
-  projectId: "greencat-d6419",
-  storageBucket: "greencat-d6419.firebasestorage.app",
-  messagingSenderId: "1039922914232",
-  appId: "1:1039922914232:web:5271fcd79d932b762ee54d",
-  measurementId: "G-QGXJ4DS02Q"
-};
-    firebase.initializeApp(config);
-    const db = firebase.database(), auth = firebase.auth();
-
-    // 2. Global State & Admin
-    let cart = [], curUid = null, userData = {}, mode = 'login', tempProfile = null, tempSlip = null;
-    let isAdmin = false, isSpinUnlimited = false;
-
-    // 3. ข้อมูลสินค้า 30 รายการแบบเตรียมไว้ให้แก้ (สามารถแก้ไข ชื่อ ราคา ไซส์ และลิงก์รูป ได้ตรงนี้เลย)
-    const items = [
-        {id:1, name:"Green OG Kush", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+1"},
-        {id:2, name:"Neon Haze", size25:"25g", p25:450, size50:"50g", p50:850, size100:"100g", p100:1600, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+2"},
-        {id:3, name:"Purple Dream", size25:"25g", p25:500, size50:"50g", p50:900, size100:"100g", p100:1750, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+3"},
-        {id:4, name:"Cyber Gelato", size25:"25g", p25:480, size50:"50g", p50:900, size100:"100g", p100:1700, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+4"},
-        {id:5, name:"Matrix Widow", size25:"25g", p25:420, size50:"50g", p50:800, size100:"100g", p100:1500, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+5"},
-        {id:6, name:"Digital Sour", size25:"25g", p25:460, size50:"50g", p50:880, size100:"100g", p100:1650, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+6"},
-        {id:7, name:"Crypto Punch", size25:"25g", p25:490, size50:"50g", p50:920, size100:"100g", p100:1800, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+7"},
-        {id:8, name:"Glitch Mint", size25:"25g", p25:430, size50:"50g", p50:820, size100:"100g", p100:1550, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+8"},
-        {id:9, name:"Neon Cookies", size25:"25g", p25:470, size50:"50g", p50:890, size100:"100g", p100:1680, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+9"},
-        {id:10, name:"Pixel Runtz", size25:"25g", p25:550, size50:"50g", p50:1000, size100:"100g", p100:1900, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+10"},
-        {id:11, name:"Item Slot 11", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+11"},
-        {id:12, name:"Item Slot 12", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+12"},
-        {id:13, name:"Item Slot 13", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+13"},
-        {id:14, name:"Item Slot 14", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+14"},
-        {id:15, name:"Item Slot 15", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+15"},
-        {id:16, name:"Item Slot 16", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+16"},
-        {id:17, name:"Item Slot 17", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+17"},
-        {id:18, name:"Item Slot 18", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+18"},
-        {id:19, name:"Item Slot 19", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+19"},
-        {id:20, name:"Item Slot 20", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+20"},
-        {id:21, name:"Item Slot 21", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+21"},
-        {id:22, name:"Item Slot 22", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+22"},
-        {id:23, name:"Item Slot 23", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+23"},
-        {id:24, name:"Item Slot 24", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+24"},
-        {id:25, name:"Item Slot 25", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+25"},
-        {id:26, name:"Item Slot 26", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+26"},
-        {id:27, name:"Item Slot 27", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+27"},
-        {id:28, name:"Item Slot 28", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+28"},
-        {id:29, name:"Item Slot 29", size25:"25g", p25:400, size50:"50g", p50:750, size100:"100g", p100:1400, img:"https://via.placeholder.com/300x200/111/39ff14?text=Item+29"},
-        {id:30, name:"Grand Jackpot", size25:"25g", p25:999, size50:"50g", p50:1800, size100:"100g", p100:3000, img:"https://via.placeholder.com/300x200/111/ffd700?text=Premium"}
-    ];
-
-    // 4. Auth Management
-    function switchAuth(m) {
-        mode = m;
-        document.getElementById('tab-login').className = m === 'login' ? 'active' : '';
-        document.getElementById('tab-reg').className = m === 'reg' ? 'active' : '';
-    }
-
-    function handleAuth() {
-        const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-        const btn = document.getElementById('btn-auth');
-        if(!e || !p) return alert("กรุณากรอกข้อมูลให้ครบครับ");
-        btn.disabled = true; btn.innerText = "WAIT...";
-
-        if(mode === 'login') {
-            auth.signInWithEmailAndPassword(e, p).catch(err => {
-                document.getElementById('auth-err').innerText = "เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบข้อมูล";
-                btn.disabled = false; btn.innerText = "CONFIRM";
-            });
-        } else {
-            auth.createUserWithEmailAndPassword(e, p).then(res => {
-                db.ref('players/' + res.user.uid).set({ name: "Member", spend: 0, img: "https://via.placeholder.com/150", address: "", admin_level: 1, spin_unlimited: false });
-            }).catch(err => {
-                document.getElementById('auth-err').innerText = "สมัครไม่สำเร็จ: " + err.message;
-                btn.disabled = false; btn.innerText = "CONFIRM";
-            });
-        }
-    }
-
-    auth.onAuthStateChanged(user => {
-        if(user) {
-            curUid = user.uid;
-            document.getElementById('auth-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            db.ref('players/' + curUid).on('value', snap => {
-                userData = snap.val() || {};
-                syncEverything();
-            });
-            loadRankings();
-        } else {
-            document.getElementById('auth-screen').style.display = 'flex';
-            document.getElementById('main-app').style.display = 'none';
-        }
-    });
-
-    function logOut() { if(confirm("ออกจากระบบใช่หรือไม่?")) auth.signOut().then(() => location.reload()); }
-
-    // 5. Sync Data & ADMIN LOGIC 🔥
-    function syncEverything() {
-        const spend = userData.spend || 0;
-        let lv = Math.floor(spend / 1000) + 1;
-        const name = userData.name || "Member";
-        const img = userData.img || "https://via.placeholder.com/150";
-
-        // เช็กสถานะ Admin จากฐานข้อมูล
-        isAdmin = userData.admin_level >= 50;
-        isSpinUnlimited = userData.spin_unlimited === true;
-
-        let lvDisplay = "LV." + lv;
-        let lvColor = "var(--gold)";
-
-        if(isAdmin) {
-            lvDisplay = "ADMIN MAX";
-            lvColor = "#ff4444";
-            document.getElementById('admin-badge').style.display = 'block';
-        } else {
-            document.getElementById('admin-badge').style.display = 'none';
-        }
-
-        if(isSpinUnlimited) {
-            document.getElementById('gacha-status').style.display = 'block';
-        } else {
-            document.getElementById('gacha-status').style.display = 'none';
-        }
-
-        const uiLv = document.getElementById('ui-lv');
-        uiLv.innerText = lvDisplay;
-        uiLv.style.color = lvColor;
-        uiLv.style.borderColor = lvColor;
-        
-        document.getElementById('ui-name').innerText = name;
-        document.getElementById('ui-avatar').src = img;
-        document.getElementById('prof-name').innerText = name;
-        document.getElementById('prof-img').src = img;
-        document.getElementById('prof-spend').innerText = spend.toLocaleString();
-        
-        document.getElementById('set-nickname').value = name;
-        document.getElementById('set-addr').value = userData.address || "";
-        document.getElementById('set-img-preview').src = img;
-    }
-
-    // 6. Shop & Cart Logic
-    function buildShop() {
-        document.getElementById('product-list').innerHTML = items.map(p => `
-            <div class="product-card">
-                <img src="${p.img}" alt="${p.name}">
-                <b style="font-size:10px; display:block; margin-bottom:6px; color:#fff; text-shadow: 0 0 5px rgba(255,255,255,0.2);">${p.name}</b>
-                <div class="size-picker" id="sz-${p.id}">
-                    <div class="size-btn active" onclick="setSz(this,${p.id},${p.p25}, '${p.size25}')">${p.size25}</div>
-                    <div class="size-btn" onclick="setSz(this,${p.id},${p.p50}, '${p.size50}')">${p.size50}</div>
-                    <div class="size-btn" onclick="setSz(this,${p.id},${p.p100}, '${p.size100}')">${p.size100}</div>
-                </div>
-                <button class="btn-add" onclick="add(${p.id})">ADD TO CART</button>
+        <div class="p-3">
+            <div class="w-full bg-zinc-900/50 rounded-xl p-3 mb-4 border-l-4 border-lime-500">
+                <marquee class="text-[10px] font-bold text-lime-400 uppercase tracking-widest">ยินดีต้อนรับเข้าสู่ระบบ VIP - ช้อปครบ 100,000 รับกรอบทองทันที!</marquee>
             </div>
-        `).join('');
-    }
+            <div class="grid grid-cols-3 gap-2" id="product-grid"></div>
+        </div>
 
-    function setSz(el, id, price, sizeStr) {
-        document.getElementById('sz-'+id).querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
-        el.classList.add('active'); 
-        el.dataset.price = price;
-        el.dataset.size = sizeStr;
-    }
+        <button onclick="showPage('page-game')" class="fixed bottom-6 right-6 w-14 h-14 bg-lime-500 text-black rounded-full shadow-2xl flex items-center justify-center animate-bounce z-50">
+            <i class="fa-solid fa-dice text-xl"></i>
+        </button>
+    </div>
 
-    function add(id) {
-        const p = items.find(x => x.id === id);
-        const active = document.getElementById('sz-'+id).querySelector('.active');
-        const sizeSelected = active.dataset.size || p.size25;
-        const priceSelected = parseInt(active.dataset.price || p.p25);
-        
-        cart.push({ id: p.id, name: p.name, size: sizeSelected, price: priceSelected, img: p.img });
-        updateCartUI();
-        
-        const btn = event.target;
-        btn.innerText = "ADDED!"; btn.style.background = "#fff"; 
-        setTimeout(() => { btn.innerText = "ADD TO CART"; btn.style.background = "var(--neon)"; }, 800);
-    }
-
-    function updateCartUI() {
-        const list = document.getElementById('cart-content'), sec = document.getElementById('checkout-section');
-        let total = 0;
-        if(cart.length > 0) {
-            sec.style.display = 'block';
-            list.innerHTML = cart.map((c, i) => {
-                total += c.price;
-                return `
-                <div class="cart-item">
-                    <div style="display:flex; align-items:center;">
-                        <img src="${c.img}" class="cart-img">
-                        <div><b style="font-size:14px;">${c.name}</b><br><small style="color:var(--neon); font-weight:bold;">Size: ${c.size}</small></div>
+    <div id="page-profile" class="page p-6">
+        <button onclick="showPage('page-shop')" class="text-zinc-500 mb-6 block"><i class="fa-solid fa-arrow-left"></i> BACK</button>
+        <div class="glass p-6 text-center">
+            <div class="relative inline-block mb-4">
+                <div id="prof-aura-box" class="w-24 h-24 rounded-full overflow-hidden border-2 border-zinc-800">
+                    <img id="display-pic" src="https://via.placeholder.com/150" class="w-full h-full object-cover">
+                </div>
+                <label for="img-upload" class="absolute bottom-0 right-0 bg-lime-500 text-black w-8 h-8 rounded-full flex items-center justify-center border-2 border-black cursor-pointer">
+                    <i class="fa-solid fa-camera text-xs"></i>
+                </label>
+                <input type="file" id="img-upload" class="hidden" accept="image/*" onchange="uploadProfileImg(this)">
+            </div>
+            
+            <div class="space-y-4 text-left">
+                <div>
+                    <label class="text-[10px] text-zinc-500 ml-2">Display Name</label>
+                    <input type="text" id="prof-name" placeholder="ชื่อของคุณ">
+                </div>
+                <div>
+                    <label class="text-[10px] text-zinc-500 ml-2">Shipping Address</label>
+                    <textarea id="prof-address" class="h-20" placeholder="บ้านเลขที่, ถนน, แขวง..."></textarea>
+                </div>
+                <div class="bg-black p-4 rounded-xl border border-zinc-800">
+                    <p class="text-[10px] text-zinc-500">ยอดสะสม VIP</p>
+                    <p id="prof-spent" class="text-lime-400 font-bold">0 / 100,000 ฿</p>
+                    <div class="w-full bg-zinc-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                        <div id="prof-progress" class="bg-lime-500 h-full w-0"></div>
                     </div>
-                    <div style="font-weight:900; font-size:15px;">${c.price.toLocaleString()} ฿ <i class="fas fa-trash" style="color:#ff4444; margin-left:15px; cursor:pointer;" onclick="cart.splice(${i},1);updateCartUI();"></i></div>
-                </div>`;
-            }).join('');
-        } else { 
-            list.innerHTML = "<p style='text-align:center; padding:50px; color:#444; font-weight:bold;'><i class="fas fa-box-open" style="font-size:30px; display:block; margin-bottom:10px;"></i>ยังไม่มีสินค้าในตะกร้า</p>"; 
-            sec.style.display = 'none'; 
+                </div>
+                <button onclick="saveProfileData()" class="w-full py-4 bg-lime-500 text-black font-bold rounded-xl transition active:scale-95">SAVE CHANGES</button>
+                <button onclick="logout()" class="w-full py-2 text-red-500 text-sm font-bold">LOGOUT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="page-game" class="page p-4 text-center">
+        <button onclick="showPage('page-shop')" class="float-left text-zinc-500 mt-2"><i class="fa-solid fa-arrow-left"></i> BACK</button>
+        <h2 class="neon-font text-xl text-lime-400 mt-12 mb-8 uppercase">Lucky Board</h2>
+        <div class="monopoly-board" id="game-board"></div>
+        <div class="mt-12">
+            <button id="btn-spin" onclick="playGame()" class="px-10 py-4 bg-lime-500 text-black font-bold rounded-xl shadow-lg shadow-lime-500/30">START SPIN</button>
+        </div>
+    </div>
+
+    <div id="page-cart" class="page p-6">
+        <button onclick="showPage('page-shop')" class="text-zinc-500 mb-6 block"><i class="fa-solid fa-arrow-left"></i> BACK</button>
+        <div class="glass p-6">
+            <h3 class="font-bold mb-4 border-b border-zinc-800 pb-2">รายการของคุณ</h3>
+            <div id="cart-items" class="space-y-3 mb-6"></div>
+            <div class="flex justify-between font-bold text-xl mb-6">
+                <span>ยอดรวม:</span>
+                <span id="cart-total-val" class="text-lime-400">0 ฿</span>
+            </div>
+            <p class="text-[10px] text-zinc-500 mb-2 italic">แนบสลิปเพื่อยืนยันออเดอร์และสะสมยอด VIP</p>
+            <input type="file" id="slip-upload" class="text-xs mb-6">
+            <button onclick="confirmOrder()" class="w-full py-4 bg-lime-500 text-black font-bold rounded-xl">CHECKOUT NOW</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
+
+        // Firebase Config จากผู้ใช้
+        const firebaseConfig = {
+          apiKey: "AIzaSyA9SqXG_HpkEj9mZXAzQnG8Oh9c5CiDNQ4",
+          authDomain: "greencat-d6419.firebaseapp.com",
+          projectId: "greencat-d6419",
+          storageBucket: "greencat-d6419.firebasestorage.app",
+          messagingSenderId: "1039922914232",
+          appId: "1:1039922914232:web:5271fcd79d932b762ee54d"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        let currentUser = null;
+        let cart = [];
+        let authMode = 'login';
+
+        // --- AUTH LOGIC ---
+        window.toggleAuth = (mode) => {
+            authMode = mode;
+            document.getElementById('tab-login').className = mode === 'login' ? "flex-1 py-2 rounded-lg bg-zinc-800 text-white font-bold" : "flex-1 py-2 rounded-lg text-zinc-500";
+            document.getElementById('tab-reg').className = mode === 'reg' ? "flex-1 py-2 rounded-lg bg-zinc-800 text-white font-bold" : "flex-1 py-2 rounded-lg text-zinc-500";
+            document.getElementById('btn-auth').innerText = mode === 'login' ? "CONFIRM LOGIN" : "CREATE ACCOUNT";
+        };
+
+        window.handleAuth = async () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+            const err = document.getElementById('auth-error');
+            err.classList.add('hidden');
+
+            try {
+                if(authMode === 'login') {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                } else {
+                    const res = await createUserWithEmailAndPassword(auth, email, pass);
+                    await setDoc(doc(db, "users", res.user.uid), {
+                        name: "New Player",
+                        address: "",
+                        totalSpent: 0,
+                        profileImg: ""
+                    });
+                }
+            } catch (error) {
+                err.innerText = error.message;
+                err.classList.remove('hidden');
+            }
+        };
+
+        window.logout = () => signOut(auth);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                await syncProfile();
+                window.showPage('page-shop');
+            } else {
+                currentUser = null;
+                window.showPage('page-login');
+            }
+        });
+
+        // --- PROFILE LOGIC ---
+        async function syncProfile() {
+            if(!currentUser) return;
+            const snap = await getDoc(doc(db, "users", currentUser.uid));
+            if(snap.exists()) {
+                const data = snap.data();
+                document.getElementById('prof-name').value = data.name || "";
+                document.getElementById('prof-address').value = data.address || "";
+                document.getElementById('display-pic').src = data.profileImg || "https://api.dicebear.com/7.x/avataaars/svg?seed="+currentUser.uid;
+                
+                const spent = data.totalSpent || 0;
+                document.getElementById('prof-spent').innerText = `${spent.toLocaleString()} / 100,000 ฿`;
+                document.getElementById('prof-progress').style.width = Math.min((spent/100000)*100, 100) + "%";
+                
+                // VIP Check
+                if(spent >= 100000) {
+                    document.getElementById('prof-aura-box').classList.add('vip-aura');
+                } else {
+                    document.getElementById('prof-aura-box').classList.remove('vip-aura');
+                }
+            }
         }
-        document.getElementById('total-price').innerText = total.toLocaleString();
-    }
 
-    // 7. Checkout & Slip
-    function handleSlip(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-                const cvs = document.createElement('canvas');
-                cvs.width = 500; cvs.height = 700;
-                cvs.getContext('2d').drawImage(img, 0, 0, 500, 700);
-                tempSlip = cvs.toDataURL('image/jpeg', 0.7);
-                document.getElementById('slip-preview').innerHTML = `<img src="${tempSlip}">`;
-                document.getElementById('slip-preview').style.borderColor = "var(--neon)";
-            };
-            img.src = ev.target.result;
-        };
-        reader.readAsDataURL(file);
-    }
-
-    function finishOrder() {
-        const addr = document.getElementById('order-address').value;
-        const totalNum = parseInt(document.getElementById('total-price').innerText.replace(/,/g, ''));
-        const btn = document.getElementById('btn-finish');
-
-        if(!addr || !tempSlip) return alert("กรุณากรอกที่อยู่และแนบสลิปโอนเงินครับ!");
-        btn.disabled = true; btn.innerText = "กำลังประมวลผล...";
-
-        const orderId = 'ORD-' + Date.now();
-        const orderData = {
-            orderId: orderId, uid: curUid, customerName: userData.name,
-            items: cart, totalPrice: totalNum, address: addr, slip: tempSlip, 
-            timestamp: firebase.database.ServerValue.TIMESTAMP
+        window.saveProfileData = async () => {
+            const name = document.getElementById('prof-name').value;
+            const address = document.getElementById('prof-address').value;
+            await updateDoc(doc(db, "users", currentUser.uid), { name, address });
+            alert("บันทึกข้อมูลสำเร็จ!");
         };
 
-        db.ref('orders/' + orderId).set(orderData).then(() => {
-            const currentSpend = userData.spend || 0;
-            return db.ref('players/' + curUid).update({ spend: currentSpend + totalNum });
-        }).then(() => {
-            confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } });
-            alert("สั่งซื้อสำเร็จ! รายการของคุณถูกส่งเข้าสู่ระบบหลังบ้านแล้ว ✅");
-            cart = []; tempSlip = null; 
-            document.getElementById('slip-preview').innerHTML = '<span style="color:#333; font-weight:bold;"><i class="fas fa-image" style="font-size:24px; display:block; text-align:center; margin-bottom:5px;"></i>ตัวอย่างสลิป</span>';
-            document.getElementById('slip-preview').style.borderColor = "#333";
-            document.getElementById('slip-file').value = '';
-            document.getElementById('order-address').value = '';
-            updateCartUI(); 
-            btn.disabled = false; btn.innerText = "ยืนยันสั่งซื้อ & อัปเดตเลเวล";
-            goPage('p-shop');
-        }).catch(err => {
-            alert("เกิดข้อผิดพลาด: " + err.message);
-            btn.disabled = false;
+        window.uploadProfileImg = async (input) => {
+            if(!input.files[0]) return;
+            const file = input.files[0];
+            const fileRef = ref(storage, `profiles/${currentUser.uid}`);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+            await updateDoc(doc(db, "users", currentUser.uid), { profileImg: url });
+            document.getElementById('display-pic').src = url;
+            alert("อัปโหลดรูปสำเร็จ!");
+        };
+
+        // --- SHOP LOGIC (3 แถว) ---
+        const products = Array.from({length: 30}, (_, i) => ({ id: i, name: `GC Product ${i+1}` }));
+        const grid = document.getElementById('product-grid');
+        let selectedSizes = {};
+
+        products.forEach(p => {
+            selectedSizes[p.id] = 400; // default 25g
+            grid.innerHTML += `
+                <div class="product-card">
+                    <img src="https://api.dicebear.com/7.x/identicon/svg?seed=${p.id+20}" class="w-full aspect-square rounded mb-2 bg-zinc-900">
+                    <p class="text-[8px] font-bold truncate mb-2">${p.name}</p>
+                    <div class="flex justify-between gap-0.5 mb-2">
+                        <button onclick="pickSize(${p.id}, 400, this)" class="size-btn active">25g</button>
+                        <button onclick="pickSize(${p.id}, 700, this)" class="size-btn">50g</button>
+                        <button onclick="pickSize(${p.id}, 1200, this)" class="size-btn">100g</button>
+                    </div>
+                    <button onclick="buyNow(${p.id})" class="w-full py-1.5 bg-zinc-800 text-[9px] rounded font-bold hover:bg-lime-500 hover:text-black">ADD</button>
+                </div>
+            `;
         });
-    }
 
-    // 8. Profile Update
-    function handleProfileUpload(e) {
-        const file = e.target.files[0];
-        if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-            const img = new Image();
-            img.onload = () => {
-                const cvs = document.createElement('canvas');
-                cvs.width = 250; cvs.height = 250;
-                cvs.getContext('2d').drawImage(img, 0, 0, 250, 250);
-                tempProfile = cvs.toDataURL('image/jpeg', 0.8);
-                document.getElementById('set-img-preview').src = tempProfile;
-            };
-            img.src = ev.target.result;
+        window.pickSize = (id, price, btn) => {
+            const parent = btn.parentElement;
+            parent.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            selectedSizes[id] = price;
         };
-        reader.readAsDataURL(file);
-    }
 
-    function saveNewProfile() {
-        const btn = document.getElementById('btn-save-prof');
-        const newName = document.getElementById('set-nickname').value;
-        const newAddr = document.getElementById('set-addr').value;
+        window.buyNow = (id) => {
+            cart.push({ id, price: selectedSizes[id], name: `GC Item #${id+1}` });
+            document.getElementById('cart-count').innerText = cart.length;
+            updateCartUI();
+        };
 
-        if(!newName) return alert("กรุณาใส่ชื่อเล่นด้วยครับ");
+        function updateCartUI() {
+            const cont = document.getElementById('cart-items');
+            cont.innerHTML = '';
+            let total = 0;
+            cart.forEach((c, idx) => {
+                total += c.price;
+                cont.innerHTML += `<div class="flex justify-between text-xs bg-zinc-900 p-2 rounded"><span>${c.name}</span><span>${c.price}฿</span></div>`;
+            });
+            document.getElementById('cart-total-val').innerText = total + " ฿";
+        }
 
-        btn.innerText = "กำลังบันทึก..."; btn.disabled = true;
-        const updates = { name: newName, address: newAddr };
-        if(tempProfile) updates.img = tempProfile;
+        window.confirmOrder = async () => {
+            if(cart.length === 0) return alert("ตะกร้าว่างเปล่า!");
+            const total = cart.reduce((a,b) => a+b.price, 0);
+            const snap = await getDoc(doc(db, "users", currentUser.uid));
+            const currentSpent = snap.data().totalSpent || 0;
+            await updateDoc(doc(db, "users", currentUser.uid), { totalSpent: currentSpent + total });
+            alert("สั่งซื้อสำเร็จ! ยอดสะสม VIP ของคุณถูกอัปเดตแล้ว");
+            cart = [];
+            document.getElementById('cart-count').innerText = 0;
+            updateCartUI();
+            await syncProfile();
+            window.showPage('page-shop');
+        };
+
+        // --- LUCKY BOARD LOGIC (30 Slots) ---
+        const boardCont = document.getElementById('game-board');
+        const slots = [
+            1,2,3,4,5,6,7,8, // Top
+            14, // Right side
+            19,
+            24,
+            29,
+            30,28,27,26,25,23,22,21, // Bottom
+            16, // Left side
+            11,
+            9,
+            12, 13, 15, 17, 18, 20, 10 // Fillers to reach 30
+        ];
         
-        db.ref('players/' + curUid).update(updates).then(() => {
-            alert("บันทึกข้อมูลเรียบร้อย!");
-            btn.innerText = "บันทึกข้อมูล"; btn.disabled = false;
-            goPage('p-profile');
-        }).catch(err => {
-            alert("บันทึกไม่สำเร็จ: " + err.message);
-            btn.disabled = false;
-        });
-    }
-
-    // 9. Premium Gacha System (สุ่ม 30 ช่อง มีอนิเมชัน)
-    let isSpinning = false;
-    function buildGacha() {
-        const board = document.getElementById('gacha-board');
-        let html = '';
-        // สร้าง 30 กล่องพรีเมียม
+        // เราใช้ Grid Area ในการจัดวาง 30 ช่องให้วนรอบจอ
         for(let i=1; i<=30; i++) {
-            html += `<div class="gacha-box" id="box-${i}" onclick="openBox(${i})"><i class="fas fa-gift"></i></div>`;
-        }
-        board.innerHTML = html;
-    }
-
-    function openBox(id) {
-        if(isSpinning) return; // กำลังสุ่มอยู่ห้ามกดซ้ำ
-        const box = document.getElementById('box-'+id);
-        
-        // ถ้าเคยเปิดแล้ว และ ไม่ใช่วงล้อไม่จำกัด (Admin)
-        if(box.classList.contains('opened-salt') || box.classList.contains('opened-win') || box.classList.contains('opened-jackpot')) {
-            if(!isSpinUnlimited) {
-                return; // กดซ้ำไม่ได้ถ้าไม่ใช่ Admin
-            } else {
-                // ถ้าเป็นแอดมิน ให้ล้างคลาสเดิมเพื่อสุ่มใหม่ได้ช่องเดิม
-                box.className = "gacha-box";
-                box.innerHTML = '<i class="fas fa-gift"></i>';
-            }
+            let label = i === 1 ? "START" : (i%5===0 ? "FREE" : "GC "+i);
+            boardCont.innerHTML += `<div class="slot" id="slot-${i}">${label}</div>`;
         }
 
-        isSpinning = true;
-        box.classList.add('spinning'); // ใส่เอฟเฟกต์กระพริบตอนกำลังหาของ
+        window.playGame = () => {
+            let current = 1;
+            let target = Math.floor(Math.random() * 30) + 60;
+            let speed = 50;
+            document.getElementById('btn-spin').disabled = true;
 
-        // ดีเลย์สร้างความตื่นเต้น 1.5 วินาที
-        setTimeout(() => {
-            box.classList.remove('spinning');
-            
-            // โอกาสออกของ: เกลือ 80%, รางวัลเล็ก 15%, แจ็คพอต 5%
-            const rand = Math.random() * 100;
-            let result = "";
-            
-            if(rand <= 80) {
-                result = "เกลือ! ไม่ได้อะไรเลย 😢";
-                box.classList.add('opened-salt');
-                box.innerHTML = '<i class="fas fa-times" style="color:#444;"></i>';
-            } else if(rand <= 95) {
-                result = "ยินดีด้วย! คุณได้ส่วนลด 50 บาท 🎉";
-                box.classList.add('opened-win');
-                box.innerHTML = '<i class="fas fa-ticket-alt" style="color:var(--gold);"></i>';
-                confetti({ particleCount: 50, spread: 40 });
-            } else {
-                result = "JACKPOT! คุณได้รับ Green Elite ฟรี 1 กรัม! 🌿";
-                box.classList.add('opened-jackpot');
-                box.innerHTML = '<i class="fas fa-leaf" style="color:var(--neon);"></i>';
-                confetti({ particleCount: 250, spread: 120, origin: { y: 0.5 }, colors: ['#39ff14', '#ffd700', '#ffffff'] });
+            function run() {
+                document.querySelectorAll('.slot').forEach(s => s.classList.remove('active-slot'));
+                let visualPos = (current % 30) || 30;
+                document.getElementById(`slot-${visualPos}`).classList.add('active-slot');
+                
+                if(current < target) {
+                    current++;
+                    if(target - current < 10) speed += 30;
+                    setTimeout(run, speed);
+                } else {
+                    document.getElementById('btn-spin').disabled = false;
+                    alert("ยินดีด้วย! คุณได้รับรางวัลในช่องที่ " + visualPos);
+                }
             }
-            
-            setTimeout(() => { alert(result); isSpinning = false; }, 300);
-        }, 1500);
-    }
+            run();
+        };
 
-    function resetGacha() {
-        if(confirm("ต้องการล้างกระดานพรีเมียมสุ่มใหม่หรือไม่?")) buildGacha();
-    }
+        // --- GLOBAL UI ---
+        window.showPage = (id) => {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0,0);
+        };
 
-    // 10. Leaderboard (ตารางแรงค์)
-    function loadRankings() {
-        db.ref('players').orderByChild('spend').limitToLast(20).on('value', snap => {
-            let arr = [];
-            snap.forEach(child => { arr.push(child.val()); });
-            arr.reverse(); 
-            
-            if(arr.length > 0) {
-                document.getElementById('rank-list').innerHTML = arr.map((p, i) => {
-                    let medal = `<span class="rank-number">#${i+1}</span>`;
-                    if(i===0) medal = `<span class="rank-number" style="color:#FFD700"><i class="fas fa-crown"></i></span>`; 
-                    if(i===1) medal = `<span class="rank-number" style="color:#C0C0C0"><i class="fas fa-medal"></i></span>`; 
-                    if(i===2) medal = `<span class="rank-number" style="color:#CD7F32"><i class="fas fa-medal"></i></span>`; 
+        window.togglePass = () => {
+            const p = document.getElementById('auth-pass');
+            p.type = p.type === 'password' ? 'text' : 'password';
+        };
 
-                    let adminTag = (p.admin_level >= 50) ? `<i class="fas fa-check-circle" style="color:#ff4444; font-size:10px; margin-left:5px;"></i>` : '';
-
-                    return `
-                    <div class="rank-card">
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            ${medal}
-                            <img src="${p.img || 'https://via.placeholder.com/150'}" style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid ${i===0?'#FFD700':(i===1?'#C0C0C0':(i===2?'#CD7F32':'#444'))};">
-                            <b style="font-size:15px; color:${i<3?'#fff':'#ccc'};">${p.name} ${adminTag}</b>
-                        </div>
-                        <span style="color:var(--neon); font-weight:900; font-size:16px;">${(p.spend || 0).toLocaleString()} <small style="font-size:10px;">฿</small></span>
-                    </div>`;
-                }).join('');
-            } else {
-                document.getElementById('rank-list').innerHTML = "<p style='text-align:center; color:#555;'>ยังไม่มีข้อมูลผู้เล่น</p>";
-            }
-        });
-    }
-
-    // 11. Navigation & Banner Logic
-    function goPage(id) {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-        document.querySelectorAll('.nav-link').forEach(l => {
-            l.classList.remove('active');
-            if(l.getAttribute('onclick').includes(id)) l.classList.add('active');
-        });
-        window.scrollTo(0,0);
-    }
-
-    let slideIdx = 0;
-    function runSlider() {
-        const slides = document.getElementsByClassName("slide");
-        for (let i = 0; i < slides.length; i++) slides[i].style.display = "none";
-        slideIdx++;
-        if (slideIdx > slides.length) slideIdx = 1;
-        slides[slideIdx-1].style.display = "block";
-        setTimeout(runSlider, 4500); // เปลี่ยนทุก 4.5 วิ
-    }
-
-    // Start App
-    buildShop();
-    buildGacha();
-    runSlider();
-</script>
+    </script>
 </body>
 </html>
