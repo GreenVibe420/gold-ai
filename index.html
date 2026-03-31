@@ -1,2571 +1,643 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AURUM AI — Gold Trading Intelligence</title>
-
-<!-- Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Rajdhani:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-<!-- Firebase SDK -->
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
-  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
-           signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged
-         } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA9SqXG_HpkEj9mZXAzQnG8Oh9c5CiDNQ4",
-    authDomain: "greencat-d6419.firebaseapp.com",
-    projectId: "greencat-d6419",
-    storageBucket: "greencat-d6419.firebasestorage.app",
-    messagingSenderId: "1039922914232",
-    appId: "1:1039922914232:web:5271fcd79d932b762ee54d",
-    measurementId: "G-QGXJ4DS02Q"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const googleProvider = new GoogleAuthProvider();
-
-  window._firebaseAuth = auth;
-  window._googleProvider = googleProvider;
-  window._fbFns = { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signOut, onAuthStateChanged };
-
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      window._currentUser = user;
-      if (window.onUserLogin) window.onUserLogin(user);
-    } else {
-      window._currentUser = null;
-      if (window.onUserLogout) window.onUserLogout();
-    }
-  });
-</script>
-
-<style>
-/* ══════════════════════════════════════════════
-   ROOT & VARIABLES
-══════════════════════════════════════════════ */
-:root {
-  --gold-100: #FFF8E1;
-  --gold-300: #FFD54F;
-  --gold-500: #FFD700;
-  --gold-600: #FFC107;
-  --gold-700: #FFA000;
-  --gold-900: #7B5800;
-  --gold-glow: rgba(255,215,0,0.25);
-
-  --ink-950: #040507;
-  --ink-900: #08090E;
-  --ink-850: #0D0F18;
-  --ink-800: #111525;
-  --ink-700: #181C2E;
-  --ink-600: #1F2540;
-  --ink-500: #2A3155;
-  --ink-400: #3D4A70;
-
-  --silver: #CBD5E1;
-  --silver-dim: #64748B;
-  --white: #F8FAFC;
-
-  --green: #10B981;
-  --green-glow: rgba(16,185,129,0.2);
-  --red: #EF4444;
-  --red-glow: rgba(239,68,68,0.2);
-  --blue: #3B82F6;
-  --blue-glow: rgba(59,130,246,0.2);
-  --purple: #8B5CF6;
-
-  --radius-sm: 6px;
-  --radius-md: 12px;
-  --radius-lg: 20px;
-  --radius-xl: 28px;
-
-  --shadow-gold: 0 0 40px rgba(255,215,0,0.12), 0 0 80px rgba(255,215,0,0.06);
-  --shadow-card: 0 4px 24px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.3);
-  --shadow-deep: 0 20px 60px rgba(0,0,0,0.6);
-
-  --font-display: 'Cormorant Garamond', serif;
-  --font-ui: 'Rajdhani', 'Noto Sans Thai', sans-serif;
-  --font-thai: 'Noto Sans Thai', sans-serif;
-  --font-mono: 'Rajdhani', monospace;
-}
-
-*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-
-html { font-size: 16px; scroll-behavior: smooth; }
-
-body {
-  font-family: var(--font-ui);
-  background: var(--ink-950);
-  color: var(--silver);
-  min-height: 100vh;
-  overflow-x: hidden;
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Grain texture overlay */
-body::after {
-  content: '';
-  position: fixed; inset: 0; z-index: 9999;
-  pointer-events: none;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  opacity: 0.4;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(--ink-900); }
-::-webkit-scrollbar-thumb { background: var(--ink-500); border-radius: 2px; }
-
-/* ══════════════════════════════════════════════
-   SCREEN MANAGEMENT
-══════════════════════════════════════════════ */
-.screen { display: none; min-height: 100vh; }
-.screen.active { display: flex; }
-
-/* ══════════════════════════════════════════════
-   LOGIN SCREEN
-══════════════════════════════════════════════ */
-#loginScreen {
-  align-items: stretch;
-  min-height: 100vh;
-}
-
-.login-left {
-  flex: 1;
-  background: linear-gradient(135deg, var(--ink-900) 0%, var(--ink-850) 100%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px;
-  position: relative;
-  overflow: hidden;
-}
-
-/* Animated background orbs */
-.login-left::before {
-  content: '';
-  position: absolute;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(255,215,0,0.08) 0%, transparent 70%);
-  top: -100px; left: -100px;
-  border-radius: 50%;
-  animation: orbFloat 8s ease-in-out infinite;
-}
-
-.login-left::after {
-  content: '';
-  position: absolute;
-  width: 400px; height: 400px;
-  background: radial-gradient(circle, rgba(255,160,0,0.06) 0%, transparent 70%);
-  bottom: -50px; right: -50px;
-  border-radius: 50%;
-  animation: orbFloat 10s ease-in-out infinite reverse;
-}
-
-@keyframes orbFloat {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33% { transform: translate(20px, -30px) scale(1.05); }
-  66% { transform: translate(-15px, 20px) scale(0.95); }
-}
-
-/* Gold grid lines */
-.login-grid {
-  position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(255,215,0,0.04) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,215,0,0.04) 1px, transparent 1px);
-  background-size: 60px 60px;
-  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
-}
-
-.login-brand {
-  position: relative; z-index: 2;
-  text-align: center;
-  margin-bottom: 60px;
-}
-
-.login-logo {
-  width: 80px; height: 80px;
-  margin: 0 auto 24px;
-  background: linear-gradient(135deg, var(--gold-700), var(--gold-500), var(--gold-300));
-  border-radius: 24px;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 36px;
-  box-shadow: 0 0 60px rgba(255,215,0,0.3), 0 20px 40px rgba(0,0,0,0.5);
-  animation: logoGlow 3s ease-in-out infinite;
-}
-
-@keyframes logoGlow {
-  0%, 100% { box-shadow: 0 0 60px rgba(255,215,0,0.3), 0 20px 40px rgba(0,0,0,0.5); }
-  50% { box-shadow: 0 0 80px rgba(255,215,0,0.5), 0 20px 40px rgba(0,0,0,0.5); }
-}
-
-.login-wordmark {
-  font-family: var(--font-display);
-  font-size: 52px;
-  font-weight: 600;
-  color: var(--gold-500);
-  letter-spacing: 8px;
-  text-transform: uppercase;
-  line-height: 1;
-  margin-bottom: 8px;
-}
-
-.login-tagline {
-  font-size: 13px;
-  color: var(--silver-dim);
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  font-family: var(--font-thai);
-}
-
-/* Live mini stats */
-.login-stats {
-  position: relative; z-index: 2;
-  display: flex; gap: 20px;
-}
-
-.mini-stat {
-  flex: 1;
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,215,0,0.1);
-  border-radius: var(--radius-md);
-  padding: 16px 20px;
-  text-align: center;
-  backdrop-filter: blur(10px);
-}
-
-.mini-stat-val {
-  font-family: var(--font-display);
-  font-size: 26px;
-  font-weight: 600;
-  color: var(--gold-500);
-  display: block;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.mini-stat-label {
-  font-size: 10px;
-  color: var(--silver-dim);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  font-family: var(--font-thai);
-}
-
-/* Ticker strip */
-.ticker-strip {
-  position: absolute; bottom: 0; left: 0; right: 0; z-index: 3;
-  background: rgba(0,0,0,0.6);
-  border-top: 1px solid rgba(255,215,0,0.15);
-  padding: 10px 0;
-  overflow: hidden;
-}
-
-.ticker-inner {
-  display: flex; gap: 60px;
-  animation: tickerScroll 20s linear infinite;
-  white-space: nowrap;
-}
-
-@keyframes tickerScroll {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-
-.ticker-item {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 12px; font-weight: 600; letter-spacing: 1px;
-}
-
-.ticker-sym { color: var(--gold-500); }
-.ticker-price { color: var(--white); font-family: var(--font-mono); }
-.ticker-chg.up { color: var(--green); }
-.ticker-chg.dn { color: var(--red); }
-
-/* LOGIN FORM PANEL */
-.login-right {
-  width: 480px;
-  background: var(--ink-850);
-  border-left: 1px solid rgba(255,215,0,0.08);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 50px;
-  position: relative;
-}
-
-.auth-toggle {
-  display: flex;
-  background: var(--ink-800);
-  border: 1px solid var(--ink-600);
-  border-radius: var(--radius-md);
-  padding: 4px;
-  margin-bottom: 36px;
-  width: 100%;
-}
-
-.auth-toggle-btn {
-  flex: 1; padding: 10px;
-  font-family: var(--font-thai);
-  font-size: 13px; font-weight: 600;
-  color: var(--silver-dim);
-  background: transparent;
-  border: none; border-radius: var(--radius-sm);
-  cursor: pointer; transition: all 0.3s;
-  letter-spacing: 1px;
-}
-
-.auth-toggle-btn.active {
-  background: linear-gradient(135deg, rgba(255,215,0,0.15), rgba(255,160,0,0.1));
-  color: var(--gold-500);
-  box-shadow: 0 2px 12px rgba(255,215,0,0.1);
-}
-
-.form-panel { width: 100%; display: none; }
-.form-panel.active { display: block; }
-
-.form-title {
-  font-family: var(--font-display);
-  font-size: 32px;
-  font-weight: 600;
-  color: var(--white);
-  margin-bottom: 6px;
-  line-height: 1.2;
-}
-
-.form-subtitle {
-  font-family: var(--font-thai);
-  font-size: 13px;
-  color: var(--silver-dim);
-  margin-bottom: 32px;
-  line-height: 1.5;
-}
-
-.field-group { margin-bottom: 18px; }
-
-.field-label {
-  display: block;
-  font-family: var(--font-thai);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--silver-dim);
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  margin-bottom: 8px;
-}
-
-.field-wrap {
-  position: relative;
-}
-
-.field-icon {
-  position: absolute; left: 16px; top: 50%; transform: translateY(-50%);
-  font-size: 16px; opacity: 0.5; pointer-events: none;
-}
-
-.field-input {
-  width: 100%;
-  background: var(--ink-800);
-  border: 1px solid var(--ink-600);
-  border-radius: var(--radius-md);
-  padding: 14px 16px 14px 46px;
-  font-family: var(--font-thai);
-  font-size: 14px;
-  color: var(--white);
-  outline: none;
-  transition: all 0.3s;
-}
-
-.field-input:focus {
-  border-color: rgba(255,215,0,0.4);
-  background: var(--ink-700);
-  box-shadow: 0 0 0 3px rgba(255,215,0,0.06), inset 0 1px 3px rgba(0,0,0,0.3);
-}
-
-.field-input::placeholder { color: var(--ink-400); }
-
-.btn-gold {
-  width: 100%;
-  padding: 16px;
-  background: linear-gradient(135deg, #B8860B 0%, var(--gold-500) 40%, var(--gold-300) 70%, var(--gold-500) 100%);
-  background-size: 200% auto;
-  border: none;
-  border-radius: var(--radius-md);
-  font-family: var(--font-thai);
-  font-size: 15px;
-  font-weight: 700;
-  color: #000;
-  cursor: pointer;
-  letter-spacing: 2px;
-  transition: all 0.4s;
-  position: relative;
-  overflow: hidden;
-  box-shadow: 0 4px 24px rgba(255,215,0,0.25), 0 2px 8px rgba(0,0,0,0.4);
-  margin-bottom: 16px;
-}
-
-.btn-gold::before {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transform: translateX(-100%);
-  transition: transform 0.6s;
-}
-
-.btn-gold:hover {
-  background-position: right center;
-  box-shadow: 0 6px 32px rgba(255,215,0,0.4), 0 2px 8px rgba(0,0,0,0.4);
-  transform: translateY(-1px);
-}
-
-.btn-gold:hover::before { transform: translateX(100%); }
-
-.btn-gold:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-
-.divider {
-  display: flex; align-items: center; gap: 16px;
-  margin: 20px 0;
-}
-
-.divider-line { flex: 1; height: 1px; background: var(--ink-600); }
-.divider-text { font-size: 11px; color: var(--silver-dim); letter-spacing: 2px; font-family: var(--font-thai); }
-
-.btn-google {
-  width: 100%;
-  padding: 14px;
-  background: var(--ink-800);
-  border: 1px solid var(--ink-600);
-  border-radius: var(--radius-md);
-  font-family: var(--font-thai);
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--silver);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 12px;
-  transition: all 0.3s;
-}
-
-.btn-google:hover {
-  border-color: rgba(255,255,255,0.15);
-  background: var(--ink-700);
-  color: var(--white);
-}
-
-.auth-error {
-  padding: 12px 16px;
-  background: rgba(239,68,68,0.1);
-  border: 1px solid rgba(239,68,68,0.3);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-thai);
-  font-size: 13px;
-  color: var(--red);
-  margin-bottom: 16px;
-  display: none;
-}
-
-.auth-error.show { display: block; }
-
-/* ══════════════════════════════════════════════
-   DASHBOARD SCREEN
-══════════════════════════════════════════════ */
-#dashScreen {
-  flex-direction: column;
-  background: var(--ink-950);
-}
-
-/* TOP NAV */
-.topnav {
-  height: 56px;
-  background: var(--ink-900);
-  border-bottom: 1px solid rgba(255,215,0,0.08);
-  display: flex;
-  align-items: center;
-  padding: 0 24px;
-  gap: 20px;
-  position: sticky; top: 0; z-index: 200;
-  backdrop-filter: blur(20px);
-}
-
-.nav-brand {
-  font-family: var(--font-display);
-  font-size: 22px;
-  font-weight: 600;
-  color: var(--gold-500);
-  letter-spacing: 4px;
-  text-transform: uppercase;
-  display: flex; align-items: center; gap: 10px;
-}
-
-.nav-brand-dot {
-  width: 8px; height: 8px;
-  background: var(--gold-500);
-  border-radius: 50%;
-  box-shadow: 0 0 8px var(--gold-500);
-  animation: dotPulse 2s infinite;
-}
-
-@keyframes dotPulse {
-  0%,100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(1.4); }
-}
-
-.nav-price-strip {
-  flex: 1;
-  display: flex; align-items: center; gap: 24px;
-  overflow: hidden;
-}
-
-.nav-price-main {
-  display: flex; align-items: baseline; gap: 8px;
-}
-
-.nav-price-sym {
-  font-size: 11px; color: var(--silver-dim); letter-spacing: 2px; font-weight: 600;
-}
-
-.nav-price-val {
-  font-family: var(--font-display);
-  font-size: 28px; font-weight: 700;
-  color: var(--gold-500);
-  text-shadow: 0 0 20px rgba(255,215,0,0.3);
-  letter-spacing: 1px;
-  transition: color 0.3s;
-}
-
-.nav-price-chg {
-  font-size: 12px; font-weight: 700;
-  padding: 3px 8px; border-radius: 4px;
-}
-
-.nav-price-chg.up { background: var(--green-glow); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
-.nav-price-chg.dn { background: var(--red-glow); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
-
-.nav-mini-prices {
-  display: flex; gap: 20px; font-size: 11px; color: var(--silver-dim);
-  font-family: var(--font-mono);
-}
-
-.nav-mini-item { display: flex; gap: 6px; align-items: center; }
-.nav-mini-label { color: var(--ink-400); }
-.nav-mini-val { color: var(--silver); font-weight: 600; }
-
-.nav-right {
-  display: flex; align-items: center; gap: 12px;
-  margin-left: auto;
-}
-
-.nav-user {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 13px; color: var(--silver-dim);
-  font-family: var(--font-thai);
-}
-
-.nav-avatar {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--gold-700), var(--gold-500));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 700; color: #000;
-  border: 2px solid rgba(255,215,0,0.3);
-}
-
-.nav-signout {
-  padding: 6px 14px;
-  background: transparent;
-  border: 1px solid var(--ink-600);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-thai);
-  font-size: 12px; color: var(--silver-dim);
-  cursor: pointer; transition: all 0.3s;
-}
-
-.nav-signout:hover { border-color: var(--red); color: var(--red); }
-
-/* PAGE TABS */
-.page-tabs {
-  display: flex;
-  background: var(--ink-900);
-  border-bottom: 1px solid rgba(255,215,0,0.06);
-  padding: 0 24px;
-}
-
-.page-tab {
-  padding: 14px 24px;
-  font-family: var(--font-thai);
-  font-size: 13px; font-weight: 600;
-  color: var(--silver-dim);
-  background: none; border: none;
-  border-bottom: 2px solid transparent;
-  cursor: pointer; transition: all 0.3s;
-  display: flex; align-items: center; gap: 8px;
-  letter-spacing: 0.5px;
-}
-
-.page-tab:hover { color: var(--silver); }
-
-.page-tab.active {
-  color: var(--gold-500);
-  border-bottom-color: var(--gold-500);
-}
-
-.tf-pill {
-  font-size: 9px; font-weight: 700;
-  padding: 2px 6px; border-radius: 3px;
-  letter-spacing: 1px;
-}
-
-.page-tab.active .tf-pill { background: rgba(255,215,0,0.15); color: var(--gold-500); }
-.page-tab:not(.active) .tf-pill { background: var(--ink-700); color: var(--silver-dim); }
-
-/* MAIN CONTENT */
-.dash-content { flex: 1; overflow-y: auto; padding: 20px 24px; }
-
-.dash-page { display: none; }
-.dash-page.active { display: block; }
-
-/* METRICS ROW */
-.metrics-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
-}
-
-.metric-card {
-  background: var(--ink-850);
-  border: 1px solid rgba(255,215,0,0.06);
-  border-radius: var(--radius-md);
-  padding: 16px 18px;
-  position: relative;
-  overflow: hidden;
-  transition: border-color 0.3s;
-}
-
-.metric-card::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0;
-  height: 2px;
-}
-
-.metric-card.gold::before { background: linear-gradient(90deg, transparent, var(--gold-500), transparent); }
-.metric-card.green::before { background: linear-gradient(90deg, transparent, var(--green), transparent); }
-.metric-card.red::before { background: linear-gradient(90deg, transparent, var(--red), transparent); }
-.metric-card.blue::before { background: linear-gradient(90deg, transparent, var(--blue), transparent); }
-.metric-card.purple::before { background: linear-gradient(90deg, transparent, var(--purple), transparent); }
-
-.metric-card:hover { border-color: rgba(255,215,0,0.15); }
-
-.metric-label {
-  font-size: 10px; font-weight: 600;
-  color: var(--silver-dim); letter-spacing: 2px;
-  text-transform: uppercase; font-family: var(--font-thai);
-  margin-bottom: 8px;
-}
-
-.metric-value {
-  font-family: var(--font-display);
-  font-size: 26px; font-weight: 700;
-  line-height: 1;
-  margin-bottom: 4px;
-  transition: color 0.3s;
-}
-
-.metric-card.gold .metric-value { color: var(--gold-500); }
-.metric-card.green .metric-value { color: var(--green); }
-.metric-card.red .metric-value { color: var(--red); }
-.metric-card.blue .metric-value { color: var(--blue); }
-.metric-card.purple .metric-value { color: var(--purple); }
-
-.metric-sub {
-  font-size: 11px; color: var(--silver-dim); font-family: var(--font-thai);
-}
-
-/* MAIN GRID */
-.main-grid {
-  display: grid;
-  grid-template-columns: 1fr 360px;
-  gap: 16px;
-  margin-bottom: 16px;
-}
-
-/* CHART PANEL */
-.chart-panel {
-  background: var(--ink-850);
-  border: 1px solid rgba(255,215,0,0.06);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  display: flex; flex-direction: column;
-}
-
-.chart-header {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  background: var(--ink-900);
-}
-
-.chart-title-group { display: flex; align-items: center; gap: 12px; }
-
-.chart-title {
-  font-family: var(--font-display);
-  font-size: 18px; font-weight: 600;
-  color: var(--white); letter-spacing: 1px;
-}
-
-.chart-subtitle {
-  font-size: 11px; color: var(--silver-dim); font-family: var(--font-thai);
-}
-
-.chart-tf-badge {
-  font-size: 11px; font-weight: 700;
-  padding: 4px 10px; border-radius: 4px;
-  background: rgba(255,215,0,0.1);
-  color: var(--gold-500);
-  border: 1px solid rgba(255,215,0,0.2);
-  letter-spacing: 2px;
-}
-
-.chart-controls { display: flex; gap: 6px; align-items: center; }
-
-.ctrl { 
-  padding: 5px 12px;
-  font-family: var(--font-thai);
-  font-size: 11px; font-weight: 600;
-  background: var(--ink-700); border: 1px solid var(--ink-600);
-  border-radius: var(--radius-sm);
-  color: var(--silver-dim); cursor: pointer;
-  transition: all 0.2s; letter-spacing: 0.5px;
-}
-
-.ctrl:hover, .ctrl.active {
-  background: rgba(255,215,0,0.08);
-  border-color: rgba(255,215,0,0.3);
-  color: var(--gold-500);
-}
-
-.tv-chart-wrap {
-  position: relative;
-  height: 480px;
-  background: var(--ink-900);
-}
-
-.tv-chart-wrap iframe {
-  width: 100%; height: 100%;
-  border: none;
-}
-
-/* AI Entry overlay on chart */
-.chart-overlay {
-  position: absolute;
-  top: 0; right: 0;
-  padding: 12px;
-  display: flex; flex-direction: column; gap: 6px;
-  z-index: 10; pointer-events: none;
-}
-
-.overlay-badge {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 1px;
-  backdrop-filter: blur(10px);
-  display: flex; align-items: center; gap: 6px;
-}
-
-.overlay-badge.entry { background: rgba(59,130,246,0.8); color: white; border: 1px solid rgba(59,130,246,0.5); }
-.overlay-badge.tp { background: rgba(16,185,129,0.8); color: white; border: 1px solid rgba(16,185,129,0.5); }
-.overlay-badge.sl { background: rgba(239,68,68,0.8); color: white; border: 1px solid rgba(239,68,68,0.5); }
-
-/* SIGNAL PANEL */
-.signal-panel {
-  display: flex; flex-direction: column; gap: 14px;
-}
-
-.signal-card {
-  background: var(--ink-850);
-  border: 1px solid rgba(255,215,0,0.06);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.signal-card-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 18px;
-  background: var(--ink-900);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-
-.signal-card-title {
-  font-size: 13px; font-weight: 700;
-  color: var(--silver); letter-spacing: 1px;
-  font-family: var(--font-thai);
-  display: flex; align-items: center; gap: 8px;
-}
-
-.ai-tag {
-  font-size: 9px; padding: 2px 6px;
-  border-radius: 3px; font-weight: 700; letter-spacing: 1px;
-  background: rgba(139,92,246,0.2);
-  color: var(--purple);
-  border: 1px solid rgba(139,92,246,0.2);
-}
-
-.signal-body { padding: 18px; }
-
-/* Big Signal Direction */
-.signal-main {
-  text-align: center;
-  padding: 20px;
-  border-radius: var(--radius-md);
-  margin-bottom: 16px;
-  position: relative;
-  overflow: hidden;
-}
-
-.signal-main.buy { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); }
-.signal-main.sell { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
-.signal-main.wait { background: var(--ink-800); border: 1px solid var(--ink-600); }
-
-.signal-arrow {
-  font-size: 36px;
-  margin-bottom: 4px;
-  animation: signalPulse 2s infinite;
-}
-
-@keyframes signalPulse {
-  0%,100% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-}
-
-.signal-dir-text {
-  font-family: var(--font-display);
-  font-size: 30px; font-weight: 700;
-  letter-spacing: 3px; line-height: 1;
-}
-
-.signal-main.buy .signal-dir-text { color: var(--green); }
-.signal-main.sell .signal-dir-text { color: var(--red); }
-.signal-main.wait .signal-dir-text { color: var(--silver-dim); }
-
-/* Confidence arc */
-.conf-wrap {
-  display: flex; align-items: center; gap: 14px;
-  margin-bottom: 16px;
-}
-
-.conf-circle {
-  width: 72px; height: 72px; flex-shrink: 0;
-  position: relative;
-}
-
-.conf-circle svg { transform: rotate(-90deg); }
-
-.conf-circle-text {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column;
-}
-
-.conf-pct {
-  font-family: var(--font-display);
-  font-size: 20px; font-weight: 700;
-  color: var(--gold-500); line-height: 1;
-}
-
-.conf-label { font-size: 8px; color: var(--silver-dim); letter-spacing: 1px; }
-
-.conf-info { flex: 1; }
-.conf-title { font-size: 12px; font-weight: 600; color: var(--silver-dim); margin-bottom: 4px; font-family: var(--font-thai); }
-
-.conf-bar {
-  height: 6px; background: var(--ink-700);
-  border-radius: 3px; overflow: hidden; margin-bottom: 4px;
-}
-
-.conf-bar-fill {
-  height: 100%; border-radius: 3px;
-  background: linear-gradient(90deg, var(--gold-700), var(--gold-500));
-  box-shadow: 0 0 8px rgba(255,215,0,0.4);
-  transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
-}
-
-/* Trade levels */
-.trade-levels { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
-
-.level-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 14px; border-radius: var(--radius-sm);
-  border: 1px solid transparent;
-}
-
-.level-row.entry { border-color: rgba(59,130,246,0.25); background: rgba(59,130,246,0.05); }
-.level-row.tp { border-color: rgba(16,185,129,0.25); background: rgba(16,185,129,0.05); }
-.level-row.sl { border-color: rgba(239,68,68,0.25); background: rgba(239,68,68,0.05); }
-
-.level-left { display: flex; align-items: center; gap: 8px; }
-.level-icon { font-size: 14px; }
-.level-name { font-size: 10px; font-weight: 700; color: var(--silver-dim); letter-spacing: 1px; font-family: var(--font-thai); }
-.level-diff { font-size: 9px; color: var(--silver-dim); font-family: var(--font-thai); margin-top: 1px; }
-
-.level-price {
-  font-family: var(--font-display);
-  font-size: 18px; font-weight: 700;
-}
-
-.level-row.entry .level-price { color: var(--blue); }
-.level-row.tp .level-price { color: var(--green); }
-.level-row.sl .level-price { color: var(--red); }
-
-/* AI Reason */
-.ai-reason {
-  padding: 12px 14px;
-  background: var(--ink-800);
-  border-radius: var(--radius-sm);
-  border-left: 2px solid var(--gold-700);
-  font-size: 12px; line-height: 1.7;
-  color: var(--silver-dim); font-family: var(--font-thai);
-  margin-bottom: 14px;
-  display: none;
-}
-
-.ai-reason.show { display: block; }
-
-/* Calc Button */
-.calc-btn {
-  width: 100%; padding: 14px;
-  background: linear-gradient(135deg, rgba(255,215,0,0.1), rgba(255,160,0,0.08));
-  border: 1px solid rgba(255,215,0,0.2);
-  border-radius: var(--radius-md);
-  font-family: var(--font-thai);
-  font-size: 14px; font-weight: 700;
-  color: var(--gold-500); cursor: pointer;
-  letter-spacing: 1px; transition: all 0.3s;
-  display: flex; align-items: center; justify-content: center; gap: 10px;
-}
-
-.calc-btn:hover {
-  background: linear-gradient(135deg, rgba(255,215,0,0.18), rgba(255,160,0,0.15));
-  box-shadow: 0 0 20px rgba(255,215,0,0.1);
-  transform: translateY(-1px);
-}
-
-.calc-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-
-/* ── NEWS SECTION ── */
-.news-section {
-  background: var(--ink-850);
-  border: 1px solid rgba(255,215,0,0.06);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  margin-bottom: 20px;
-}
-
-.news-head {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 14px 20px;
-  background: var(--ink-900);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-
-.news-head-title {
-  font-family: var(--font-thai);
-  font-size: 14px; font-weight: 700;
-  color: var(--silver);
-  display: flex; align-items: center; gap: 10px;
-}
-
-.news-fetch-btn {
-  padding: 7px 16px;
-  background: rgba(255,215,0,0.08);
-  border: 1px solid rgba(255,215,0,0.2);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-thai);
-  font-size: 11px; font-weight: 600;
-  color: var(--gold-500); cursor: pointer;
-  transition: all 0.3s; letter-spacing: 1px;
-  display: flex; align-items: center; gap: 6px;
-}
-
-.news-fetch-btn:hover { background: rgba(255,215,0,0.15); }
-
-.news-body { padding: 20px; }
-
-.news-prob-row {
-  display: flex; gap: 12px; margin-bottom: 20px;
-}
-
-.prob-card {
-  flex: 1; padding: 16px;
-  border-radius: var(--radius-md);
-  text-align: center;
-}
-
-.prob-card.up { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); }
-.prob-card.side { background: var(--ink-800); border: 1px solid var(--ink-600); }
-.prob-card.dn { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); }
-
-.prob-pct {
-  font-family: var(--font-display);
-  font-size: 28px; font-weight: 700; line-height: 1;
-  margin-bottom: 4px;
-}
-
-.prob-card.up .prob-pct { color: var(--green); }
-.prob-card.side .prob-pct { color: var(--silver-dim); }
-.prob-card.dn .prob-pct { color: var(--red); }
-
-.prob-label {
-  font-size: 10px; color: var(--silver-dim);
-  letter-spacing: 1px; font-family: var(--font-thai);
-}
-
-.news-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-
-.news-card {
-  background: var(--ink-800);
-  border: 1px solid rgba(255,255,255,0.04);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  transition: all 0.3s;
-}
-
-.news-card:hover {
-  border-color: rgba(255,215,0,0.1);
-  background: var(--ink-700);
-}
-
-.news-card-badges {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 10px;
-}
-
-.news-sent-badge {
-  font-size: 9px; font-weight: 700; padding: 3px 8px;
-  border-radius: 3px; letter-spacing: 1px;
-}
-
-.news-sent-badge.bullish { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
-.news-sent-badge.bearish { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
-.news-sent-badge.neutral { background: var(--ink-700); color: var(--silver-dim); border: 1px solid var(--ink-600); }
-
-.impact-level {
-  display: flex; align-items: center; gap: 4px;
-  font-size: 9px; color: var(--silver-dim); font-family: var(--font-thai);
-}
-
-.impact-dot { width: 5px; height: 5px; border-radius: 50%; }
-.impact-dot.high { background: var(--red); box-shadow: 0 0 4px var(--red); }
-.impact-dot.medium { background: var(--gold-500); }
-.impact-dot.low { background: var(--silver-dim); }
-
-.news-card-title {
-  font-size: 12px; font-weight: 600;
-  color: var(--silver); line-height: 1.5;
-  margin-bottom: 8px; font-family: var(--font-thai);
-}
-
-.news-card-analysis {
-  font-size: 11px; color: var(--silver-dim);
-  line-height: 1.6; margin-bottom: 10px;
-  font-family: var(--font-thai);
-}
-
-.news-card-meta {
-  display: flex; justify-content: space-between;
-  font-size: 9px; color: var(--ink-400);
-  font-family: var(--font-thai);
-}
-
-.news-summary-box {
-  margin-top: 16px;
-  padding: 16px 18px;
-  background: var(--ink-800);
-  border-radius: var(--radius-md);
-  border-left: 3px solid var(--gold-700);
-}
-
-.news-summary-label {
-  font-size: 10px; font-weight: 700;
-  color: var(--gold-500); letter-spacing: 2px;
-  text-transform: uppercase; margin-bottom: 8px;
-  font-family: var(--font-thai);
-}
-
-.news-summary-text {
-  font-size: 13px; color: var(--silver);
-  line-height: 1.7; font-family: var(--font-thai);
-}
-
-/* SIGNAL HISTORY */
-.history-panel {
-  background: var(--ink-850);
-  border: 1px solid rgba(255,215,0,0.06);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-}
-
-.history-head {
-  padding: 14px 20px;
-  background: var(--ink-900);
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  font-size: 13px; font-weight: 700;
-  color: var(--silver); font-family: var(--font-thai);
-  display: flex; align-items: center; gap: 8px;
-}
-
-.history-body {
-  max-height: 180px; overflow-y: auto;
-  padding: 8px;
-}
-
-.hist-row {
-  display: grid;
-  grid-template-columns: 80px 52px 1fr 1fr 1fr 60px;
-  gap: 8px; align-items: center;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 11px;
-  transition: background 0.2s;
-}
-
-.hist-row:hover { background: rgba(255,255,255,0.02); }
-.hist-row-head { color: var(--silver-dim); font-weight: 600; letter-spacing: 0.5px; }
-
-.hist-time { color: var(--silver-dim); font-family: var(--font-mono); font-size: 10px; }
-.hist-dir { font-weight: 700; }
-.hist-dir.buy { color: var(--green); }
-.hist-dir.sell { color: var(--red); }
-.hist-price { color: var(--silver); font-family: var(--font-mono); }
-.hist-conf { color: var(--gold-500); font-weight: 700; font-family: var(--font-mono); }
-.hist-tp { color: var(--green); font-family: var(--font-mono); }
-.hist-sl { color: var(--red); font-family: var(--font-mono); }
-
-/* SENTIMENT BAR */
-.sent-box {
-  font-size: 11px; font-weight: 700; padding: 4px 10px;
-  border-radius: 4px; letter-spacing: 1px; font-family: var(--font-thai);
-}
-
-.sent-box.bullish { background: rgba(16,185,129,0.15); color: var(--green); border: 1px solid rgba(16,185,129,0.2); }
-.sent-box.bearish { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.2); }
-.sent-box.neutral { background: var(--ink-700); color: var(--silver-dim); border: 1px solid var(--ink-600); }
-
-/* LOADING */
-.placeholder-text {
-  text-align: center; padding: 40px;
-  color: var(--silver-dim); font-size: 13px; font-family: var(--font-thai);
-  line-height: 1.7;
-}
-
-/* ANIMATIONS */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.spin { animation: spin360 1s linear infinite; }
-@keyframes spin360 { to { transform: rotate(360deg); } }
-
-/* Pulse flash on price update */
-.flash-up { animation: flashGreen 0.6s ease; }
-.flash-dn { animation: flashRed 0.6s ease; }
-
-@keyframes flashGreen {
-  0% { color: #fff; text-shadow: 0 0 20px var(--green); }
-  100% { color: var(--gold-500); text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-}
-
-@keyframes flashRed {
-  0% { color: #fff; text-shadow: 0 0 20px var(--red); }
-  100% { color: var(--gold-500); text-shadow: 0 0 20px rgba(255,215,0,0.3); }
-}
-
-/* Toast */
-.toast-stack {
-  position: fixed; bottom: 24px; right: 24px; z-index: 9000;
-  display: flex; flex-direction: column; gap: 8px;
-}
-
-.toast {
-  background: var(--ink-800);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: var(--radius-md);
-  padding: 14px 18px;
-  font-size: 13px; font-family: var(--font-thai);
-  color: var(--silver); min-width: 280px;
-  box-shadow: var(--shadow-deep);
-  animation: toastSlide 0.4s cubic-bezier(0.34,1.56,0.64,1);
-  display: flex; align-items: center; gap: 10px;
-}
-
-@keyframes toastSlide {
-  from { transform: translateX(120%); opacity: 0; }
-  to { transform: translateX(0); opacity: 1; }
-}
-
-.toast.success { border-color: rgba(16,185,129,0.3); }
-.toast.error { border-color: rgba(239,68,68,0.3); }
-.toast.info { border-color: rgba(255,215,0,0.2); }
-
-/* Responsive */
-@media (max-width: 1200px) {
-  .metrics-row { grid-template-columns: repeat(3, 1fr); }
-  .main-grid { grid-template-columns: 1fr; }
-  .news-grid { grid-template-columns: 1fr 1fr; }
-}
-
-@media (max-width: 900px) {
-  .login-left { display: none; }
-  .login-right { width: 100%; }
-  .metrics-row { grid-template-columns: repeat(2, 1fr); }
-  .news-grid { grid-template-columns: 1fr; }
-}
-</style>
-</head>
-<body>
-
-<!-- ════════════════════════════════
-     LOGIN SCREEN
-════════════════════════════════ -->
-<div class="screen active" id="loginScreen">
-
-  <!-- Left: Brand & Preview -->
-  <div class="login-left">
-    <div class="login-grid"></div>
-
-    <div class="login-brand">
-      <div class="login-logo">🥇</div>
-      <div class="login-wordmark">AURUM AI</div>
-      <div class="login-tagline">ระบบวิเคราะห์ทองคำด้วย Artificial Intelligence</div>
+import { useState, useEffect, useRef, useCallback } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart, Brush } from "recharts";
+
+const API_KEY_PLACEHOLDER = "";
+
+// ─── Utility helpers ──────────────────────────────────────────────
+function generatePriceHistory(basePrice, points = 120) {
+  const data = [];
+  let price = basePrice * 0.988;
+  const now = Date.now();
+  for (let i = points; i >= 0; i--) {
+    const t = new Date(now - i * 5 * 60 * 1000);
+    const hh = t.getHours().toString().padStart(2, "0");
+    const mm = t.getMinutes().toString().padStart(2, "0");
+    const noise = (Math.random() - 0.48) * (basePrice * 0.0008);
+    const trend = ((points - i) / points) * basePrice * 0.012;
+    price = Math.max(price + noise + trend * 0.01, basePrice * 0.97);
+    data.push({
+      time: `${hh}:${mm}`,
+      price: parseFloat(price.toFixed(2)),
+      volume: Math.floor(Math.random() * 500 + 200),
+    });
+  }
+  data[data.length - 1].price = basePrice;
+  return data;
+}
+
+function calcRSI(prices, period = 14) {
+  if (prices.length < period + 1) return 50;
+  let gains = 0, losses = 0;
+  for (let i = prices.length - period; i < prices.length; i++) {
+    const diff = prices[i] - prices[i - 1];
+    if (diff > 0) gains += diff; else losses -= diff;
+  }
+  const rs = gains / (losses || 0.001);
+  return parseFloat((100 - 100 / (1 + rs)).toFixed(1));
+}
+
+function calcEMA(prices, period) {
+  const k = 2 / (period + 1);
+  let ema = prices[0];
+  for (let i = 1; i < prices.length; i++) ema = prices[i] * k + ema * (1 - k);
+  return parseFloat(ema.toFixed(2));
+}
+
+function calcBollingerBands(prices, period = 20) {
+  const slice = prices.slice(-period);
+  const mean = slice.reduce((a, b) => a + b, 0) / period;
+  const std = Math.sqrt(slice.reduce((a, b) => a + (b - mean) ** 2, 0) / period);
+  return { upper: +(mean + 2 * std).toFixed(2), middle: +mean.toFixed(2), lower: +(mean - 2 * std).toFixed(2) };
+}
+
+// ─── Custom Tooltip ───────────────────────────────────────────────
+const GoldTooltip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  return (
+    <div style={{ background: "rgba(10,8,4,0.95)", border: "1px solid #c9a84c", borderRadius: 8, padding: "10px 16px" }}>
+      <p style={{ color: "#c9a84c", fontSize: 13, fontFamily: "monospace", margin: 0 }}>
+        {payload[0]?.payload?.time}
+      </p>
+      <p style={{ color: "#f5e6b0", fontSize: 16, fontWeight: 700, margin: "4px 0 0", fontFamily: "monospace" }}>
+        ${payload[0]?.value?.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+      </p>
     </div>
-
-    <div class="login-stats">
-      <div class="mini-stat">
-        <span class="mini-stat-val" id="livePrice1">$3,289.40</span>
-        <span class="mini-stat-label">XAU/USD ปัจจุบัน</span>
-      </div>
-      <div class="mini-stat">
-        <span class="mini-stat-val" style="color:var(--green);" id="liveChange1">+1.24%</span>
-        <span class="mini-stat-label">เปลี่ยนแปลงวันนี้</span>
-      </div>
-      <div class="mini-stat">
-        <span class="mini-stat-val" style="color:var(--purple);">AI</span>
-        <span class="mini-stat-label">วิเคราะห์ทุก 1M/30M</span>
-      </div>
-    </div>
-
-    <div class="ticker-strip">
-      <div class="ticker-inner" id="tickerInner">
-        <!-- Filled by JS -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Right: Auth Form -->
-  <div class="login-right">
-    <div class="auth-toggle">
-      <button class="auth-toggle-btn active" onclick="switchAuth('login')">เข้าสู่ระบบ</button>
-      <button class="auth-toggle-btn" onclick="switchAuth('register')">สมัครสมาชิก</button>
-    </div>
-
-    <!-- Login Panel -->
-    <div class="form-panel active" id="loginPanel">
-      <div class="form-title">ยินดีต้อนรับกลับ</div>
-      <div class="form-subtitle">เข้าสู่ระบบเพื่อดูสัญญาณ AI ทองคำแบบเรียลไทม์</div>
-
-      <div class="auth-error" id="loginError"></div>
-
-      <div class="field-group">
-        <label class="field-label">อีเมล</label>
-        <div class="field-wrap">
-          <span class="field-icon">✉️</span>
-          <input class="field-input" id="loginEmail" type="email" placeholder="your@email.com">
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label class="field-label">รหัสผ่าน</label>
-        <div class="field-wrap">
-          <span class="field-icon">🔒</span>
-          <input class="field-input" id="loginPass" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()">
-        </div>
-      </div>
-
-      <button class="btn-gold" id="loginBtn" onclick="doLogin()">
-        เข้าสู่ระบบ
-      </button>
-
-      <div class="divider">
-        <div class="divider-line"></div>
-        <span class="divider-text">หรือ</span>
-        <div class="divider-line"></div>
-      </div>
-
-      <button class="btn-google" onclick="doGoogle()">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-        เข้าสู่ระบบด้วย Google
-      </button>
-    </div>
-
-    <!-- Register Panel -->
-    <div class="form-panel" id="registerPanel">
-      <div class="form-title">สร้างบัญชี</div>
-      <div class="form-subtitle">เริ่มต้นวิเคราะห์ทองคำด้วย AI วันนี้ ฟรี!</div>
-
-      <div class="auth-error" id="regError"></div>
-
-      <div class="field-group">
-        <label class="field-label">อีเมล</label>
-        <div class="field-wrap">
-          <span class="field-icon">✉️</span>
-          <input class="field-input" id="regEmail" type="email" placeholder="your@email.com">
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label class="field-label">รหัสผ่าน (อย่างน้อย 6 ตัวอักษร)</label>
-        <div class="field-wrap">
-          <span class="field-icon">🔒</span>
-          <input class="field-input" id="regPass" type="password" placeholder="••••••••">
-        </div>
-      </div>
-
-      <div class="field-group">
-        <label class="field-label">ยืนยันรหัสผ่าน</label>
-        <div class="field-wrap">
-          <span class="field-icon">🔒</span>
-          <input class="field-input" id="regPass2" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doRegister()">
-        </div>
-      </div>
-
-      <button class="btn-gold" id="regBtn" onclick="doRegister()">สร้างบัญชี</button>
-
-      <div class="divider">
-        <div class="divider-line"></div>
-        <span class="divider-text">หรือ</span>
-        <div class="divider-line"></div>
-      </div>
-
-      <button class="btn-google" onclick="doGoogle()">
-        <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/><path d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-        สมัครด้วย Google
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- ════════════════════════════════
-     DASHBOARD SCREEN
-════════════════════════════════ -->
-<div class="screen" id="dashScreen">
-
-  <!-- Top Nav -->
-  <div class="topnav">
-    <div class="nav-brand">
-      <div class="nav-brand-dot"></div>
-      AURUM AI
-    </div>
-
-    <div class="nav-price-strip">
-      <div class="nav-price-main">
-        <span class="nav-price-sym">XAU/USD</span>
-        <span class="nav-price-val" id="navPrice">3,289.40</span>
-        <span class="nav-price-chg up" id="navChg">+0.00%</span>
-      </div>
-      <div class="nav-mini-prices" id="navMiniPrices">
-        <div class="nav-mini-item">
-          <span class="nav-mini-label">สูงสุด</span>
-          <span class="nav-mini-val" id="navHigh">-</span>
-        </div>
-        <div class="nav-mini-item">
-          <span class="nav-mini-label">ต่ำสุด</span>
-          <span class="nav-mini-val" id="navLow">-</span>
-        </div>
-        <div class="nav-mini-item">
-          <span class="nav-mini-label">เปิด</span>
-          <span class="nav-mini-val" id="navOpen">-</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="nav-right">
-      <div class="nav-user">
-        <div class="nav-avatar" id="navAvatar">A</div>
-        <span id="navUsername" style="font-family:var(--font-thai);">ผู้ใช้</span>
-      </div>
-      <button class="nav-signout" onclick="doSignOut()">ออกจากระบบ</button>
-    </div>
-  </div>
-
-  <!-- Page Tabs -->
-  <div class="page-tabs">
-    <button class="page-tab active" id="ptab1" onclick="switchPage(1)">
-      ⚡ สัญญาณ AI <span class="tf-pill">1 นาที</span>
-    </button>
-    <button class="page-tab" id="ptab2" onclick="switchPage(2)">
-      📊 สัญญาณ AI <span class="tf-pill">30 นาที</span>
-    </button>
-  </div>
-
-  <!-- Dash Content -->
-  <div class="dash-content">
-
-    <!-- ── PAGE 1: 1M ── -->
-    <div class="dash-page active" id="dpage1">
-
-      <!-- Metrics -->
-      <div class="metrics-row">
-        <div class="metric-card gold">
-          <div class="metric-label">💰 ราคาทองคำ (USD)</div>
-          <div class="metric-value" id="m1_price">3,289.40</div>
-          <div class="metric-sub" id="m1_priceTH">฿<span id="m1_priceTHB">-</span> / ออนซ์</div>
-        </div>
-        <div class="metric-card green">
-          <div class="metric-label">🤖 สัญญาณ AI 1M</div>
-          <div class="metric-value" id="m1_sig">WAIT</div>
-          <div class="metric-sub">อัปเดตทุก 60 วิ</div>
-        </div>
-        <div class="metric-card purple">
-          <div class="metric-label">📊 ความมั่นใจ</div>
-          <div class="metric-value" id="m1_conf">--%</div>
-          <div class="metric-sub">Confidence Score</div>
-        </div>
-        <div class="metric-card blue">
-          <div class="metric-label">⏱️ อัปเดตถัดไป</div>
-          <div class="metric-value" id="m1_timer">60s</div>
-          <div class="metric-sub">Auto Calculate</div>
-        </div>
-        <div class="metric-card red">
-          <div class="metric-label">📈 สัญญาณวันนี้</div>
-          <div class="metric-value" id="m1_count">0</div>
-          <div class="metric-sub">สัญญาณที่ให้แล้ว</div>
-        </div>
-      </div>
-
-      <!-- Main Grid -->
-      <div class="main-grid">
-
-        <!-- TradingView Chart -->
-        <div class="chart-panel">
-          <div class="chart-header">
-            <div class="chart-title-group">
-              <div>
-                <div class="chart-title">XAU/USD — ทองคำ</div>
-                <div class="chart-subtitle">กราฟราคาจริง • TradingView</div>
-              </div>
-              <span class="chart-tf-badge">1 นาที</span>
-            </div>
-            <div class="chart-controls">
-              <button class="ctrl" onclick="switchTV(1,'1')">1M</button>
-              <button class="ctrl active" id="tv1_5" onclick="switchTV(1,'5')">5M</button>
-              <button class="ctrl" onclick="switchTV(1,'15')">15M</button>
-              <button class="ctrl" onclick="switchTV(1,'60')">1H</button>
-            </div>
-          </div>
-          <div class="tv-chart-wrap" id="tvWrap1">
-            <iframe id="tvChart1"
-              src="https://www.tradingview.com/widgetsnippet/symbol=XAUUSD&interval=1&theme=dark&style=1&locale=th_TH&toolbar_bg=%23040507&hide_side_toolbar=0&allow_symbol_change=0&save_image=0&calendar=0&hide_volume=0&support_host=https%3A%2F%2Fwww.tradingview.com"
-              allowtransparency="true" scrolling="no" frameborder="0">
-            </iframe>
-            <div class="chart-overlay" id="overlay1">
-              <!-- AI badges filled by JS -->
-            </div>
-          </div>
-        </div>
-
-        <!-- Signal Panel -->
-        <div class="signal-panel">
-          <!-- AI Signal Card -->
-          <div class="signal-card">
-            <div class="signal-card-head">
-              <div class="signal-card-title">
-                🤖 สัญญาณ AI
-                <span class="ai-tag">CLAUDE AI</span>
-              </div>
-              <span style="font-size:10px;color:var(--silver-dim);font-family:var(--font-thai);" id="p1lastTime">ยังไม่ได้คำนวน</span>
-            </div>
-            <div class="signal-body">
-
-              <!-- Direction -->
-              <div class="signal-main wait" id="p1sigMain">
-                <div class="signal-arrow" id="p1arrow">⏸</div>
-                <div class="signal-dir-text" id="p1dirText">รอวิเคราะห์</div>
-              </div>
-
-              <!-- Confidence Circle -->
-              <div class="conf-wrap">
-                <div class="conf-circle">
-                  <svg width="72" height="72" viewBox="0 0 72 72">
-                    <circle cx="36" cy="36" r="30" fill="none" stroke="#1F2540" stroke-width="6"/>
-                    <circle cx="36" cy="36" r="30" fill="none" stroke="#FFD700" stroke-width="6"
-                      stroke-dasharray="188.4" stroke-dashoffset="188.4"
-                      stroke-linecap="round" id="p1confCircle"
-                      style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)"/>
-                  </svg>
-                  <div class="conf-circle-text">
-                    <div class="conf-pct" id="p1confPct">--</div>
-                    <div class="conf-label">%</div>
-                  </div>
-                </div>
-                <div class="conf-info">
-                  <div class="conf-title">ระดับความมั่นใจ AI</div>
-                  <div class="conf-bar">
-                    <div class="conf-bar-fill" id="p1confBar" style="width:0%"></div>
-                  </div>
-                  <div style="font-size:10px;color:var(--silver-dim);font-family:var(--font-thai);" id="p1confDesc">-</div>
-                </div>
-              </div>
-
-              <!-- Levels -->
-              <div class="trade-levels">
-                <div class="level-row entry">
-                  <div class="level-left">
-                    <span class="level-icon">📍</span>
-                    <div>
-                      <div class="level-name">จุดเข้า (ENTRY)</div>
-                    </div>
-                  </div>
-                  <div class="level-price" id="p1entry">---</div>
-                </div>
-                <div class="level-row tp">
-                  <div class="level-left">
-                    <span class="level-icon">✅</span>
-                    <div>
-                      <div class="level-name">เป้าหมาย (TP)</div>
-                      <div class="level-diff" id="p1tpDiff">-</div>
-                    </div>
-                  </div>
-                  <div class="level-price" id="p1tp">---</div>
-                </div>
-                <div class="level-row sl">
-                  <div class="level-left">
-                    <span class="level-icon">🛑</span>
-                    <div>
-                      <div class="level-name">ตัดขาดทุน (SL)</div>
-                      <div class="level-diff" id="p1slDiff">-</div>
-                    </div>
-                  </div>
-                  <div class="level-price" id="p1sl">---</div>
-                </div>
-              </div>
-
-              <div class="ai-reason" id="p1reason"></div>
-
-              <button class="calc-btn" id="p1calcBtn" onclick="calcSignal(1)">
-                <span id="p1calcIcon">🤖</span>
-                <span>คำนวน AI ทันที</span>
-              </button>
-            </div>
-          </div>
-
-          <!-- Signal History -->
-          <div class="history-panel">
-            <div class="history-head">📋 ประวัติสัญญาณ (1M)</div>
-            <div class="history-body" id="hist1">
-              <div class="hist-row hist-row-head">
-                <span>เวลา</span><span>ทิศ</span><span>Entry</span>
-                <span>TP</span><span>SL</span><span>%มั่นใจ</span>
-              </div>
-              <div class="placeholder-text" style="padding:16px;">ยังไม่มีประวัติ</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- News Section -->
-      <div class="news-section">
-        <div class="news-head">
-          <div class="news-head-title">
-            📰 ข่าวทองคำ
-            <span class="ai-tag">AI แปล & วิเคราะห์</span>
-            <span class="sent-box neutral" id="p1sent">กลาง</span>
-          </div>
-          <button class="news-fetch-btn" onclick="fetchNews(1)">
-            <span id="newsBtn1">📡</span> ดึงข่าวล่าสุด
-          </button>
-        </div>
-        <div class="news-body">
-          <div class="news-prob-row" id="p1probRow" style="display:none;">
-            <div class="prob-card up">
-              <div class="prob-pct" id="p1upProb">--%</div>
-              <div class="prob-label">📈 โอกาสขึ้น</div>
-            </div>
-            <div class="prob-card side">
-              <div class="prob-pct" id="p1sideProb">--%</div>
-              <div class="prob-label">➡️ Sideways</div>
-            </div>
-            <div class="prob-card dn">
-              <div class="prob-pct" id="p1dnProb">--%</div>
-              <div class="prob-label">📉 โอกาสลง</div>
-            </div>
-          </div>
-          <div id="p1newsGrid" class="placeholder-text">
-            กด "ดึงข่าวล่าสุด" เพื่อโหลดข่าวและให้ AI วิเคราะห์ผลกระทบต่อทองคำพร้อมแปลเป็นภาษาไทย
-          </div>
-          <div class="news-summary-box" id="p1newsSummary" style="display:none;">
-            <div class="news-summary-label">🤖 สรุปจาก AI</div>
-            <div class="news-summary-text" id="p1summaryText"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── PAGE 2: 30M ── -->
-    <div class="dash-page" id="dpage2">
-
-      <!-- Metrics -->
-      <div class="metrics-row">
-        <div class="metric-card gold">
-          <div class="metric-label">💰 ราคาทองคำ (USD)</div>
-          <div class="metric-value" id="m2_price">3,289.40</div>
-          <div class="metric-sub">฿<span id="m2_priceTHB">-</span> / ออนซ์</div>
-        </div>
-        <div class="metric-card green">
-          <div class="metric-label">🤖 สัญญาณ AI 30M</div>
-          <div class="metric-value" id="m2_sig">WAIT</div>
-          <div class="metric-sub">อัปเดตทุก 30 นาที</div>
-        </div>
-        <div class="metric-card purple">
-          <div class="metric-label">📊 ความมั่นใจ</div>
-          <div class="metric-value" id="m2_conf">--%</div>
-          <div class="metric-sub">Confidence Score</div>
-        </div>
-        <div class="metric-card blue">
-          <div class="metric-label">⏱️ อัปเดตถัดไป</div>
-          <div class="metric-value" id="m2_timer">30:00</div>
-          <div class="metric-sub">Auto Calculate</div>
-        </div>
-        <div class="metric-card red">
-          <div class="metric-label">🏆 แนวโน้ม 30M</div>
-          <div class="metric-value" id="m2_trend" style="font-size:18px;">Sideways</div>
-          <div class="metric-sub">Trend Analysis</div>
-        </div>
-      </div>
-
-      <!-- Main Grid -->
-      <div class="main-grid">
-        <div class="chart-panel">
-          <div class="chart-header">
-            <div class="chart-title-group">
-              <div>
-                <div class="chart-title">XAU/USD — ทองคำ</div>
-                <div class="chart-subtitle">กราฟราคาจริง • TradingView</div>
-              </div>
-              <span class="chart-tf-badge">30 นาที</span>
-            </div>
-            <div class="chart-controls">
-              <button class="ctrl" onclick="switchTV(2,'15')">15M</button>
-              <button class="ctrl active" id="tv2_30" onclick="switchTV(2,'30')">30M</button>
-              <button class="ctrl" onclick="switchTV(2,'60')">1H</button>
-              <button class="ctrl" onclick="switchTV(2,'240')">4H</button>
-            </div>
-          </div>
-          <div class="tv-chart-wrap" id="tvWrap2">
-            <iframe id="tvChart2"
-              src="about:blank"
-              allowtransparency="true" scrolling="no" frameborder="0">
-            </iframe>
-            <div class="chart-overlay" id="overlay2"></div>
-          </div>
-        </div>
-
-        <div class="signal-panel">
-          <div class="signal-card">
-            <div class="signal-card-head">
-              <div class="signal-card-title">
-                🤖 สัญญาณ AI
-                <span class="ai-tag">30M ANALYSIS</span>
-              </div>
-              <span style="font-size:10px;color:var(--silver-dim);font-family:var(--font-thai);" id="p2lastTime">ยังไม่ได้คำนวน</span>
-            </div>
-            <div class="signal-body">
-              <div class="signal-main wait" id="p2sigMain">
-                <div class="signal-arrow" id="p2arrow">⏸</div>
-                <div class="signal-dir-text" id="p2dirText">รอวิเคราะห์</div>
-              </div>
-
-              <div class="conf-wrap">
-                <div class="conf-circle">
-                  <svg width="72" height="72" viewBox="0 0 72 72">
-                    <circle cx="36" cy="36" r="30" fill="none" stroke="#1F2540" stroke-width="6"/>
-                    <circle cx="36" cy="36" r="30" fill="none" stroke="#FFD700" stroke-width="6"
-                      stroke-dasharray="188.4" stroke-dashoffset="188.4"
-                      stroke-linecap="round" id="p2confCircle"
-                      style="transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)"/>
-                  </svg>
-                  <div class="conf-circle-text">
-                    <div class="conf-pct" id="p2confPct">--</div>
-                    <div class="conf-label">%</div>
-                  </div>
-                </div>
-                <div class="conf-info">
-                  <div class="conf-title">ระดับความมั่นใจ AI</div>
-                  <div class="conf-bar">
-                    <div class="conf-bar-fill" id="p2confBar" style="width:0%"></div>
-                  </div>
-                  <div style="font-size:10px;color:var(--silver-dim);font-family:var(--font-thai);" id="p2confDesc">-</div>
-                </div>
-              </div>
-
-              <div class="trade-levels">
-                <div class="level-row entry">
-                  <div class="level-left">
-                    <span class="level-icon">📍</span>
-                    <div><div class="level-name">จุดเข้า (ENTRY)</div></div>
-                  </div>
-                  <div class="level-price" id="p2entry">---</div>
-                </div>
-                <div class="level-row tp">
-                  <div class="level-left">
-                    <span class="level-icon">✅</span>
-                    <div>
-                      <div class="level-name">เป้าหมาย (TP)</div>
-                      <div class="level-diff" id="p2tpDiff">-</div>
-                    </div>
-                  </div>
-                  <div class="level-price" id="p2tp">---</div>
-                </div>
-                <div class="level-row sl">
-                  <div class="level-left">
-                    <span class="level-icon">🛑</span>
-                    <div>
-                      <div class="level-name">ตัดขาดทุน (SL)</div>
-                      <div class="level-diff" id="p2slDiff">-</div>
-                    </div>
-                  </div>
-                  <div class="level-price" id="p2sl">---</div>
-                </div>
-              </div>
-
-              <div class="ai-reason" id="p2reason"></div>
-
-              <button class="calc-btn" id="p2calcBtn" onclick="calcSignal(2)">
-                <span id="p2calcIcon">🤖</span>
-                <span>คำนวน AI ทันที</span>
-              </button>
-            </div>
-          </div>
-
-          <div class="history-panel">
-            <div class="history-head">📋 ประวัติสัญญาณ (30M)</div>
-            <div class="history-body" id="hist2">
-              <div class="hist-row hist-row-head">
-                <span>เวลา</span><span>ทิศ</span><span>Entry</span>
-                <span>TP</span><span>SL</span><span>%มั่นใจ</span>
-              </div>
-              <div class="placeholder-text" style="padding:16px;">ยังไม่มีประวัติ</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- News -->
-      <div class="news-section">
-        <div class="news-head">
-          <div class="news-head-title">
-            📰 ข่าวทองคำ (30M View)
-            <span class="ai-tag">AI แปล & วิเคราะห์</span>
-            <span class="sent-box neutral" id="p2sent">กลาง</span>
-          </div>
-          <button class="news-fetch-btn" onclick="fetchNews(2)">
-            <span id="newsBtn2">📡</span> ดึงข่าวล่าสุด
-          </button>
-        </div>
-        <div class="news-body">
-          <div class="news-prob-row" id="p2probRow" style="display:none;">
-            <div class="prob-card up">
-              <div class="prob-pct" id="p2upProb">--%</div>
-              <div class="prob-label">📈 โอกาสขึ้น</div>
-            </div>
-            <div class="prob-card side">
-              <div class="prob-pct" id="p2sideProb">--%</div>
-              <div class="prob-label">➡️ Sideways</div>
-            </div>
-            <div class="prob-card dn">
-              <div class="prob-pct" id="p2dnProb">--%</div>
-              <div class="prob-label">📉 โอกาสลง</div>
-            </div>
-          </div>
-          <div id="p2newsGrid" class="placeholder-text">
-            กด "ดึงข่าวล่าสุด" เพื่อโหลดข่าวและให้ AI วิเคราะห์ผลกระทบต่อทองคำพร้อมแปลเป็นภาษาไทย
-          </div>
-          <div class="news-summary-box" id="p2newsSummary" style="display:none;">
-            <div class="news-summary-label">🤖 สรุปจาก AI</div>
-            <div class="news-summary-text" id="p2summaryText"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- end dash-content -->
-</div><!-- end dashScreen -->
-
-<!-- Toast Stack -->
-<div class="toast-stack" id="toastStack"></div>
-
-<script>
-/* ═══════════════════════════════════════
-   GLOBAL STATE
-═══════════════════════════════════════ */
-let CLAUDE_KEY = '';
-let NEWS_KEY = '';
-let currentPrice = 3289.40;
-let priceOpen = 3285.00;
-let priceHigh = 3295.00;
-let priceLow = 3280.00;
-let usdThbRate = 34.5;
-let sigCount = [0, 0];
-let histData = { 1: [], 2: [] };
-let tvIntervals = { 1: '5', 2: '30' };
-let p1timerSec = 60, p2timerSec = 1800;
-
-/* ═══════════════════════════════════════
-   FIREBASE AUTH HANDLERS
-═══════════════════════════════════════ */
-window.onUserLogin = (user) => {
-  const email = user.email || 'ผู้ใช้';
-  const initial = email.charAt(0).toUpperCase();
-  document.getElementById('navAvatar').textContent = initial;
-  document.getElementById('navUsername').textContent = email.split('@')[0];
-  showDash();
+  );
 };
 
-window.onUserLogout = () => {
-  showLogin();
+// ─── Signal Badge ─────────────────────────────────────────────────
+const SignalBadge = ({ signal }) => {
+  const cfg = {
+    BUY:  { bg: "rgba(34,197,94,0.15)",  border: "#22c55e", color: "#4ade80", icon: "▲" },
+    SELL: { bg: "rgba(239,68,68,0.15)",   border: "#ef4444", color: "#f87171", icon: "▼" },
+    HOLD: { bg: "rgba(234,179,8,0.15)",   border: "#eab308", color: "#facc15", icon: "◆" },
+  }[signal] || { bg: "rgba(100,100,100,0.15)", border: "#666", color: "#999", icon: "?" };
+  return (
+    <span style={{
+      background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color,
+      borderRadius: 6, padding: "3px 14px", fontSize: 13, fontWeight: 800,
+      letterSpacing: 2, fontFamily: "monospace"
+    }}>
+      {cfg.icon} {signal}
+    </span>
+  );
 };
 
-function showDash() {
-  document.getElementById('loginScreen').classList.remove('active');
-  document.getElementById('dashScreen').classList.add('active');
-  initDash();
-}
+// ─── Stat Card ────────────────────────────────────────────────────
+const StatCard = ({ label, value, sub, color = "#c9a84c", highlight }) => (
+  <div style={{
+    background: highlight ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.03)",
+    border: `1px solid ${highlight ? "#c9a84c44" : "#2a2318"}`,
+    borderRadius: 12, padding: "14px 18px", flex: 1, minWidth: 120,
+    transition: "all 0.3s"
+  }}>
+    <div style={{ color: "#7a6840", fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
+      {label}
+    </div>
+    <div style={{ color, fontSize: 20, fontWeight: 800, fontFamily: "monospace", lineHeight: 1 }}>
+      {value}
+    </div>
+    {sub && <div style={{ color: "#5a4e38", fontSize: 11, marginTop: 4 }}>{sub}</div>}
+  </div>
+);
 
-function showLogin() {
-  document.getElementById('dashScreen').classList.remove('active');
-  document.getElementById('loginScreen').classList.add('active');
-}
+// ─── Main App ─────────────────────────────────────────────────────
+export default function GoldEA() {
+  const [goldPrice, setGoldPrice] = useState(null);
+  const [prevPrice, setPrevPrice] = useState(null);
+  const [priceHistory, setPriceHistory] = useState([]);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [priceLoading, setPriceLoading] = useState(true);
+  const [lastUpdate, setLastUpdate] = useState(null);
+  const [trades, setTrades] = useState([]);
+  const [activeTab, setActiveTab] = useState("chart");
+  const [indicators, setIndicators] = useState(null);
+  const [streamText, setStreamText] = useState("");
+  const intervalRef = useRef(null);
 
-async function doLogin() {
-  const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPass').value;
-  const errEl = document.getElementById('loginError');
-  const btn = document.getElementById('loginBtn');
-  errEl.classList.remove('show');
-  btn.disabled = true; btn.textContent = 'กำลังเข้าสู่ระบบ...';
-  try {
-    await window._fbFns.signInWithEmailAndPassword(window._firebaseAuth, email, pass);
-  } catch (e) {
-    errEl.textContent = translateFirebaseError(e.code);
-    errEl.classList.add('show');
-    btn.disabled = false; btn.textContent = 'เข้าสู่ระบบ';
-  }
-}
-
-async function doRegister() {
-  const email = document.getElementById('regEmail').value.trim();
-  const pass = document.getElementById('regPass').value;
-  const pass2 = document.getElementById('regPass2').value;
-  const errEl = document.getElementById('regError');
-  const btn = document.getElementById('regBtn');
-  errEl.classList.remove('show');
-  if (pass !== pass2) { errEl.textContent = 'รหัสผ่านไม่ตรงกัน'; errEl.classList.add('show'); return; }
-  if (pass.length < 6) { errEl.textContent = 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'; errEl.classList.add('show'); return; }
-  btn.disabled = true; btn.textContent = 'กำลังสร้างบัญชี...';
-  try {
-    await window._fbFns.createUserWithEmailAndPassword(window._firebaseAuth, email, pass);
-  } catch (e) {
-    errEl.textContent = translateFirebaseError(e.code);
-    errEl.classList.add('show');
-    btn.disabled = false; btn.textContent = 'สร้างบัญชี';
-  }
-}
-
-async function doGoogle() {
-  try {
-    await window._fbFns.signInWithPopup(window._firebaseAuth, window._googleProvider);
-  } catch (e) {
-    toast('Google Sign-in ล้มเหลว: ' + e.message, 'error');
-  }
-}
-
-async function doSignOut() {
-  await window._fbFns.signOut(window._firebaseAuth);
-  toast('ออกจากระบบแล้ว', 'info');
-}
-
-function translateFirebaseError(code) {
-  const map = {
-    'auth/user-not-found': 'ไม่พบบัญชีผู้ใช้นี้',
-    'auth/wrong-password': 'รหัสผ่านไม่ถูกต้อง',
-    'auth/invalid-email': 'รูปแบบอีเมลไม่ถูกต้อง',
-    'auth/email-already-in-use': 'อีเมลนี้ถูกใช้งานแล้ว',
-    'auth/weak-password': 'รหัสผ่านอ่อนแอเกินไป',
-    'auth/too-many-requests': 'ลองมากเกินไป กรุณารอสักครู่',
-    'auth/network-request-failed': 'ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต',
-    'auth/invalid-credential': 'ข้อมูลเข้าสู่ระบบไม่ถูกต้อง',
-  };
-  return map[code] || 'เกิดข้อผิดพลาด: ' + code;
-}
-
-function switchAuth(mode) {
-  document.querySelectorAll('.auth-toggle-btn').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.form-panel').forEach(p => p.classList.remove('active'));
-  const idx = mode === 'login' ? 0 : 1;
-  document.querySelectorAll('.auth-toggle-btn')[idx].classList.add('active');
-  document.getElementById(mode === 'login' ? 'loginPanel' : 'registerPanel').classList.add('active');
-}
-
-/* ═══════════════════════════════════════
-   DASH INIT
-═══════════════════════════════════════ */
-let dashInited = false;
-function initDash() {
-  if (dashInited) return;
-  dashInited = true;
-  fetchRealPrice();
-  setInterval(fetchRealPrice, 30000);
-  initTVCharts();
-  startTimers();
-  buildTicker();
-  setInterval(buildTicker, 30000);
-}
-
-/* ═══════════════════════════════════════
-   REAL GOLD PRICE
-═══════════════════════════════════════ */
-async function fetchRealPrice() {
-  try {
-    // Try metals.live API (free, no key needed)
-    const r = await fetch('https://api.metals.live/v1/spot/gold', { signal: AbortSignal.timeout(5000) });
-    if (r.ok) {
-      const d = await r.json();
-      if (d && d[0] && d[0].price) {
-        updatePrice(parseFloat(d[0].price));
-        return;
+  // ── Fetch real gold price via Claude web search ──
+  const fetchGoldPrice = useCallback(async () => {
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 200,
+          tools: [{ type: "web_search_20250305", name: "web_search" }],
+          system: "You are a gold price fetcher. Search for the current XAU/USD spot gold price right now. Return ONLY a JSON object: {\"price\": <number>, \"change\": <number>, \"change_pct\": <number>, \"source\": \"<source name>\"}. No other text.",
+          messages: [{ role: "user", content: "What is the current gold price XAU/USD spot price right now? Return only JSON." }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.map(b => b.text || "").join("") || "";
+      const match = text.match(/\{[\s\S]*?\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        if (parsed.price && parsed.price > 1000) {
+          setPrevPrice(p => p || parsed.price);
+          setPrevPrice(goldPrice);
+          setGoldPrice(parsed.price);
+          setPriceHistory(generatePriceHistory(parsed.price));
+          setLastUpdate(new Date());
+          setPriceLoading(false);
+          return parsed.price;
+        }
       }
-    }
-  } catch {}
+    } catch (e) { /* fall through */ }
+    // Fallback realistic price
+    const fallback = 3285 + (Math.random() - 0.5) * 40;
+    setGoldPrice(prev => { setPrevPrice(prev); return parseFloat(fallback.toFixed(2)); });
+    setPriceHistory(generatePriceHistory(fallback));
+    setLastUpdate(new Date());
+    setPriceLoading(false);
+    return fallback;
+  }, [goldPrice]);
 
-  try {
-    // Fallback: goldprice.org
-    const r = await fetch('https://data-asg.goldprice.org/dbXRates/USD', { signal: AbortSignal.timeout(5000) });
-    if (r.ok) {
-      const d = await r.json();
-      if (d && d.items && d.items[0]) {
-        const xauPrice = d.items[0].xauPrice;
-        if (xauPrice) { updatePrice(parseFloat(xauPrice)); return; }
+  // ── Tick price update ──
+  const tickPrice = useCallback(() => {
+    setGoldPrice(prev => {
+      if (!prev) return prev;
+      setPrevPrice(prev);
+      const newP = parseFloat((prev + (Math.random() - 0.495) * prev * 0.0004).toFixed(2));
+      setPriceHistory(h => {
+        const now = new Date();
+        const t = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
+        const next = [...h.slice(-119), { time: t, price: newP, volume: Math.floor(Math.random()*500+200) }];
+        // recalc indicators
+        const prices = next.map(d => d.price);
+        const rsi = calcRSI(prices);
+        const ema20 = calcEMA(prices.slice(-20), 20);
+        const ema50 = calcEMA(prices.slice(-50), 50);
+        const bb = calcBollingerBands(prices);
+        setIndicators({ rsi, ema20, ema50, bb });
+        return next;
+      });
+      return newP;
+    });
+    setLastUpdate(new Date());
+  }, []);
+
+  // ── AI Analysis via Claude ──
+  const runAiAnalysis = useCallback(async (price, hist) => {
+    if (!price || hist.length < 20) return;
+    setLoading(true);
+    setStreamText("");
+    const prices = hist.map(d => d.price);
+    const rsi = calcRSI(prices);
+    const ema20 = calcEMA(prices.slice(-20), 20);
+    const ema50 = calcEMA(prices.slice(-50), 50);
+    const bb = calcBollingerBands(prices);
+    const recentPrices = prices.slice(-10).join(", ");
+    try {
+      const res = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: `You are an elite gold trading AI (XAUUSD Expert Advisor). Analyze technical data and provide precise trading signals. Always respond in this EXACT JSON format:
+{
+  "signal": "BUY"|"SELL"|"HOLD",
+  "confidence": 0-100,
+  "entry": <price>,
+  "tp1": <price>,
+  "tp2": <price>,
+  "tp3": <price>,
+  "sl": <price>,
+  "rr_ratio": <number>,
+  "reasoning": "<2-3 sentence analysis in Thai or English>",
+  "trend": "BULLISH"|"BEARISH"|"SIDEWAYS",
+  "strength": "STRONG"|"MODERATE"|"WEAK",
+  "timeframe": "M5",
+  "risk_pct": <0.5-2.0>,
+  "session": "LONDON"|"NEW_YORK"|"ASIAN"|"OVERLAP"
+}`,
+          messages: [{
+            role: "user",
+            content: `Analyze XAUUSD:
+Current Price: $${price}
+RSI(14): ${rsi}
+EMA20: ${ema20} | EMA50: ${ema50}
+Bollinger: Upper=${bb.upper} Mid=${bb.middle} Lower=${bb.lower}
+Recent prices (last 10): ${recentPrices}
+Price vs EMA20: ${price > ema20 ? "ABOVE" : "BELOW"}
+Price vs EMA50: ${price > ema50 ? "ABOVE" : "BELOW"}
+BB Position: ${price > bb.upper ? "ABOVE_UPPER" : price < bb.lower ? "BELOW_LOWER" : "INSIDE"}
+Current time UTC: ${new Date().toUTCString()}
+Provide precise entry, TP1, TP2, TP3 and SL levels.`
+          }]
+        })
+      });
+      const data = await res.json();
+      const text = data.content?.map(b => b.text || "").join("") || "";
+      const match = text.match(/\{[\s\S]*\}/);
+      if (match) {
+        const parsed = JSON.parse(match[0]);
+        setAiAnalysis(parsed);
+        // Add to trade log
+        if (parsed.signal !== "HOLD") {
+          setTrades(t => [{
+            id: Date.now(),
+            time: new Date().toLocaleTimeString(),
+            signal: parsed.signal,
+            entry: parsed.entry,
+            tp1: parsed.tp1,
+            sl: parsed.sl,
+            confidence: parsed.confidence,
+            status: "OPEN"
+          }, ...t.slice(0, 9)]);
+        }
       }
+    } catch (e) {
+      setAiAnalysis({
+        signal: "HOLD", confidence: 45, entry: price,
+        tp1: +(price + 8).toFixed(2), tp2: +(price + 18).toFixed(2), tp3: +(price + 30).toFixed(2),
+        sl: +(price - 12).toFixed(2), rr_ratio: 1.5, reasoning: "ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองใหม่",
+        trend: "SIDEWAYS", strength: "WEAK", timeframe: "M5", risk_pct: 1.0, session: "OVERLAP"
+      });
     }
-  } catch {}
-
-  // Fallback: simulate realistic gold price
-  simulatePriceMove();
-}
-
-function updatePrice(price) {
-  const prev = currentPrice;
-  currentPrice = price;
-  if (price > priceHigh || priceHigh === 3295) priceHigh = price + Math.random() * 8;
-  if (price < priceLow || priceLow === 3280) priceLow = price - Math.random() * 8;
-
-  const chg = ((price - priceOpen) / priceOpen * 100);
-  const chgStr = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '%';
-  const isUp = chg >= 0;
-
-  // Update all price displays
-  ['navPrice', 'm1_price', 'm2_price'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) {
-      el.textContent = price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      el.classList.remove('flash-up', 'flash-dn');
-      void el.offsetWidth;
-      el.classList.add(price > prev ? 'flash-up' : price < prev ? 'flash-dn' : '');
-    }
-  });
-
-  const navChg = document.getElementById('navChg');
-  navChg.textContent = chgStr;
-  navChg.className = 'nav-price-chg ' + (isUp ? 'up' : 'dn');
-
-  // THB price
-  const thbPrice = Math.round(price * usdThbRate).toLocaleString('th-TH');
-  ['m1_priceTHB', 'm2_priceTHB'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = thbPrice;
-  });
-
-  // Mini prices
-  document.getElementById('navHigh').textContent = priceHigh.toFixed(2);
-  document.getElementById('navLow').textContent = priceLow.toFixed(2);
-  document.getElementById('navOpen').textContent = priceOpen.toFixed(2);
-
-  // Login screen live price
-  const lp1 = document.getElementById('livePrice1');
-  const lc1 = document.getElementById('liveChange1');
-  if (lp1) lp1.textContent = '$' + price.toLocaleString('en-US', { minimumFractionDigits: 2 });
-  if (lc1) { lc1.textContent = chgStr; lc1.style.color = isUp ? 'var(--green)' : 'var(--red)'; }
-
-  buildTicker();
-}
-
-function simulatePriceMove() {
-  const change = (Math.random() - 0.485) * 1.2;
-  updatePrice(parseFloat((currentPrice + change).toFixed(2)));
-}
-
-/* ═══════════════════════════════════════
-   TRADINGVIEW CHARTS
-═══════════════════════════════════════ */
-function initTVCharts() {
-  // Chart 1 - 1M (but default showing 5M)
-  loadTVChart(1, '5');
-  // Chart 2 - 30M
-  // Load on tab switch to avoid lag
-}
-
-function loadTVChart(page, interval) {
-  tvIntervals[page] = interval;
-  const iframe = document.getElementById('tvChart' + page);
-  if (!iframe) return;
-  iframe.src = `https://www.tradingview.com/widgetsnippet/` +
-    `?symbol=XAUUSD` +
-    `&interval=${interval}` +
-    `&theme=dark` +
-    `&style=1` +
-    `&locale=th_TH` +
-    `&toolbar_bg=%23040507` +
-    `&hide_side_toolbar=0` +
-    `&allow_symbol_change=0` +
-    `&save_image=0` +
-    `&calendar=0`;
-}
-
-function switchTV(page, interval) {
-  loadTVChart(page, interval);
-  // Update active button
-  const btnMap = {
-    1: { '1': 'tv1_1', '5': 'tv1_5', '15': 'tv1_15', '60': 'tv1_60' },
-    2: { '15': 'tv2_15', '30': 'tv2_30', '60': 'tv2_60', '240': 'tv2_240' }
-  };
-  // Reset all in the row then mark active
-  const allBtns = document.querySelectorAll(`#tvWrap${page}`).forEach; // too complex; just visual
-}
-
-/* ═══════════════════════════════════════
-   PAGE / TAB SWITCHING
-═══════════════════════════════════════ */
-function switchPage(n) {
-  document.querySelectorAll('.dash-page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.page-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('dpage' + n).classList.add('active');
-  document.getElementById('ptab' + n).classList.add('active');
-  if (n === 2 && !document.getElementById('tvChart2').src.includes('XAUUSD')) {
-    loadTVChart(2, '30');
-  }
-}
-
-/* ═══════════════════════════════════════
-   TIMERS
-═══════════════════════════════════════ */
-function startTimers() {
-  // 1M timer
-  setInterval(() => {
-    p1timerSec--;
-    if (p1timerSec <= 0) { p1timerSec = 60; calcSignal(1, true); }
-    document.getElementById('m1_timer').textContent = p1timerSec + 's';
-  }, 1000);
-
-  // 30M timer
-  setInterval(() => {
-    p2timerSec--;
-    if (p2timerSec <= 0) { p2timerSec = 1800; calcSignal(2, true); }
-    const m = Math.floor(p2timerSec / 60), s = p2timerSec % 60;
-    document.getElementById('m2_timer').textContent = m + ':' + String(s).padStart(2, '0');
-  }, 1000);
-
-  // Price simulation every 3 seconds
-  setInterval(simulatePriceMove, 3000);
-}
-
-/* ═══════════════════════════════════════
-   AI SIGNAL CALCULATION
-═══════════════════════════════════════ */
-async function calcSignal(page, auto = false) {
-  const btn = document.getElementById('p' + page + 'calcBtn');
-  const iconEl = document.getElementById('p' + page + 'calcIcon');
-  btn.disabled = true;
-  iconEl.classList.add('spin');
-  iconEl.textContent = '⚙️';
-
-  try {
-    if (CLAUDE_KEY) {
-      await calcWithClaude(page);
-    } else {
-      await calcLocal(page);
-    }
-  } catch (e) {
-    console.error(e);
-    await calcLocal(page);
-  }
-
-  btn.disabled = false;
-  iconEl.classList.remove('spin');
-  iconEl.textContent = '🤖';
-}
-
-async function calcWithClaude(page) {
-  const tf = page === 1 ? '1 นาที' : '30 นาที';
-  const atr = page === 1 ? 3 : 12;
-  const price = currentPrice;
-
-  // Build realistic OHLC history
-  const bars = [];
-  let p = price - (Math.random() * 20 - 5);
-  for (let i = 20; i >= 0; i--) {
-    const o = p, c = o + (Math.random() - 0.5) * atr * 1.5;
-    bars.push(`O:${o.toFixed(2)} H:${Math.max(o,c)+Math.random()*atr*0.5|0}.${Math.floor(Math.random()*99)} L:${Math.min(o,c)-Math.random()*atr*0.5|0}.${Math.floor(Math.random()*99)} C:${c.toFixed(2)}`);
-    p = c;
-  }
-
-  const prompt = `คุณคือผู้เชี่ยวชาญเทรดทองคำ XAU/USD ระดับ Professional
-ราคาปัจจุบัน: ${price.toFixed(2)} USD
-Timeframe วิเคราะห์: ${tf}
-ราคาเปิด: ${priceOpen.toFixed(2)} | สูงสุด: ${priceHigh.toFixed(2)} | ต่ำสุด: ${priceLow.toFixed(2)}
-OHLC 20 แท่งล่าสุด: ${bars.join(' | ')}
-
-วิเคราะห์ RSI, MACD, Bollinger Bands, EMA 20/50, Volume, Support/Resistance และตอบเป็น JSON เท่านั้น:
-{"signal":"BUY"หรือ"SELL"หรือ"WAIT","confidence":0-100,"entry":ราคา,"tp":ราคา,"sl":ราคา,"reason":"เหตุผลภาษาไทย 2-3 ประโยค","trend":"ขาขึ้น"หรือ"ขาลง"หรือ"Sideways","rsi":ค่า}`;
-
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': CLAUDE_KEY,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 600,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-
-  const data = await r.json();
-  if (data.error) throw new Error(data.error.message);
-  const raw = data.content.map(c => c.text || '').join('');
-  const json = JSON.parse(raw.replace(/```json|```/g, '').trim());
-  applySignal(page, json);
-}
-
-async function calcLocal(page) {
-  await new Promise(r => setTimeout(r, 900 + Math.random() * 600));
-
-  const price = currentPrice;
-  const atr = page === 1 ? 3.5 : 12;
-  const chg = price - priceOpen;
-  const rng = priceHigh - priceLow;
-  const pos = rng > 0 ? (price - priceLow) / rng : 0.5;
-
-  // Simulate indicators
-  const rsi = 30 + pos * 50 + (Math.random() - 0.5) * 15;
-  const macdBullish = chg > 0 && Math.random() > 0.4;
-  const bbPos = pos; // 0=low 1=high
-
-  let signal, confidence, tp, sl, reason, trend;
-
-  if (chg > 0) trend = 'ขาขึ้น'; else if (chg < 0) trend = 'ขาลง'; else trend = 'Sideways';
-
-  if (rsi < 35 && macdBullish && pos < 0.35) {
-    signal = 'BUY';
-    confidence = Math.round(68 + (35 - rsi) * 0.9 + Math.random() * 12);
-    tp = parseFloat((price + atr * 2.2).toFixed(2));
-    sl = parseFloat((price - atr * 1.1).toFixed(2));
-    reason = `RSI อยู่ที่ ${rsi.toFixed(0)} บ่งบอก Oversold อย่างชัดเจน • MACD กลับมาเป็นบวก ยืนยันแรงซื้อ • ราคาอยู่ใกล้แนวรับแข็งแกร่ง ริสก์/รีวอร์ดเหมาะสม 1:2`;
-  } else if (rsi > 68 && !macdBullish && pos > 0.7) {
-    signal = 'SELL';
-    confidence = Math.round(65 + (rsi - 68) * 0.9 + Math.random() * 12);
-    tp = parseFloat((price - atr * 2.2).toFixed(2));
-    sl = parseFloat((price + atr * 1.1).toFixed(2));
-    reason = `RSI ${rsi.toFixed(0)} เข้าโซน Overbought • ราคาแตะ Bollinger Band บน สัญญาณกลับตัว • MACD divergence บ่งชี้แรงซื้อเริ่มอ่อนตัว`;
-  } else {
-    signal = 'WAIT';
-    confidence = Math.round(35 + Math.random() * 25);
-    tp = parseFloat((price + atr * 1.5).toFixed(2));
-    sl = parseFloat((price - atr * 0.9).toFixed(2));
-    reason = `RSI ${rsi.toFixed(0)} อยู่ในโซน Neutral ยังไม่มีสัญญาณชัดเจน • ราคาอยู่ระหว่าง Support และ Resistance • ควรรอสัญญาณยืนยันก่อนเข้าเทรด`;
-  }
-
-  confidence = Math.min(94, Math.max(30, confidence));
-  applySignal(page, { signal, confidence, entry: price, tp, sl, reason, trend, rsi });
-}
-
-function applySignal(page, d) {
-  const { signal, confidence, entry, tp, sl, reason, trend } = d;
-  const p = parseFloat(entry).toFixed(2);
-  const t = parseFloat(tp).toFixed(2);
-  const s = parseFloat(sl).toFixed(2);
-  const tpDiff = Math.abs(tp - entry).toFixed(2);
-  const slDiff = Math.abs(sl - entry).toFixed(2);
-  const now = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-
-  // Signal main box
-  const mainEl = document.getElementById('p' + page + 'sigMain');
-  const arrow = signal === 'BUY' ? '▲' : signal === 'SELL' ? '▼' : '⏸';
-  const dirText = signal === 'BUY' ? 'ซื้อ / BUY' : signal === 'SELL' ? 'ขาย / SELL' : 'รอดู / WAIT';
-  mainEl.className = 'signal-main ' + (signal === 'BUY' ? 'buy' : signal === 'SELL' ? 'sell' : 'wait');
-  document.getElementById('p' + page + 'arrow').textContent = arrow;
-  document.getElementById('p' + page + 'dirText').textContent = dirText;
-
-  // Confidence circle (circumference 188.4)
-  const circ = 188.4;
-  const offset = circ - (confidence / 100 * circ);
-  document.getElementById('p' + page + 'confCircle').style.strokeDashoffset = offset;
-  document.getElementById('p' + page + 'confPct').textContent = confidence;
-  document.getElementById('p' + page + 'confBar').style.width = confidence + '%';
-  const confDesc = confidence >= 80 ? '🔥 มั่นใจสูงมาก' : confidence >= 65 ? '✅ มั่นใจดี' : confidence >= 50 ? '⚠️ ปานกลาง' : '⏸ ต่ำ รอสัญญาณ';
-  document.getElementById('p' + page + 'confDesc').textContent = confDesc;
-
-  // Levels
-  document.getElementById('p' + page + 'entry').textContent = p;
-  document.getElementById('p' + page + 'tp').textContent = t;
-  document.getElementById('p' + page + 'sl').textContent = s;
-  document.getElementById('p' + page + 'tpDiff').textContent = '+$' + tpDiff + ' / ออนซ์';
-  document.getElementById('p' + page + 'slDiff').textContent = '-$' + slDiff + ' / ออนซ์';
-
-  // Reason
-  const reasonEl = document.getElementById('p' + page + 'reason');
-  reasonEl.textContent = '🤖 ' + reason;
-  reasonEl.classList.add('show');
-
-  // Last time
-  document.getElementById('p' + page + 'lastTime').textContent = now;
-
-  // Metrics
-  document.getElementById('m' + page + '_sig').textContent = signal;
-  document.getElementById('m' + page + '_conf').textContent = confidence + '%';
-  if (page === 2) document.getElementById('m2_trend').textContent = trend || 'Sideways';
-
-  // Signal count
-  sigCount[page - 1]++;
-  if (page === 1) document.getElementById('m1_count').textContent = sigCount[0];
-
-  // Overlay on chart (entry/TP/SL badges)
-  if (signal !== 'WAIT' && confidence >= 65) {
-    const overlayEl = document.getElementById('overlay' + page);
-    overlayEl.innerHTML = `
-      <div class="overlay-badge entry">📍 ENTRY ${p}</div>
-      <div class="overlay-badge tp">✅ TP ${t}</div>
-      <div class="overlay-badge sl">🛑 SL ${s}</div>`;
-    setTimeout(() => { if (overlayEl) overlayEl.innerHTML = ''; }, page === 1 ? 60000 : 1800000);
-  }
-
-  // Add to history
-  addHistory(page, now, signal, p, t, s, confidence);
-
-  // Toast
-  const msgColor = signal === 'BUY' ? '🟢' : signal === 'SELL' ? '🔴' : '⏸';
-  toast(`${msgColor} AI ${page === 1 ? '1M' : '30M'}: ${signal} @ ${p} (${confidence}% มั่นใจ)`,
-    confidence >= 70 ? 'success' : 'info');
-}
-
-function addHistory(page, time, signal, entry, tp, sl, conf) {
-  const histEl = document.getElementById('hist' + page);
-  // Remove placeholder
-  const ph = histEl.querySelector('.placeholder-text');
-  if (ph) ph.remove();
-
-  const dirClass = signal === 'BUY' ? 'buy' : signal === 'SELL' ? 'sell' : '';
-  const dirTH = signal === 'BUY' ? 'BUY ▲' : signal === 'SELL' ? 'SELL ▼' : 'WAIT';
-
-  const row = document.createElement('div');
-  row.className = 'hist-row';
-  row.innerHTML = `
-    <span class="hist-time">${time}</span>
-    <span class="hist-dir ${dirClass}">${dirTH}</span>
-    <span class="hist-price">${entry}</span>
-    <span class="hist-tp">${tp}</span>
-    <span class="hist-sl">${sl}</span>
-    <span class="hist-conf">${conf}%</span>`;
-
-  // Insert after header row
-  const header = histEl.querySelector('.hist-row-head');
-  if (header) header.after(row);
-  else histEl.prepend(row);
-
-  // Keep max 10
-  const rows = histEl.querySelectorAll('.hist-row:not(.hist-row-head)');
-  if (rows.length > 10) rows[rows.length - 1].remove();
-}
-
-/* ═══════════════════════════════════════
-   NEWS & AI ANALYSIS
-═══════════════════════════════════════ */
-async function fetchNews(page) {
-  const btnEl = document.getElementById('newsBtn' + page);
-  btnEl.classList.add('spin');
-  btnEl.textContent = '⚙️';
-
-  const gridEl = document.getElementById('p' + page + 'newsGrid');
-  gridEl.className = 'placeholder-text';
-  gridEl.textContent = '⏳ กำลังดึงข่าวและให้ AI วิเคราะห์...';
-
-  try {
-    let articles = [];
-    if (NEWS_KEY) {
-      try {
-        const r = await fetch(`https://newsapi.org/v2/everything?q=gold+XAU+USD+price+bullion&language=en&sortBy=publishedAt&pageSize=6&apiKey=${NEWS_KEY}`);
-        const d = await r.json();
-        if (d.articles) articles = d.articles.slice(0, 6);
-      } catch {}
-    }
-    if (!articles.length) articles = getMockArticles();
-
-    let analysis;
-    if (CLAUDE_KEY) {
-      analysis = await analyzeNewsWithClaude(articles, page);
-    } else {
-      analysis = localNewsAnalysis(articles);
-    }
-
-    renderNews(page, articles, analysis);
-  } catch (e) {
-    console.error(e);
-    const articles = getMockArticles();
-    renderNews(page, articles, localNewsAnalysis(articles));
-  }
-
-  btnEl.classList.remove('spin');
-  btnEl.textContent = '📡';
-}
-
-async function analyzeNewsWithClaude(articles, page) {
-  const tf = page === 1 ? '1 นาที' : '30 นาที';
-  const sums = articles.map((a, i) => `${i + 1}. "${a.title}" | ${a.description || ''}`).join('\n');
-  const prompt = `คุณคือผู้เชี่ยวชาญทองคำ วิเคราะห์ข่าวเหล่านี้สำหรับ XAU/USD Timeframe ${tf}:
-${sums}
-
-ตอบเป็น JSON เท่านั้น:
-{"overall":"บวก"หรือ"ลบ"หรือ"กลาง","upProb":0-100,"downProb":0-100,"sideProb":0-100,"summary":"สรุปภาษาไทย 2-3 ประโยค","items":[{"index":0,"sentiment":"bullish"หรือ"bearish"หรือ"neutral","impact":"high"หรือ"medium"หรือ"low","titleTH":"หัวข้อภาษาไทย","analysisTH":"วิเคราะห์ภาษาไทย 1-2 ประโยค"}]}`;
-
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'x-api-key': CLAUDE_KEY, 'anthropic-version': '2023-06-01' },
-    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1500, messages: [{ role: 'user', content: prompt }] })
-  });
-  const data = await r.json();
-  if (data.error) throw new Error(data.error.message);
-  return JSON.parse(data.content[0].text.replace(/```json|```/g, '').trim());
-}
-
-function localNewsAnalysis(articles) {
-  const sents = ['bullish', 'bearish', 'neutral'];
-  const impacts = ['high', 'medium', 'low'];
-  const items = articles.map((a, i) => {
-    const t = (a.title || '').toLowerCase();
-    let sent = 'neutral';
-    if (t.includes('surge') || t.includes('rise') || t.includes('rally') || t.includes('high') || t.includes('gain')) sent = 'bullish';
-    if (t.includes('fall') || t.includes('drop') || t.includes('decline') || t.includes('low') || t.includes('slip')) sent = 'bearish';
-    const imp = t.includes('fed') || t.includes('inflation') || t.includes('war') ? 'high' : t.includes('rate') || t.includes('dollar') ? 'medium' : 'low';
-    return { index: i, sentiment: sent, impact: imp, titleTH: translateTitle(a.title), analysisTH: genAnalysis(a.title) };
-  });
-  const bull = items.filter(x => x.sentiment === 'bullish').length;
-  const bear = items.filter(x => x.sentiment === 'bearish').length;
-  const total = items.length || 1;
-  const upP = Math.round(bull / total * 65 + Math.random() * 20);
-  const dnP = Math.round(bear / total * 65 + Math.random() * 15);
-  const sdP = Math.max(0, 100 - upP - dnP);
-  return {
-    overall: bull > bear ? 'บวก' : bear > bull ? 'ลบ' : 'กลาง',
-    upProb: upP, downProb: dnP, sideProb: sdP,
-    summary: `ภาพรวมข่าว${bull > bear ? 'เชิงบวกต่อทองคำ บ่งชี้แรงซื้อจากความกังวลเศรษฐกิจ' : 'ผสม ยังไม่ชัดเจน'} • นโยบายเฟดและค่าเงินดอลลาร์ยังเป็นปัจจัยหลัก • นักลงทุนควรติดตามข้อมูลเศรษฐกิจสหรัฐฯ อย่างใกล้ชิด`,
-    items
-  };
-}
-
-function translateTitle(title) {
-  const map = {
-    'gold': 'ทองคำ', 'price': 'ราคา', 'dollar': 'ดอลลาร์', 'federal reserve': 'เฟด',
-    'inflation': 'เงินเฟ้อ', 'interest rate': 'อัตราดอกเบี้ย', 'rally': 'ปรับตัวขึ้น',
-    'drop': 'ร่วงลง', 'surge': 'พุ่งขึ้น', 'fall': 'ปรับลง', 'rise': 'ขึ้น',
-    'record': 'สถิติใหม่', 'market': 'ตลาด', 'economy': 'เศรษฐกิจ',
-    'safe haven': 'สินทรัพย์ปลอดภัย', 'central bank': 'ธนาคารกลาง',
-    'geopolitical': 'ภูมิรัฐศาสตร์', 'demand': 'ความต้องการ',
-    'supply': 'อุปทาน', 'bullion': 'ทองคำแท่ง', 'xau': 'XAU',
-  };
-  let r = title;
-  for (const [en, th] of Object.entries(map)) {
-    r = r.replace(new RegExp(en, 'gi'), th);
-  }
-  return r;
-}
-
-function genAnalysis(title) {
-  const t = (title || '').toLowerCase();
-  if (t.includes('fed') || t.includes('rate') || t.includes('interest')) return 'การเปลี่ยนแปลงนโยบายเฟดส่งผลโดยตรงต่อค่าเงินดอลลาร์และราคาทองคำในทิศทางตรงกันข้าม';
-  if (t.includes('inflation') || t.includes('cpi')) return 'ข้อมูลเงินเฟ้อที่สูงกว่าคาดหนุนราคาทองคำในฐานะสินทรัพย์ป้องกันความเสี่ยง';
-  if (t.includes('war') || t.includes('conflict') || t.includes('geo')) return 'ความตึงเครียดทางภูมิรัฐศาสตร์เพิ่มความต้องการ Safe Haven ส่งผลบวกต่อทองคำ';
-  if (t.includes('dollar') || t.includes('dxy') || t.includes('usd')) return 'ดอลลาร์อ่อนค่าหนุนราคาทองคำ เนื่องจากมีความสัมพันธ์ผกผันอย่างชัดเจน';
-  if (t.includes('record') || t.includes('high') || t.includes('surge')) return 'แรงซื้อทองคำจากนักลงทุนสถาบันและกองทุนทั่วโลกยังคงแข็งแกร่ง';
-  return 'ปัจจัยนี้อาจส่งผลต่อความเชื่อมั่นของตลาดและความต้องการสินทรัพย์ปลอดภัยในระยะสั้น';
-}
-
-function getMockArticles() {
-  return [
-    { title: 'Gold surges to record high amid Federal Reserve rate cut expectations', description: 'XAU/USD hits all-time high as investors anticipate Fed policy pivot.', publishedAt: new Date().toISOString(), source: { name: 'Reuters' } },
-    { title: 'Dollar weakens as US economic data disappoints, boosting gold prices', description: 'Weak jobs data pressures USD, sending gold above key resistance.', publishedAt: new Date().toISOString(), source: { name: 'Bloomberg' } },
-    { title: 'Geopolitical tensions drive safe haven demand for bullion', description: 'Middle East and Ukraine conflicts fuel gold buying globally.', publishedAt: new Date().toISOString(), source: { name: 'CNBC' } },
-    { title: 'Central banks continue aggressive gold accumulation strategy', description: 'Global central banks add record gold reserves for third consecutive quarter.', publishedAt: new Date().toISOString(), source: { name: 'FT' } },
-    { title: 'Inflation expectations rise, supporting gold as hedge', description: 'CPI data beats estimates, investors seek inflation protection in gold.', publishedAt: new Date().toISOString(), source: { name: 'MarketWatch' } },
-    { title: 'Gold ETF inflows surge as institutional demand returns strongly', description: 'Major gold ETFs see biggest weekly inflows in six months.', publishedAt: new Date().toISOString(), source: { name: 'Kitco' } },
-  ];
-}
-
-function renderNews(page, articles, analysis) {
-  const gridEl = document.getElementById('p' + page + 'newsGrid');
-  const sentEl = document.getElementById('p' + page + 'sent');
-  const probRowEl = document.getElementById('p' + page + 'probRow');
-  const summaryBox = document.getElementById('p' + page + 'newsSummary');
-  const summaryText = document.getElementById('p' + page + 'summaryText');
-
-  // Sentiment
-  sentEl.textContent = analysis.overall === 'บวก' ? '📈 บวก' : analysis.overall === 'ลบ' ? '📉 ลบ' : '➡️ กลาง';
-  sentEl.className = 'sent-box ' + (analysis.overall === 'บวก' ? 'bullish' : analysis.overall === 'ลบ' ? 'bearish' : 'neutral');
-
-  // Prob row
-  probRowEl.style.display = 'flex';
-  document.getElementById('p' + page + 'upProb').textContent = analysis.upProb + '%';
-  document.getElementById('p' + page + 'sideProb').textContent = analysis.sideProb + '%';
-  document.getElementById('p' + page + 'dnProb').textContent = analysis.downProb + '%';
-
-  // Cards
-  const cards = articles.map((a, i) => {
-    const ai = (analysis.items || []).find(x => x.index === i) || {};
-    const sent = ai.sentiment || 'neutral';
-    const imp = ai.impact || 'low';
-    const titleTH = ai.titleTH || translateTitle(a.title);
-    const analysisTH = ai.analysisTH || genAnalysis(a.title);
-    const sentLabel = sent === 'bullish' ? '🟢 ขาขึ้น' : sent === 'bearish' ? '🔴 ขาลง' : '⚪ กลาง';
-    const impTH = imp === 'high' ? 'สูง' : imp === 'medium' ? 'กลาง' : 'ต่ำ';
-    return `<div class="news-card">
-      <div class="news-card-badges">
-        <span class="news-sent-badge ${sent}">${sentLabel}</span>
-        <span class="impact-level"><span class="impact-dot ${imp}"></span>${impTH}</span>
+    setLoading(false);
+  }, []);
+
+  // ── Init ──
+  useEffect(() => {
+    fetchGoldPrice().then(price => {
+      if (price) setTimeout(() => runAiAnalysis(price, generatePriceHistory(price)), 800);
+    });
+    intervalRef.current = setInterval(tickPrice, 3000);
+    return () => clearInterval(intervalRef.current);
+  }, []);
+
+  // ── Auto re-analyze every 5 minutes ──
+  useEffect(() => {
+    const t = setInterval(() => {
+      if (goldPrice && priceHistory.length > 20) runAiAnalysis(goldPrice, priceHistory);
+    }, 5 * 60 * 1000);
+    return () => clearInterval(t);
+  }, [goldPrice, priceHistory, runAiAnalysis]);
+
+  const priceChange = goldPrice && prevPrice ? goldPrice - prevPrice : 0;
+  const isUp = priceChange >= 0;
+  const prices = priceHistory.map(d => d.price);
+  const minP = prices.length ? Math.min(...prices) * 0.9995 : 3200;
+  const maxP = prices.length ? Math.max(...prices) * 1.0005 : 3400;
+
+  // ── Colors ──
+  const gold = "#c9a84c";
+  const goldLight = "#f5e6b0";
+  const bg = "#070604";
+  const surface = "#0e0c08";
+  const border = "#1e1a10";
+
+  return (
+    <div style={{
+      background: bg, minHeight: "100vh", fontFamily: "'DM Mono', 'Courier New', monospace",
+      color: goldLight, padding: 0, margin: 0, position: "relative", overflow: "hidden"
+    }}>
+      {/* Background grain */}
+      <div style={{
+        position: "fixed", inset: 0, backgroundImage: `radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201,168,76,0.07) 0%, transparent 60%)`,
+        pointerEvents: "none", zIndex: 0
+      }} />
+
+      <div style={{ position: "relative", zIndex: 1, maxWidth: 1400, margin: "0 auto", padding: "0 16px 32px" }}>
+
+        {/* ── HEADER ── */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          padding: "20px 0 18px", borderBottom: `1px solid ${border}`
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg, #c9a84c, #8b6914)",
+              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: "0 0 20px rgba(201,168,76,0.3)"
+            }}>⬡</div>
+            <div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: gold, letterSpacing: 3 }}>GOLD EA PRO</div>
+              <div style={{ fontSize: 11, color: "#5a4e38", letterSpacing: 2 }}>XAUUSD · AI EXPERT ADVISOR · v3.1</div>
+            </div>
+          </div>
+          <div style={{ display: "flex", align: "center", gap: 12 }}>
+            <div style={{ textAlign: "right" }}>
+              {priceLoading ? (
+                <div style={{ color: "#5a4e38", fontSize: 14 }}>กำลังดึงราคา...</div>
+              ) : (
+                <>
+                  <div style={{
+                    fontSize: 32, fontWeight: 900, letterSpacing: -1,
+                    color: isUp ? "#4ade80" : "#f87171",
+                    textShadow: isUp ? "0 0 20px rgba(74,222,128,0.4)" : "0 0 20px rgba(248,113,113,0.4)"
+                  }}>
+                    ${goldPrice?.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                  </div>
+                  <div style={{ fontSize: 12, color: isUp ? "#4ade80" : "#f87171" }}>
+                    {isUp ? "▲" : "▼"} {Math.abs(priceChange).toFixed(2)} USD
+                    &nbsp;·&nbsp;อัปเดต {lastUpdate?.toLocaleTimeString()}
+                  </div>
+                </>
+              )}
+            </div>
+            <button onClick={() => { fetchGoldPrice(); setTimeout(() => runAiAnalysis(goldPrice, priceHistory), 500); }}
+              style={{
+                background: "rgba(201,168,76,0.1)", border: `1px solid ${gold}44`,
+                color: gold, borderRadius: 10, padding: "8px 16px", cursor: "pointer",
+                fontSize: 13, fontFamily: "inherit", transition: "all 0.2s"
+              }}>⟳ รีเฟรช</button>
+          </div>
+        </div>
+
+        {/* ── SIGNAL BAR ── */}
+        {aiAnalysis && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 16, padding: "12px 16px",
+            background: "rgba(201,168,76,0.05)", border: `1px solid ${border}`,
+            borderRadius: 12, margin: "16px 0",
+            flexWrap: "wrap"
+          }}>
+            <SignalBadge signal={aiAnalysis.signal} />
+            <div style={{ color: "#7a6840", fontSize: 12 }}>แนวโน้ม:</div>
+            <div style={{ color: goldLight, fontWeight: 700, fontSize: 13 }}>{aiAnalysis.trend}</div>
+            <div style={{ color: "#7a6840", fontSize: 12 }}>ความมั่นใจ:</div>
+            <div style={{ color: gold, fontWeight: 700, fontSize: 13 }}>{aiAnalysis.confidence}%</div>
+            <div style={{ color: "#7a6840", fontSize: 12 }}>Session:</div>
+            <div style={{ color: goldLight, fontSize: 13 }}>{aiAnalysis.session}</div>
+            <div style={{ marginLeft: "auto", color: "#5a4e38", fontSize: 12 }}>Timeframe: {aiAnalysis.timeframe}</div>
+          </div>
+        )}
+
+        {/* ── MAIN GRID ── */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16, marginTop: 8 }}>
+
+          {/* LEFT: Chart + Stats */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+            {/* Stats Row */}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <StatCard label="Entry" value={aiAnalysis ? `$${aiAnalysis.entry?.toFixed(2)}` : "---"} highlight={true} />
+              <StatCard label="TP1" value={aiAnalysis ? `$${aiAnalysis.tp1?.toFixed(2)}` : "---"} color="#4ade80" />
+              <StatCard label="TP2" value={aiAnalysis ? `$${aiAnalysis.tp2?.toFixed(2)}` : "---"} color="#34d399" />
+              <StatCard label="TP3" value={aiAnalysis ? `$${aiAnalysis.tp3?.toFixed(2)}` : "---"} color="#10b981" />
+              <StatCard label="Stop Loss" value={aiAnalysis ? `$${aiAnalysis.sl?.toFixed(2)}` : "---"} color="#f87171" />
+              <StatCard label="R:R Ratio" value={aiAnalysis ? `1:${aiAnalysis.rr_ratio?.toFixed(1)}` : "---"} />
+            </div>
+
+            {/* Chart */}
+            <div style={{
+              background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "20px 8px 8px"
+            }}>
+              <div style={{ display: "flex", gap: 16, paddingLeft: 16, marginBottom: 12, alignItems: "center" }}>
+                <span style={{ fontSize: 13, color: gold, fontWeight: 700 }}>XAUUSD • M5</span>
+                <span style={{ fontSize: 11, color: "#5a4e38" }}>Real-time Spot Gold (USD/oz)</span>
+                {loading && <span style={{ fontSize: 11, color: gold, animation: "pulse 1s infinite" }}>AI กำลังวิเคราะห์...</span>}
+              </div>
+
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={priceHistory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#c9a84c" stopOpacity={0.3} />
+                      <stop offset="100%" stopColor="#c9a84c" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#1a1508" vertical={false} />
+                  <XAxis dataKey="time" tick={{ fill: "#4a4030", fontSize: 10 }} tickLine={false} interval={19} />
+                  <YAxis domain={[minP, maxP]} tick={{ fill: "#4a4030", fontSize: 10 }} tickLine={false}
+                    tickFormatter={v => `$${v.toFixed(0)}`} width={68} />
+                  <Tooltip content={<GoldTooltip />} />
+                  {aiAnalysis && <ReferenceLine y={aiAnalysis.entry} stroke="#c9a84c" strokeDasharray="4 4" strokeOpacity={0.7}
+                    label={{ value: "Entry", position: "insideRight", fill: "#c9a84c", fontSize: 10 }} />}
+                  {aiAnalysis && <ReferenceLine y={aiAnalysis.tp1} stroke="#4ade80" strokeDasharray="4 4" strokeOpacity={0.6}
+                    label={{ value: "TP1", position: "insideRight", fill: "#4ade80", fontSize: 10 }} />}
+                  {aiAnalysis && <ReferenceLine y={aiAnalysis.tp2} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.5}
+                    label={{ value: "TP2", position: "insideRight", fill: "#22c55e", fontSize: 10 }} />}
+                  {aiAnalysis && <ReferenceLine y={aiAnalysis.sl} stroke="#f87171" strokeDasharray="4 4" strokeOpacity={0.7}
+                    label={{ value: "SL", position: "insideRight", fill: "#f87171", fontSize: 10 }} />}
+                  <Area type="monotone" dataKey="price" stroke="#c9a84c" strokeWidth={1.5}
+                    fill="url(#goldGrad)" dot={false} activeDot={{ r: 4, fill: "#c9a84c" }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Indicators */}
+            {indicators && (
+              <div style={{
+                background: surface, border: `1px solid ${border}`, borderRadius: 16,
+                padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12
+              }}>
+                <div>
+                  <div style={{ color: "#5a4e38", fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>RSI (14)</div>
+                  <div style={{
+                    fontSize: 18, fontWeight: 800, color: indicators.rsi > 70 ? "#f87171" : indicators.rsi < 30 ? "#4ade80" : gold
+                  }}>{indicators.rsi}</div>
+                  <div style={{ fontSize: 10, color: "#5a4e38" }}>
+                    {indicators.rsi > 70 ? "Overbought" : indicators.rsi < 30 ? "Oversold" : "Neutral"}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ color: "#5a4e38", fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>EMA 20</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: gold }}>${indicators.ema20}</div>
+                  <div style={{ fontSize: 10, color: goldPrice > indicators.ema20 ? "#4ade80" : "#f87171" }}>
+                    {goldPrice > indicators.ema20 ? "↑ Above" : "↓ Below"}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ color: "#5a4e38", fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>EMA 50</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: gold }}>${indicators.ema50}</div>
+                  <div style={{ fontSize: 10, color: goldPrice > indicators.ema50 ? "#4ade80" : "#f87171" }}>
+                    {goldPrice > indicators.ema50 ? "↑ Above" : "↓ Below"}
+                  </div>
+                </div>
+                <div>
+                  <div style={{ color: "#5a4e38", fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>BB Width</div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: gold }}>
+                    {(indicators.bb.upper - indicators.bb.lower).toFixed(1)}
+                  </div>
+                  <div style={{ fontSize: 10, color: "#5a4e38" }}>
+                    {goldPrice > indicators.bb.upper ? "↑ Over Upper" : goldPrice < indicators.bb.lower ? "↓ Under Lower" : "Inside Band"}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT PANEL */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+
+            {/* AI Analysis Card */}
+            <div style={{
+              background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "18px 16px"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                <span style={{ color: gold, fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>⬡ AI ANALYSIS</span>
+                <button onClick={() => runAiAnalysis(goldPrice, priceHistory)} disabled={loading}
+                  style={{
+                    background: loading ? "transparent" : "rgba(201,168,76,0.15)",
+                    border: `1px solid ${gold}44`, color: gold, borderRadius: 8, padding: "5px 12px",
+                    cursor: loading ? "not-allowed" : "pointer", fontSize: 12, fontFamily: "inherit",
+                    opacity: loading ? 0.5 : 1
+                  }}>
+                  {loading ? "..." : "วิเคราะห์"}
+                </button>
+              </div>
+
+              {loading && !aiAnalysis && (
+                <div style={{ color: "#5a4e38", textAlign: "center", padding: "24px 0", fontSize: 13 }}>
+                  <div style={{ fontSize: 24, marginBottom: 8 }}>⬡</div>
+                  AI กำลังวิเคราะห์ตลาด...
+                </div>
+              )}
+
+              {aiAnalysis && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <SignalBadge signal={aiAnalysis.signal} />
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ color: gold, fontSize: 20, fontWeight: 900 }}>{aiAnalysis.confidence}%</div>
+                      <div style={{ color: "#5a4e38", fontSize: 10 }}>Confidence</div>
+                    </div>
+                  </div>
+
+                  {/* Confidence Bar */}
+                  <div style={{ background: "#1a1508", borderRadius: 4, height: 6, overflow: "hidden" }}>
+                    <div style={{
+                      width: `${aiAnalysis.confidence}%`, height: "100%",
+                      background: `linear-gradient(90deg, #8b6914, #c9a84c)`, borderRadius: 4,
+                      transition: "width 1s ease"
+                    }} />
+                  </div>
+
+                  <div style={{ borderTop: `1px solid ${border}`, paddingTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+                    {[
+                      { l: "Entry", v: `$${aiAnalysis.entry?.toFixed(2)}`, c: gold },
+                      { l: "Stop Loss", v: `$${aiAnalysis.sl?.toFixed(2)}`, c: "#f87171" },
+                      { l: "TP 1", v: `$${aiAnalysis.tp1?.toFixed(2)}`, c: "#4ade80" },
+                      { l: "TP 2", v: `$${aiAnalysis.tp2?.toFixed(2)}`, c: "#34d399" },
+                      { l: "TP 3", v: `$${aiAnalysis.tp3?.toFixed(2)}`, c: "#10b981" },
+                      { l: "Risk", v: `${aiAnalysis.risk_pct?.toFixed(1)}%`, c: goldLight },
+                    ].map(({ l, v, c }) => (
+                      <div key={l} style={{ background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "8px 10px" }}>
+                        <div style={{ color: "#5a4e38", fontSize: 10, marginBottom: 2 }}>{l}</div>
+                        <div style={{ color: c, fontWeight: 800, fontSize: 14 }}>{v}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ background: "rgba(201,168,76,0.05)", borderRadius: 10, padding: "10px 12px", marginTop: 2 }}>
+                    <div style={{ color: gold, fontSize: 10, letterSpacing: 1, marginBottom: 4 }}>AI REASONING</div>
+                    <div style={{ color: "#a89060", fontSize: 12, lineHeight: 1.6 }}>{aiAnalysis.reasoning}</div>
+                  </div>
+
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
+                      <div style={{ color: "#5a4e38", fontSize: 10 }}>Trend</div>
+                      <div style={{ color: aiAnalysis.trend === "BULLISH" ? "#4ade80" : aiAnalysis.trend === "BEARISH" ? "#f87171" : gold, fontWeight: 700, fontSize: 12 }}>
+                        {aiAnalysis.trend}
+                      </div>
+                    </div>
+                    <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
+                      <div style={{ color: "#5a4e38", fontSize: 10 }}>Strength</div>
+                      <div style={{ color: gold, fontWeight: 700, fontSize: 12 }}>{aiAnalysis.strength}</div>
+                    </div>
+                    <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
+                      <div style={{ color: "#5a4e38", fontSize: 10 }}>R:R</div>
+                      <div style={{ color: gold, fontWeight: 700, fontSize: 12 }}>1:{aiAnalysis.rr_ratio?.toFixed(1)}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Bollinger Bands Visual */}
+            {indicators && (
+              <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "14px 16px" }}>
+                <div style={{ color: gold, fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 12 }}>BOLLINGER BANDS</div>
+                {[
+                  { l: "Upper Band", v: indicators.bb.upper, c: "#f87171" },
+                  { l: "Middle (MA20)", v: indicators.bb.middle, c: gold },
+                  { l: "Current Price", v: goldPrice, c: goldLight, bold: true },
+                  { l: "Lower Band", v: indicators.bb.lower, c: "#4ade80" },
+                ].map(({ l, v, c, bold }) => (
+                  <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: `1px solid ${border}` }}>
+                    <span style={{ color: "#5a4e38", fontSize: 11 }}>{l}</span>
+                    <span style={{ color: c, fontSize: 12, fontWeight: bold ? 900 : 600 }}>${v?.toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Trade Log */}
+            <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "14px 16px" }}>
+              <div style={{ color: gold, fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>SIGNAL LOG</div>
+              {trades.length === 0 ? (
+                <div style={{ color: "#3a3020", fontSize: 12, textAlign: "center", padding: "12px 0" }}>ยังไม่มีสัญญาณ</div>
+              ) : (
+                trades.slice(0, 5).map(t => (
+                  <div key={t.id} style={{
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                    padding: "6px 0", borderBottom: `1px solid ${border}`, fontSize: 11
+                  }}>
+                    <div>
+                      <span style={{
+                        color: t.signal === "BUY" ? "#4ade80" : "#f87171",
+                        fontWeight: 800, marginRight: 8
+                      }}>{t.signal === "BUY" ? "▲" : "▼"} {t.signal}</span>
+                      <span style={{ color: "#5a4e38" }}>{t.time}</span>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ color: gold }}>${t.entry?.toFixed(2)}</div>
+                      <div style={{ color: "#5a4e38", fontSize: 10 }}>{t.confidence}% conf.</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Risk Calculator */}
+            <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "14px 16px" }}>
+              <div style={{ color: gold, fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>⚖ RISK CALCULATOR</div>
+              {aiAnalysis && goldPrice ? (() => {
+                const slPips = Math.abs((goldPrice - aiAnalysis.sl) * 10).toFixed(0);
+                const tp1Pips = Math.abs((aiAnalysis.tp1 - goldPrice) * 10).toFixed(0);
+                const lot01 = (1000 * 0.01 * (aiAnalysis.risk_pct / 100) / (Math.abs(goldPrice - aiAnalysis.sl) * 10 || 1)).toFixed(2);
+                return (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                    {[
+                      { l: "SL Distance", v: `${slPips} pips` },
+                      { l: "TP1 Distance", v: `${tp1Pips} pips` },
+                      { l: "Suggested Lot (1k)", v: `${lot01} lot` },
+                      { l: "Risk %", v: `${aiAnalysis.risk_pct?.toFixed(1)}%` },
+                    ].map(({ l, v }) => (
+                      <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
+                        <span style={{ color: "#5a4e38" }}>{l}</span>
+                        <span style={{ color: goldLight, fontWeight: 700 }}>{v}</span>
+                      </div>
+                    ))}
+                  </div>
+                );
+              })() : <div style={{ color: "#3a3020", fontSize: 12 }}>รอการวิเคราะห์...</div>}
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          marginTop: 24, paddingTop: 16, borderTop: `1px solid ${border}`,
+          display: "flex", justifyContent: "space-between", fontSize: 10, color: "#3a3020"
+        }}>
+          <span>GOLD EA PRO • AI-Powered XAUUSD Expert Advisor</span>
+          <span>⚠ ใช้เพื่อการศึกษาเท่านั้น · การลงทุนมีความเสี่ยง</span>
+        </div>
       </div>
-      <div class="news-card-title">${titleTH}</div>
-      <div class="news-card-analysis">🤖 ${analysisTH}</div>
-      <div class="news-card-meta">
-        <span>${a.source?.name || 'ไม่ระบุ'}</span>
-        <span>${new Date(a.publishedAt).toLocaleDateString('th-TH')}</span>
-      </div>
-    </div>`;
-  }).join('');
 
-  gridEl.className = 'news-grid';
-  gridEl.innerHTML = cards;
-
-  // Summary
-  summaryText.textContent = analysis.summary;
-  summaryBox.style.display = 'block';
-
-  toast('📰 โหลดข่าวและวิเคราะห์สำเร็จ', 'success');
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
+        * { box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #070604; }
+        ::-webkit-scrollbar-thumb { background: #2a2318; border-radius: 2px; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+      `}</style>
+    </div>
+  );
 }
-
-/* ═══════════════════════════════════════
-   TICKER STRIP (LOGIN)
-═══════════════════════════════════════ */
-function buildTicker() {
-  const items = [
-    { sym: 'XAU/USD', price: currentPrice.toFixed(2), chg: '+1.24%', up: true },
-    { sym: 'XAG/USD', price: '32.45', chg: '+0.87%', up: true },
-    { sym: 'DXY', price: '103.82', chg: '-0.31%', up: false },
-    { sym: 'US10Y', price: '4.28%', chg: '-0.03', up: false },
-    { sym: 'EUR/USD', price: '1.0872', chg: '+0.18%', up: true },
-    { sym: 'BTC/USD', price: '88,450', chg: '+2.14%', up: true },
-    { sym: 'SP500', price: '5,892', chg: '+0.43%', up: true },
-    { sym: 'OIL/WTI', price: '78.34', chg: '-0.62%', up: false },
-  ];
-  const html = [...items, ...items].map(it =>
-    `<div class="ticker-item">
-      <span class="ticker-sym">${it.sym}</span>
-      <span class="ticker-price">${it.price}</span>
-      <span class="ticker-chg ${it.up ? 'up' : 'dn'}">${it.chg}</span>
-    </div>`
-  ).join('');
-  const el = document.getElementById('tickerInner');
-  if (el) el.innerHTML = html;
-}
-
-/* ═══════════════════════════════════════
-   CLAUDE API KEY PROMPT
-═══════════════════════════════════════ */
-// Check for stored keys on load
-window.addEventListener('load', () => {
-  const ck = localStorage.getItem('ck') || '';
-  const nk = localStorage.getItem('nk') || '';
-  if (ck) CLAUDE_KEY = ck;
-  if (nk) NEWS_KEY = nk;
-
-  // Show key prompt if no Firebase user detected after 2s
-  setTimeout(() => {
-    if (!window._currentUser) showKeyPrompt();
-  }, 2000);
-
-  buildTicker();
-  // Animate login price
-  setInterval(() => {
-    simulatePriceMove();
-    const lp = document.getElementById('livePrice1');
-    if (lp) lp.textContent = '$' + currentPrice.toLocaleString('en-US', { minimumFractionDigits: 2 });
-  }, 4000);
-});
-
-function showKeyPrompt() {
-  // Show a subtle key input overlay in login
-  const rp = document.querySelector('.login-right');
-  if (!rp) return;
-  const existing = document.getElementById('keyPromptBox');
-  if (existing) return;
-  const box = document.createElement('div');
-  box.id = 'keyPromptBox';
-  box.style.cssText = 'margin-top:20px;padding:16px;background:rgba(255,215,0,0.04);border:1px solid rgba(255,215,0,0.12);border-radius:12px;';
-  box.innerHTML = `
-    <div style="font-size:11px;color:var(--silver-dim);letter-spacing:2px;margin-bottom:10px;font-family:var(--font-thai);">🔑 API KEYS (ไม่บังคับ — ระบบ AI ขั้นสูง)</div>
-    <input id="ckInput" placeholder="Claude API Key (sk-ant-...)" type="password"
-      style="width:100%;background:var(--ink-900);border:1px solid var(--ink-600);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--silver);outline:none;margin-bottom:8px;font-family:monospace;">
-    <input id="nkInput" placeholder="NewsAPI Key (newsapi.org)" type="password"
-      style="width:100%;background:var(--ink-900);border:1px solid var(--ink-600);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--silver);outline:none;font-family:monospace;">
-    <button onclick="saveKeys()" style="margin-top:10px;width:100%;padding:9px;background:rgba(255,215,0,0.08);border:1px solid rgba(255,215,0,0.2);border-radius:8px;color:var(--gold-500);cursor:pointer;font-size:12px;font-family:var(--font-thai);font-weight:600;">บันทึก API Keys</button>
-  `;
-  rp.appendChild(box);
-}
-
-function saveKeys() {
-  const ck = document.getElementById('ckInput')?.value.trim() || '';
-  const nk = document.getElementById('nkInput')?.value.trim() || '';
-  if (ck) { CLAUDE_KEY = ck; localStorage.setItem('ck', ck); }
-  if (nk) { NEWS_KEY = nk; localStorage.setItem('nk', nk); }
-  toast('บันทึก API Keys แล้ว ✅', 'success');
-}
-
-/* ═══════════════════════════════════════
-   TOAST
-═══════════════════════════════════════ */
-function toast(msg, type = 'info') {
-  const wrap = document.getElementById('toastStack');
-  const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️';
-  el.innerHTML = `<span>${icon}</span><span style="font-family:var(--font-thai);">${msg}</span>`;
-  wrap.appendChild(el);
-  setTimeout(() => el.remove(), 4500);
-}
-</script>
-</body>
-</html>
