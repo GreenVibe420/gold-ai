@@ -1,643 +1,492 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Area, AreaChart, Brush } from "recharts";
-
-const API_KEY_PLACEHOLDER = "";
-
-// ─── Utility helpers ──────────────────────────────────────────────
-function generatePriceHistory(basePrice, points = 120) {
-  const data = [];
-  let price = basePrice * 0.988;
-  const now = Date.now();
-  for (let i = points; i >= 0; i--) {
-    const t = new Date(now - i * 5 * 60 * 1000);
-    const hh = t.getHours().toString().padStart(2, "0");
-    const mm = t.getMinutes().toString().padStart(2, "0");
-    const noise = (Math.random() - 0.48) * (basePrice * 0.0008);
-    const trend = ((points - i) / points) * basePrice * 0.012;
-    price = Math.max(price + noise + trend * 0.01, basePrice * 0.97);
-    data.push({
-      time: `${hh}:${mm}`,
-      price: parseFloat(price.toFixed(2)),
-      volume: Math.floor(Math.random() * 500 + 200),
-    });
-  }
-  data[data.length - 1].price = basePrice;
-  return data;
-}
-
-function calcRSI(prices, period = 14) {
-  if (prices.length < period + 1) return 50;
-  let gains = 0, losses = 0;
-  for (let i = prices.length - period; i < prices.length; i++) {
-    const diff = prices[i] - prices[i - 1];
-    if (diff > 0) gains += diff; else losses -= diff;
-  }
-  const rs = gains / (losses || 0.001);
-  return parseFloat((100 - 100 / (1 + rs)).toFixed(1));
-}
-
-function calcEMA(prices, period) {
-  const k = 2 / (period + 1);
-  let ema = prices[0];
-  for (let i = 1; i < prices.length; i++) ema = prices[i] * k + ema * (1 - k);
-  return parseFloat(ema.toFixed(2));
-}
-
-function calcBollingerBands(prices, period = 20) {
-  const slice = prices.slice(-period);
-  const mean = slice.reduce((a, b) => a + b, 0) / period;
-  const std = Math.sqrt(slice.reduce((a, b) => a + (b - mean) ** 2, 0) / period);
-  return { upper: +(mean + 2 * std).toFixed(2), middle: +mean.toFixed(2), lower: +(mean - 2 * std).toFixed(2) };
-}
-
-// ─── Custom Tooltip ───────────────────────────────────────────────
-const GoldTooltip = ({ active, payload }) => {
-  if (!active || !payload?.length) return null;
-  return (
-    <div style={{ background: "rgba(10,8,4,0.95)", border: "1px solid #c9a84c", borderRadius: 8, padding: "10px 16px" }}>
-      <p style={{ color: "#c9a84c", fontSize: 13, fontFamily: "monospace", margin: 0 }}>
-        {payload[0]?.payload?.time}
-      </p>
-      <p style={{ color: "#f5e6b0", fontSize: 16, fontWeight: 700, margin: "4px 0 0", fontFamily: "monospace" }}>
-        ${payload[0]?.value?.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-      </p>
-    </div>
-  );
-};
-
-// ─── Signal Badge ─────────────────────────────────────────────────
-const SignalBadge = ({ signal }) => {
-  const cfg = {
-    BUY:  { bg: "rgba(34,197,94,0.15)",  border: "#22c55e", color: "#4ade80", icon: "▲" },
-    SELL: { bg: "rgba(239,68,68,0.15)",   border: "#ef4444", color: "#f87171", icon: "▼" },
-    HOLD: { bg: "rgba(234,179,8,0.15)",   border: "#eab308", color: "#facc15", icon: "◆" },
-  }[signal] || { bg: "rgba(100,100,100,0.15)", border: "#666", color: "#999", icon: "?" };
-  return (
-    <span style={{
-      background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color,
-      borderRadius: 6, padding: "3px 14px", fontSize: 13, fontWeight: 800,
-      letterSpacing: 2, fontFamily: "monospace"
-    }}>
-      {cfg.icon} {signal}
-    </span>
-  );
-};
-
-// ─── Stat Card ────────────────────────────────────────────────────
-const StatCard = ({ label, value, sub, color = "#c9a84c", highlight }) => (
-  <div style={{
-    background: highlight ? "rgba(201,168,76,0.08)" : "rgba(255,255,255,0.03)",
-    border: `1px solid ${highlight ? "#c9a84c44" : "#2a2318"}`,
-    borderRadius: 12, padding: "14px 18px", flex: 1, minWidth: 120,
-    transition: "all 0.3s"
-  }}>
-    <div style={{ color: "#7a6840", fontSize: 11, fontWeight: 600, letterSpacing: 1.5, textTransform: "uppercase", marginBottom: 6 }}>
-      {label}
-    </div>
-    <div style={{ color, fontSize: 20, fontWeight: 800, fontFamily: "monospace", lineHeight: 1 }}>
-      {value}
-    </div>
-    {sub && <div style={{ color: "#5a4e38", fontSize: 11, marginTop: 4 }}>{sub}</div>}
-  </div>
-);
-
-// ─── Main App ─────────────────────────────────────────────────────
-export default function GoldEA() {
-  const [goldPrice, setGoldPrice] = useState(null);
-  const [prevPrice, setPrevPrice] = useState(null);
-  const [priceHistory, setPriceHistory] = useState([]);
-  const [aiAnalysis, setAiAnalysis] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [priceLoading, setPriceLoading] = useState(true);
-  const [lastUpdate, setLastUpdate] = useState(null);
-  const [trades, setTrades] = useState([]);
-  const [activeTab, setActiveTab] = useState("chart");
-  const [indicators, setIndicators] = useState(null);
-  const [streamText, setStreamText] = useState("");
-  const intervalRef = useRef(null);
-
-  // ── Fetch real gold price via Claude web search ──
-  const fetchGoldPrice = useCallback(async () => {
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 200,
-          tools: [{ type: "web_search_20250305", name: "web_search" }],
-          system: "You are a gold price fetcher. Search for the current XAU/USD spot gold price right now. Return ONLY a JSON object: {\"price\": <number>, \"change\": <number>, \"change_pct\": <number>, \"source\": \"<source name>\"}. No other text.",
-          messages: [{ role: "user", content: "What is the current gold price XAU/USD spot price right now? Return only JSON." }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.map(b => b.text || "").join("") || "";
-      const match = text.match(/\{[\s\S]*?\}/);
-      if (match) {
-        const parsed = JSON.parse(match[0]);
-        if (parsed.price && parsed.price > 1000) {
-          setPrevPrice(p => p || parsed.price);
-          setPrevPrice(goldPrice);
-          setGoldPrice(parsed.price);
-          setPriceHistory(generatePriceHistory(parsed.price));
-          setLastUpdate(new Date());
-          setPriceLoading(false);
-          return parsed.price;
-        }
-      }
-    } catch (e) { /* fall through */ }
-    // Fallback realistic price
-    const fallback = 3285 + (Math.random() - 0.5) * 40;
-    setGoldPrice(prev => { setPrevPrice(prev); return parseFloat(fallback.toFixed(2)); });
-    setPriceHistory(generatePriceHistory(fallback));
-    setLastUpdate(new Date());
-    setPriceLoading(false);
-    return fallback;
-  }, [goldPrice]);
-
-  // ── Tick price update ──
-  const tickPrice = useCallback(() => {
-    setGoldPrice(prev => {
-      if (!prev) return prev;
-      setPrevPrice(prev);
-      const newP = parseFloat((prev + (Math.random() - 0.495) * prev * 0.0004).toFixed(2));
-      setPriceHistory(h => {
-        const now = new Date();
-        const t = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}`;
-        const next = [...h.slice(-119), { time: t, price: newP, volume: Math.floor(Math.random()*500+200) }];
-        // recalc indicators
-        const prices = next.map(d => d.price);
-        const rsi = calcRSI(prices);
-        const ema20 = calcEMA(prices.slice(-20), 20);
-        const ema50 = calcEMA(prices.slice(-50), 50);
-        const bb = calcBollingerBands(prices);
-        setIndicators({ rsi, ema20, ema50, bb });
-        return next;
-      });
-      return newP;
-    });
-    setLastUpdate(new Date());
-  }, []);
-
-  // ── AI Analysis via Claude ──
-  const runAiAnalysis = useCallback(async (price, hist) => {
-    if (!price || hist.length < 20) return;
-    setLoading(true);
-    setStreamText("");
-    const prices = hist.map(d => d.price);
-    const rsi = calcRSI(prices);
-    const ema20 = calcEMA(prices.slice(-20), 20);
-    const ema50 = calcEMA(prices.slice(-50), 50);
-    const bb = calcBollingerBands(prices);
-    const recentPrices = prices.slice(-10).join(", ");
-    try {
-      const res = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: `You are an elite gold trading AI (XAUUSD Expert Advisor). Analyze technical data and provide precise trading signals. Always respond in this EXACT JSON format:
-{
-  "signal": "BUY"|"SELL"|"HOLD",
-  "confidence": 0-100,
-  "entry": <price>,
-  "tp1": <price>,
-  "tp2": <price>,
-  "tp3": <price>,
-  "sl": <price>,
-  "rr_ratio": <number>,
-  "reasoning": "<2-3 sentence analysis in Thai or English>",
-  "trend": "BULLISH"|"BEARISH"|"SIDEWAYS",
-  "strength": "STRONG"|"MODERATE"|"WEAK",
-  "timeframe": "M5",
-  "risk_pct": <0.5-2.0>,
-  "session": "LONDON"|"NEW_YORK"|"ASIAN"|"OVERLAP"
-}`,
-          messages: [{
-            role: "user",
-            content: `Analyze XAUUSD:
-Current Price: $${price}
-RSI(14): ${rsi}
-EMA20: ${ema20} | EMA50: ${ema50}
-Bollinger: Upper=${bb.upper} Mid=${bb.middle} Lower=${bb.lower}
-Recent prices (last 10): ${recentPrices}
-Price vs EMA20: ${price > ema20 ? "ABOVE" : "BELOW"}
-Price vs EMA50: ${price > ema50 ? "ABOVE" : "BELOW"}
-BB Position: ${price > bb.upper ? "ABOVE_UPPER" : price < bb.lower ? "BELOW_LOWER" : "INSIDE"}
-Current time UTC: ${new Date().toUTCString()}
-Provide precise entry, TP1, TP2, TP3 and SL levels.`
-          }]
-        })
-      });
-      const data = await res.json();
-      const text = data.content?.map(b => b.text || "").join("") || "";
-      const match = text.match(/\{[\s\S]*\}/);
-      if (match) {
-        const parsed = JSON.parse(match[0]);
-        setAiAnalysis(parsed);
-        // Add to trade log
-        if (parsed.signal !== "HOLD") {
-          setTrades(t => [{
-            id: Date.now(),
-            time: new Date().toLocaleTimeString(),
-            signal: parsed.signal,
-            entry: parsed.entry,
-            tp1: parsed.tp1,
-            sl: parsed.sl,
-            confidence: parsed.confidence,
-            status: "OPEN"
-          }, ...t.slice(0, 9)]);
-        }
-      }
-    } catch (e) {
-      setAiAnalysis({
-        signal: "HOLD", confidence: 45, entry: price,
-        tp1: +(price + 8).toFixed(2), tp2: +(price + 18).toFixed(2), tp3: +(price + 30).toFixed(2),
-        sl: +(price - 12).toFixed(2), rr_ratio: 1.5, reasoning: "ไม่สามารถเชื่อมต่อ AI ได้ กรุณาลองใหม่",
-        trend: "SIDEWAYS", strength: "WEAK", timeframe: "M5", risk_pct: 1.0, session: "OVERLAP"
-      });
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GreenCat Gold Terminal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #D4AF37; --gold-light: #F0CE5E; --gold-dim: #9A7B1C;
+      --bg: #080808; --bg-card: #0E0E0E; --bg-panel: #111111;
+      --text: #DDD8CC; --text-dim: #55503E; --text-mid: #9A9282;
+      --green: #00C896; --red: #FF4554; --blue: #4B9FFF;
+      --border: #1A1915; --border-gold: rgba(212,175,55,0.18);
     }
-    setLoading(false);
-  }, []);
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); height: 100vh; overflow: hidden; }
 
-  // ── Init ──
-  useEffect(() => {
-    fetchGoldPrice().then(price => {
-      if (price) setTimeout(() => runAiAnalysis(price, generatePriceHistory(price)), 800);
-    });
-    intervalRef.current = setInterval(tickPrice, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, []);
+    /* INIT */
+    #init-screen {
+      position: fixed; inset: 0; z-index: 200;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: var(--bg); gap: 16px;
+    }
+    .big-spin { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    .init-txt { font-size: 10px; letter-spacing: 3px; color: var(--text-dim); }
 
-  // ── Auto re-analyze every 5 minutes ──
-  useEffect(() => {
-    const t = setInterval(() => {
-      if (goldPrice && priceHistory.length > 20) runAiAnalysis(goldPrice, priceHistory);
-    }, 5 * 60 * 1000);
-    return () => clearInterval(t);
-  }, [goldPrice, priceHistory, runAiAnalysis]);
+    /* LOGIN */
+    #login-page {
+      position: fixed; inset: 0; display: none; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse 80% 60% at 50% 50%, #16120A 0%, #080808 100%); z-index: 100;
+    }
+    #login-page::before {
+      content: ''; position: absolute; inset: 0;
+      background-image: repeating-linear-gradient(0deg, transparent, transparent 48px, rgba(212,175,55,0.025) 48px, rgba(212,175,55,0.025) 49px), repeating-linear-gradient(90deg, transparent, transparent 48px, rgba(212,175,55,0.025) 48px, rgba(212,175,55,0.025) 49px);
+      pointer-events: none;
+    }
+    .login-card {
+      position: relative; z-index: 1; width: 360px;
+      background: var(--bg-card); border: 1px solid var(--border-gold);
+      padding: 48px 40px; box-shadow: 0 0 80px rgba(0,0,0,0.9);
+      animation: fadeUp 0.5s ease both;
+    }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+    .login-brand { text-align: center; margin-bottom: 40px; }
+    .login-icon  { font-size: 52px; display: block; margin-bottom: 8px; filter: drop-shadow(0 0 20px rgba(212,175,55,0.4)); }
+    .login-title { font-family: 'Bebas Neue', cursive; font-size: 38px; letter-spacing: 6px; color: var(--gold); }
+    .login-sub   { font-size: 9px; letter-spacing: 3.5px; color: var(--text-dim); text-transform: uppercase; margin-top: 5px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 9px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 7px; }
+    .field input { width: 100%; padding: 13px 15px; background: rgba(255,255,255,0.025); border: 1px solid rgba(212,175,55,0.12); color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px; outline: none; transition: border-color 0.2s; }
+    .field input:focus { border-color: rgba(212,175,55,0.5); }
+    .btn-login { width: 100%; padding: 15px; background: var(--gold); color: #000; border: none; font-family: 'Bebas Neue', cursive; font-size: 20px; letter-spacing: 4px; cursor: pointer; transition: background 0.2s; margin-top: 4px; }
+    .btn-login:hover { background: var(--gold-light); }
+    .login-hint { font-size: 10px; color: var(--text-dim); text-align: center; margin-top: 12px; }
+    .login-err  { color: var(--red); font-size: 11px; text-align: center; margin-top: 10px; min-height: 16px; line-height: 1.5; }
 
-  const priceChange = goldPrice && prevPrice ? goldPrice - prevPrice : 0;
-  const isUp = priceChange >= 0;
-  const prices = priceHistory.map(d => d.price);
-  const minP = prices.length ? Math.min(...prices) * 0.9995 : 3200;
-  const maxP = prices.length ? Math.max(...prices) * 1.0005 : 3400;
+    /* DASHBOARD */
+    #dashboard { display: none; height: 100vh; flex-direction: column; }
+    .hdr { height: 54px; background: var(--bg-card); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 18px; flex-shrink: 0; }
+    .hdr-logo { font-family: 'Bebas Neue', cursive; font-size: 19px; letter-spacing: 4px; color: var(--gold); display: flex; align-items: center; gap: 8px; }
+    .hdr-tag  { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--text-dim); }
+    .hdr-right { display: flex; align-items: center; gap: 12px; }
+    .live-dot  { display: flex; align-items: center; gap: 5px; font-size: 9px; letter-spacing: 2px; color: var(--text-dim); }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: blink 2s ease-in-out infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+    .hdr-email { font-size: 10px; color: var(--text-mid); }
+    .btn-sm { padding: 5px 13px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; border: 1px solid var(--border-gold); background: transparent; color: var(--gold); cursor: pointer; transition: background 0.15s; }
+    .btn-sm:hover { background: rgba(212,175,55,0.08); }
+    .body { display: grid; grid-template-columns: 1fr 296px; flex: 1; overflow: hidden; }
 
-  // ── Colors ──
-  const gold = "#c9a84c";
-  const goldLight = "#f5e6b0";
-  const bg = "#070604";
-  const surface = "#0e0c08";
-  const border = "#1e1a10";
+    /* Chart */
+    .chart-area { display: flex; flex-direction: column; padding: 16px 16px 16px 18px; gap: 10px; overflow: hidden; }
+    .chart-topbar { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+    .symbol-block { display: flex; align-items: center; gap: 14px; }
+    .sym { font-family: 'Bebas Neue', cursive; font-size: 28px; letter-spacing: 2px; color: var(--gold); }
+    .price-block { display: flex; flex-direction: column; }
+    .price-main  { font-size: 21px; font-weight: 500; }
+    .price-chg   { font-size: 11px; }
+    .up { color: var(--green); } .dn { color: var(--red); }
+    .topbar-actions { display: flex; align-items: center; gap: 7px; }
+    .tf-group { display: flex; gap: 2px; }
+    .tf-btn { padding: 6px 11px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.15s; }
+    .tf-btn:hover, .tf-btn.active { border-color: var(--gold); color: var(--gold); background: rgba(212,175,55,0.07); }
+    .btn-refresh { padding: 7px 13px; font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px; border: 1px solid var(--border); background: transparent; color: var(--text-dim); cursor: pointer; transition: all 0.15s; }
+    .btn-refresh:hover { border-color: var(--border-gold); color: var(--gold); }
+    .btn-ai { padding: 8px 18px; background: var(--gold); color: #000; border: none; font-family: 'Bebas Neue', cursive; font-size: 16px; letter-spacing: 2px; cursor: pointer; transition: background 0.15s; }
+    .btn-ai:hover    { background: var(--gold-light); }
+    .btn-ai:disabled { background: var(--gold-dim); cursor: wait; opacity: 0.7; }
+    .legend { display: flex; gap: 18px; flex-shrink: 0; }
+    .leg-item { display: flex; align-items: center; gap: 5px; font-size: 10px; }
+    .leg-line { width: 20px; height: 2px; }
+    .leg-e { background: var(--blue); } .leg-t { background: var(--green); } .leg-s { background: var(--red); }
+    .canvas-wrap { flex: 1; position: relative; background: var(--bg-card); border: 1px solid var(--border); min-height: 0; }
+    canvas#goldChart { position: absolute; inset: 14px; }
+    .loading-mask { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8,8,8,0.75); z-index: 5; }
+    .spin { width: 28px; height: 28px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.7s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-  return (
-    <div style={{
-      background: bg, minHeight: "100vh", fontFamily: "'DM Mono', 'Courier New', monospace",
-      color: goldLight, padding: 0, margin: 0, position: "relative", overflow: "hidden"
-    }}>
-      {/* Background grain */}
-      <div style={{
-        position: "fixed", inset: 0, backgroundImage: `radial-gradient(ellipse 80% 50% at 50% -20%, rgba(201,168,76,0.07) 0%, transparent 60%)`,
-        pointerEvents: "none", zIndex: 0
-      }} />
+    /* Side */
+    .side { background: var(--bg-panel); border-left: 1px solid var(--border); overflow-y: auto; display: flex; flex-direction: column; }
+    .side::-webkit-scrollbar { width: 3px; }
+    .side::-webkit-scrollbar-thumb { background: var(--border); }
+    .side-block { padding: 14px 16px; border-bottom: 1px solid var(--border); }
+    .side-title { font-size: 8px; letter-spacing: 2.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 10px; }
+    .apikey-input { width: 100%; padding: 9px 11px; background: rgba(255,255,255,0.02); border: 1px solid var(--border); color: var(--text); font-family: 'DM Mono', monospace; font-size: 10px; outline: none; transition: border-color 0.2s; }
+    .apikey-input:focus { border-color: var(--border-gold); }
+    .signal-badge { display: inline-block; padding: 5px 14px; font-family: 'Bebas Neue', cursive; font-size: 18px; letter-spacing: 3px; }
+    .sig-buy  { background: rgba(0,200,150,0.1);  color: var(--green); border: 1px solid var(--green); }
+    .sig-sell { background: rgba(255,69,84,0.1);   color: var(--red);   border: 1px solid var(--red);   }
+    .sig-wait { background: rgba(212,175,55,0.08); color: var(--gold);  border: 1px solid var(--border-gold); }
+    .sig-none { background: transparent; color: var(--text-dim); border: 1px solid var(--border); }
+    .conf-lbl { font-size: 10px; color: var(--text-dim); margin-top: 5px; }
+    .lvl-list { display: flex; flex-direction: column; gap: 7px; }
+    .lvl-row  { display: flex; align-items: center; justify-content: space-between; padding: 8px 11px; }
+    .lvl-entry { background: rgba(75,159,255,0.06);  border-left: 2px solid var(--blue);  }
+    .lvl-tp    { background: rgba(0,200,150,0.06);   border-left: 2px solid var(--green); }
+    .lvl-sl    { background: rgba(255,69,84,0.06);   border-left: 2px solid var(--red);   }
+    .lvl-key  { font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); }
+    .lvl-val  { font-size: 14px; font-weight: 500; }
+    .lvl-entry .lvl-val { color: var(--blue);  }
+    .lvl-tp    .lvl-val { color: var(--green); }
+    .lvl-sl    .lvl-val { color: var(--red);   }
+    .rr-row { display: flex; justify-content: space-between; padding: 7px 0 0; border-top: 1px solid var(--border); margin-top: 3px; font-size: 11px; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+    .stat-cell  { background: rgba(255,255,255,0.02); border: 1px solid var(--border); padding: 9px; }
+    .stat-k     { font-size: 8px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim); margin-bottom: 3px; }
+    .stat-v     { font-size: 13px; }
+    .ai-text { font-size: 11px; line-height: 1.9; color: var(--text); }
+    .ai-tag  { display: inline-block; padding: 2px 8px; font-size: 8px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); border: 1px solid var(--border-gold); margin-bottom: 9px; }
+  </style>
+</head>
+<body>
 
-      <div style={{ position: "relative", zIndex: 1, maxWidth: 1400, margin: "0 auto", padding: "0 16px 32px" }}>
+<!-- Loading screen -->
+<div id="init-screen">
+  <div class="big-spin"></div>
+  <div class="init-txt">LOADING TERMINAL...</div>
+</div>
 
-        {/* ── HEADER ── */}
-        <div style={{
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "20px 0 18px", borderBottom: `1px solid ${border}`
-        }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-            <div style={{
-              width: 44, height: 44, borderRadius: "50%", background: "linear-gradient(135deg, #c9a84c, #8b6914)",
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, boxShadow: "0 0 20px rgba(201,168,76,0.3)"
-            }}>⬡</div>
-            <div>
-              <div style={{ fontSize: 20, fontWeight: 800, color: gold, letterSpacing: 3 }}>GOLD EA PRO</div>
-              <div style={{ fontSize: 11, color: "#5a4e38", letterSpacing: 2 }}>XAUUSD · AI EXPERT ADVISOR · v3.1</div>
-            </div>
-          </div>
-          <div style={{ display: "flex", align: "center", gap: 12 }}>
-            <div style={{ textAlign: "right" }}>
-              {priceLoading ? (
-                <div style={{ color: "#5a4e38", fontSize: 14 }}>กำลังดึงราคา...</div>
-              ) : (
-                <>
-                  <div style={{
-                    fontSize: 32, fontWeight: 900, letterSpacing: -1,
-                    color: isUp ? "#4ade80" : "#f87171",
-                    textShadow: isUp ? "0 0 20px rgba(74,222,128,0.4)" : "0 0 20px rgba(248,113,113,0.4)"
-                  }}>
-                    ${goldPrice?.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                  </div>
-                  <div style={{ fontSize: 12, color: isUp ? "#4ade80" : "#f87171" }}>
-                    {isUp ? "▲" : "▼"} {Math.abs(priceChange).toFixed(2)} USD
-                    &nbsp;·&nbsp;อัปเดต {lastUpdate?.toLocaleTimeString()}
-                  </div>
-                </>
-              )}
-            </div>
-            <button onClick={() => { fetchGoldPrice(); setTimeout(() => runAiAnalysis(goldPrice, priceHistory), 500); }}
-              style={{
-                background: "rgba(201,168,76,0.1)", border: `1px solid ${gold}44`,
-                color: gold, borderRadius: 10, padding: "8px 16px", cursor: "pointer",
-                fontSize: 13, fontFamily: "inherit", transition: "all 0.2s"
-              }}>⟳ รีเฟรช</button>
-          </div>
-        </div>
+<!-- Login -->
+<div id="login-page">
+  <div class="login-card">
+    <div class="login-brand">
+      <span class="login-icon">🐱</span>
+      <div class="login-title">GreenCat</div>
+      <div class="login-sub">Gold Trading Intelligence</div>
+    </div>
+    <div class="field"><label>Email</label><input type="email" id="inp-email" placeholder="trader@email.com" autocomplete="email"/></div>
+    <div class="field"><label>Password</label><input type="password" id="inp-pass" placeholder="••••••••" autocomplete="current-password"/></div>
+    <button class="btn-login" onclick="doLogin()">SIGN IN</button>
+    <div class="login-hint">ถ้ายังไม่มีบัญชี ระบบจะสร้างให้อัตโนมัติ</div>
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
 
-        {/* ── SIGNAL BAR ── */}
-        {aiAnalysis && (
-          <div style={{
-            display: "flex", alignItems: "center", gap: 16, padding: "12px 16px",
-            background: "rgba(201,168,76,0.05)", border: `1px solid ${border}`,
-            borderRadius: 12, margin: "16px 0",
-            flexWrap: "wrap"
-          }}>
-            <SignalBadge signal={aiAnalysis.signal} />
-            <div style={{ color: "#7a6840", fontSize: 12 }}>แนวโน้ม:</div>
-            <div style={{ color: goldLight, fontWeight: 700, fontSize: 13 }}>{aiAnalysis.trend}</div>
-            <div style={{ color: "#7a6840", fontSize: 12 }}>ความมั่นใจ:</div>
-            <div style={{ color: gold, fontWeight: 700, fontSize: 13 }}>{aiAnalysis.confidence}%</div>
-            <div style={{ color: "#7a6840", fontSize: 12 }}>Session:</div>
-            <div style={{ color: goldLight, fontSize: 13 }}>{aiAnalysis.session}</div>
-            <div style={{ marginLeft: "auto", color: "#5a4e38", fontSize: 12 }}>Timeframe: {aiAnalysis.timeframe}</div>
-          </div>
-        )}
-
-        {/* ── MAIN GRID ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16, marginTop: 8 }}>
-
-          {/* LEFT: Chart + Stats */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-            {/* Stats Row */}
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-              <StatCard label="Entry" value={aiAnalysis ? `$${aiAnalysis.entry?.toFixed(2)}` : "---"} highlight={true} />
-              <StatCard label="TP1" value={aiAnalysis ? `$${aiAnalysis.tp1?.toFixed(2)}` : "---"} color="#4ade80" />
-              <StatCard label="TP2" value={aiAnalysis ? `$${aiAnalysis.tp2?.toFixed(2)}` : "---"} color="#34d399" />
-              <StatCard label="TP3" value={aiAnalysis ? `$${aiAnalysis.tp3?.toFixed(2)}` : "---"} color="#10b981" />
-              <StatCard label="Stop Loss" value={aiAnalysis ? `$${aiAnalysis.sl?.toFixed(2)}` : "---"} color="#f87171" />
-              <StatCard label="R:R Ratio" value={aiAnalysis ? `1:${aiAnalysis.rr_ratio?.toFixed(1)}` : "---"} />
-            </div>
-
-            {/* Chart */}
-            <div style={{
-              background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "20px 8px 8px"
-            }}>
-              <div style={{ display: "flex", gap: 16, paddingLeft: 16, marginBottom: 12, alignItems: "center" }}>
-                <span style={{ fontSize: 13, color: gold, fontWeight: 700 }}>XAUUSD • M5</span>
-                <span style={{ fontSize: 11, color: "#5a4e38" }}>Real-time Spot Gold (USD/oz)</span>
-                {loading && <span style={{ fontSize: 11, color: gold, animation: "pulse 1s infinite" }}>AI กำลังวิเคราะห์...</span>}
-              </div>
-
-              <ResponsiveContainer width="100%" height={300}>
-                <AreaChart data={priceHistory} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                  <defs>
-                    <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#c9a84c" stopOpacity={0.3} />
-                      <stop offset="100%" stopColor="#c9a84c" stopOpacity={0.02} />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#1a1508" vertical={false} />
-                  <XAxis dataKey="time" tick={{ fill: "#4a4030", fontSize: 10 }} tickLine={false} interval={19} />
-                  <YAxis domain={[minP, maxP]} tick={{ fill: "#4a4030", fontSize: 10 }} tickLine={false}
-                    tickFormatter={v => `$${v.toFixed(0)}`} width={68} />
-                  <Tooltip content={<GoldTooltip />} />
-                  {aiAnalysis && <ReferenceLine y={aiAnalysis.entry} stroke="#c9a84c" strokeDasharray="4 4" strokeOpacity={0.7}
-                    label={{ value: "Entry", position: "insideRight", fill: "#c9a84c", fontSize: 10 }} />}
-                  {aiAnalysis && <ReferenceLine y={aiAnalysis.tp1} stroke="#4ade80" strokeDasharray="4 4" strokeOpacity={0.6}
-                    label={{ value: "TP1", position: "insideRight", fill: "#4ade80", fontSize: 10 }} />}
-                  {aiAnalysis && <ReferenceLine y={aiAnalysis.tp2} stroke="#22c55e" strokeDasharray="4 4" strokeOpacity={0.5}
-                    label={{ value: "TP2", position: "insideRight", fill: "#22c55e", fontSize: 10 }} />}
-                  {aiAnalysis && <ReferenceLine y={aiAnalysis.sl} stroke="#f87171" strokeDasharray="4 4" strokeOpacity={0.7}
-                    label={{ value: "SL", position: "insideRight", fill: "#f87171", fontSize: 10 }} />}
-                  <Area type="monotone" dataKey="price" stroke="#c9a84c" strokeWidth={1.5}
-                    fill="url(#goldGrad)" dot={false} activeDot={{ r: 4, fill: "#c9a84c" }} />
-                </AreaChart>
-              </ResponsiveContainer>
-            </div>
-
-            {/* Indicators */}
-            {indicators && (
-              <div style={{
-                background: surface, border: `1px solid ${border}`, borderRadius: 16,
-                padding: "16px 20px", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12
-              }}>
-                <div>
-                  <div style={{ color: "#5a4e38", fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>RSI (14)</div>
-                  <div style={{
-                    fontSize: 18, fontWeight: 800, color: indicators.rsi > 70 ? "#f87171" : indicators.rsi < 30 ? "#4ade80" : gold
-                  }}>{indicators.rsi}</div>
-                  <div style={{ fontSize: 10, color: "#5a4e38" }}>
-                    {indicators.rsi > 70 ? "Overbought" : indicators.rsi < 30 ? "Oversold" : "Neutral"}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ color: "#5a4e38", fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>EMA 20</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: gold }}>${indicators.ema20}</div>
-                  <div style={{ fontSize: 10, color: goldPrice > indicators.ema20 ? "#4ade80" : "#f87171" }}>
-                    {goldPrice > indicators.ema20 ? "↑ Above" : "↓ Below"}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ color: "#5a4e38", fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>EMA 50</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: gold }}>${indicators.ema50}</div>
-                  <div style={{ fontSize: 10, color: goldPrice > indicators.ema50 ? "#4ade80" : "#f87171" }}>
-                    {goldPrice > indicators.ema50 ? "↑ Above" : "↓ Below"}
-                  </div>
-                </div>
-                <div>
-                  <div style={{ color: "#5a4e38", fontSize: 11, letterSpacing: 1, marginBottom: 4 }}>BB Width</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: gold }}>
-                    {(indicators.bb.upper - indicators.bb.lower).toFixed(1)}
-                  </div>
-                  <div style={{ fontSize: 10, color: "#5a4e38" }}>
-                    {goldPrice > indicators.bb.upper ? "↑ Over Upper" : goldPrice < indicators.bb.lower ? "↓ Under Lower" : "Inside Band"}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* RIGHT PANEL */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
-
-            {/* AI Analysis Card */}
-            <div style={{
-              background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "18px 16px"
-            }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
-                <span style={{ color: gold, fontSize: 13, fontWeight: 700, letterSpacing: 1 }}>⬡ AI ANALYSIS</span>
-                <button onClick={() => runAiAnalysis(goldPrice, priceHistory)} disabled={loading}
-                  style={{
-                    background: loading ? "transparent" : "rgba(201,168,76,0.15)",
-                    border: `1px solid ${gold}44`, color: gold, borderRadius: 8, padding: "5px 12px",
-                    cursor: loading ? "not-allowed" : "pointer", fontSize: 12, fontFamily: "inherit",
-                    opacity: loading ? 0.5 : 1
-                  }}>
-                  {loading ? "..." : "วิเคราะห์"}
-                </button>
-              </div>
-
-              {loading && !aiAnalysis && (
-                <div style={{ color: "#5a4e38", textAlign: "center", padding: "24px 0", fontSize: 13 }}>
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>⬡</div>
-                  AI กำลังวิเคราะห์ตลาด...
-                </div>
-              )}
-
-              {aiAnalysis && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <SignalBadge signal={aiAnalysis.signal} />
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ color: gold, fontSize: 20, fontWeight: 900 }}>{aiAnalysis.confidence}%</div>
-                      <div style={{ color: "#5a4e38", fontSize: 10 }}>Confidence</div>
-                    </div>
-                  </div>
-
-                  {/* Confidence Bar */}
-                  <div style={{ background: "#1a1508", borderRadius: 4, height: 6, overflow: "hidden" }}>
-                    <div style={{
-                      width: `${aiAnalysis.confidence}%`, height: "100%",
-                      background: `linear-gradient(90deg, #8b6914, #c9a84c)`, borderRadius: 4,
-                      transition: "width 1s ease"
-                    }} />
-                  </div>
-
-                  <div style={{ borderTop: `1px solid ${border}`, paddingTop: 10, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                    {[
-                      { l: "Entry", v: `$${aiAnalysis.entry?.toFixed(2)}`, c: gold },
-                      { l: "Stop Loss", v: `$${aiAnalysis.sl?.toFixed(2)}`, c: "#f87171" },
-                      { l: "TP 1", v: `$${aiAnalysis.tp1?.toFixed(2)}`, c: "#4ade80" },
-                      { l: "TP 2", v: `$${aiAnalysis.tp2?.toFixed(2)}`, c: "#34d399" },
-                      { l: "TP 3", v: `$${aiAnalysis.tp3?.toFixed(2)}`, c: "#10b981" },
-                      { l: "Risk", v: `${aiAnalysis.risk_pct?.toFixed(1)}%`, c: goldLight },
-                    ].map(({ l, v, c }) => (
-                      <div key={l} style={{ background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "8px 10px" }}>
-                        <div style={{ color: "#5a4e38", fontSize: 10, marginBottom: 2 }}>{l}</div>
-                        <div style={{ color: c, fontWeight: 800, fontSize: 14 }}>{v}</div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <div style={{ background: "rgba(201,168,76,0.05)", borderRadius: 10, padding: "10px 12px", marginTop: 2 }}>
-                    <div style={{ color: gold, fontSize: 10, letterSpacing: 1, marginBottom: 4 }}>AI REASONING</div>
-                    <div style={{ color: "#a89060", fontSize: 12, lineHeight: 1.6 }}>{aiAnalysis.reasoning}</div>
-                  </div>
-
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
-                      <div style={{ color: "#5a4e38", fontSize: 10 }}>Trend</div>
-                      <div style={{ color: aiAnalysis.trend === "BULLISH" ? "#4ade80" : aiAnalysis.trend === "BEARISH" ? "#f87171" : gold, fontWeight: 700, fontSize: 12 }}>
-                        {aiAnalysis.trend}
-                      </div>
-                    </div>
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
-                      <div style={{ color: "#5a4e38", fontSize: 10 }}>Strength</div>
-                      <div style={{ color: gold, fontWeight: 700, fontSize: 12 }}>{aiAnalysis.strength}</div>
-                    </div>
-                    <div style={{ flex: 1, background: "rgba(255,255,255,0.02)", borderRadius: 8, padding: "8px 10px", textAlign: "center" }}>
-                      <div style={{ color: "#5a4e38", fontSize: 10 }}>R:R</div>
-                      <div style={{ color: gold, fontWeight: 700, fontSize: 12 }}>1:{aiAnalysis.rr_ratio?.toFixed(1)}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Bollinger Bands Visual */}
-            {indicators && (
-              <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "14px 16px" }}>
-                <div style={{ color: gold, fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 12 }}>BOLLINGER BANDS</div>
-                {[
-                  { l: "Upper Band", v: indicators.bb.upper, c: "#f87171" },
-                  { l: "Middle (MA20)", v: indicators.bb.middle, c: gold },
-                  { l: "Current Price", v: goldPrice, c: goldLight, bold: true },
-                  { l: "Lower Band", v: indicators.bb.lower, c: "#4ade80" },
-                ].map(({ l, v, c, bold }) => (
-                  <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "5px 0", borderBottom: `1px solid ${border}` }}>
-                    <span style={{ color: "#5a4e38", fontSize: 11 }}>{l}</span>
-                    <span style={{ color: c, fontSize: 12, fontWeight: bold ? 900 : 600 }}>${v?.toFixed(2)}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Trade Log */}
-            <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "14px 16px" }}>
-              <div style={{ color: gold, fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>SIGNAL LOG</div>
-              {trades.length === 0 ? (
-                <div style={{ color: "#3a3020", fontSize: 12, textAlign: "center", padding: "12px 0" }}>ยังไม่มีสัญญาณ</div>
-              ) : (
-                trades.slice(0, 5).map(t => (
-                  <div key={t.id} style={{
-                    display: "flex", justifyContent: "space-between", alignItems: "center",
-                    padding: "6px 0", borderBottom: `1px solid ${border}`, fontSize: 11
-                  }}>
-                    <div>
-                      <span style={{
-                        color: t.signal === "BUY" ? "#4ade80" : "#f87171",
-                        fontWeight: 800, marginRight: 8
-                      }}>{t.signal === "BUY" ? "▲" : "▼"} {t.signal}</span>
-                      <span style={{ color: "#5a4e38" }}>{t.time}</span>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div style={{ color: gold }}>${t.entry?.toFixed(2)}</div>
-                      <div style={{ color: "#5a4e38", fontSize: 10 }}>{t.confidence}% conf.</div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {/* Risk Calculator */}
-            <div style={{ background: surface, border: `1px solid ${border}`, borderRadius: 16, padding: "14px 16px" }}>
-              <div style={{ color: gold, fontSize: 12, fontWeight: 700, letterSpacing: 1, marginBottom: 10 }}>⚖ RISK CALCULATOR</div>
-              {aiAnalysis && goldPrice ? (() => {
-                const slPips = Math.abs((goldPrice - aiAnalysis.sl) * 10).toFixed(0);
-                const tp1Pips = Math.abs((aiAnalysis.tp1 - goldPrice) * 10).toFixed(0);
-                const lot01 = (1000 * 0.01 * (aiAnalysis.risk_pct / 100) / (Math.abs(goldPrice - aiAnalysis.sl) * 10 || 1)).toFixed(2);
-                return (
-                  <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
-                    {[
-                      { l: "SL Distance", v: `${slPips} pips` },
-                      { l: "TP1 Distance", v: `${tp1Pips} pips` },
-                      { l: "Suggested Lot (1k)", v: `${lot01} lot` },
-                      { l: "Risk %", v: `${aiAnalysis.risk_pct?.toFixed(1)}%` },
-                    ].map(({ l, v }) => (
-                      <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                        <span style={{ color: "#5a4e38" }}>{l}</span>
-                        <span style={{ color: goldLight, fontWeight: 700 }}>{v}</span>
-                      </div>
-                    ))}
-                  </div>
-                );
-              })() : <div style={{ color: "#3a3020", fontSize: 12 }}>รอการวิเคราะห์...</div>}
-            </div>
+<!-- Dashboard -->
+<div id="dashboard">
+  <div class="hdr">
+    <div class="hdr-logo">🐱 GreenCat <span class="hdr-tag">| GOLD TERMINAL</span></div>
+    <div class="hdr-right">
+      <div class="live-dot"><span class="dot"></span>LIVE</div>
+      <span class="hdr-email" id="hdr-email"></span>
+      <button class="btn-sm" onclick="doLogout()">LOGOUT</button>
+    </div>
+  </div>
+  <div class="body">
+    <div class="chart-area">
+      <div class="chart-topbar">
+        <div class="symbol-block">
+          <div class="sym">XAU/USD</div>
+          <div class="price-block">
+            <span class="price-main" id="cur-price">—</span>
+            <span class="price-chg"  id="cur-chg">—</span>
           </div>
         </div>
-
-        {/* Footer */}
-        <div style={{
-          marginTop: 24, paddingTop: 16, borderTop: `1px solid ${border}`,
-          display: "flex", justifyContent: "space-between", fontSize: 10, color: "#3a3020"
-        }}>
-          <span>GOLD EA PRO • AI-Powered XAUUSD Expert Advisor</span>
-          <span>⚠ ใช้เพื่อการศึกษาเท่านั้น · การลงทุนมีความเสี่ยง</span>
+        <div class="topbar-actions">
+          <div class="tf-group">
+            <button class="tf-btn active" onclick="setTF('1d',this)">1D</button>
+            <button class="tf-btn"        onclick="setTF('5d',this)">5D</button>
+            <button class="tf-btn"        onclick="setTF('1mo',this)">1M</button>
+            <button class="tf-btn"        onclick="setTF('3mo',this)">3M</button>
+          </div>
+          <button class="btn-refresh" onclick="fetchData(currentTF)">↺ Refresh</button>
+          <button class="btn-ai" id="btn-ai" onclick="runAI()">⚡ AI ANALYZE</button>
         </div>
       </div>
-
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&display=swap');
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: #070604; }
-        ::-webkit-scrollbar-thumb { background: #2a2318; border-radius: 2px; }
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-      `}</style>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-line leg-e"></div><span style="color:var(--blue)">Entry</span></div>
+        <div class="leg-item"><div class="leg-line leg-t"></div><span style="color:var(--green)">Take Profit</span></div>
+        <div class="leg-item"><div class="leg-line leg-s"></div><span style="color:var(--red)">Stop Loss</span></div>
+      </div>
+      <div class="canvas-wrap">
+        <div class="loading-mask" id="chart-mask"><div class="spin"></div></div>
+        <canvas id="goldChart"></canvas>
+      </div>
     </div>
-  );
+    <div class="side">
+      <div class="side-block">
+        <div class="side-title">🔑 Anthropic API Key</div>
+        <input class="apikey-input" type="password" id="api-key" placeholder="sk-ant-api03-..."/>
+        <div style="font-size:9px;color:var(--text-dim);margin-top:6px">จำเป็นสำหรับ AI Analysis</div>
+      </div>
+      <div class="side-block">
+        <div class="side-title">📡 AI Signal</div>
+        <span class="signal-badge sig-none" id="sig-badge">WAITING</span>
+        <div class="conf-lbl" id="sig-conf"></div>
+      </div>
+      <div class="side-block">
+        <div class="side-title">📊 AI Levels</div>
+        <div class="lvl-list">
+          <div class="lvl-row lvl-entry"><span class="lvl-key">📍 Entry</span><span class="lvl-val" id="lv-entry">—</span></div>
+          <div class="lvl-row lvl-tp">   <span class="lvl-key">🎯 TP</span>   <span class="lvl-val" id="lv-tp">—</span></div>
+          <div class="lvl-row lvl-sl">   <span class="lvl-key">🛑 SL</span>   <span class="lvl-val" id="lv-sl">—</span></div>
+          <div class="rr-row"><span style="color:var(--text-dim)">Risk : Reward</span><span id="lv-rr" style="color:var(--gold)">—</span></div>
+        </div>
+      </div>
+      <div class="side-block">
+        <div class="side-title">📈 Market Data</div>
+        <div class="stats-grid">
+          <div class="stat-cell"><div class="stat-k">High</div><div class="stat-v" id="st-high" style="color:var(--green)">—</div></div>
+          <div class="stat-cell"><div class="stat-k">Low</div> <div class="stat-v" id="st-low"  style="color:var(--red)">—</div></div>
+          <div class="stat-cell"><div class="stat-k">Open</div><div class="stat-v" id="st-open">—</div></div>
+          <div class="stat-cell"><div class="stat-k">Chg%</div><div class="stat-v" id="st-chg">—</div></div>
+        </div>
+      </div>
+      <div class="side-block" style="flex:1">
+        <div class="side-title">🤖 AI Analysis</div>
+        <div class="ai-text" id="ai-text">กด <span style="color:var(--gold)">⚡ AI ANALYZE</span> เพื่อให้ AI คำนวณจุดเข้า TP และ SL</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Scripts ด้านล่าง body เสมอ -->
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+
+<script>
+/* === รอให้ library พร้อมทั้งหมด === */
+var _ready = false;
+function waitReady() {
+  if (typeof firebase !== 'undefined' && typeof Chart !== 'undefined') {
+    if (!_ready) { _ready = true; startApp(); }
+  } else {
+    setTimeout(waitReady, 150);
+  }
 }
+waitReady();
+
+/* ========= APP ========= */
+var auth, chart, rawData = [], currentTF = '1d';
+
+function startApp() {
+  try {
+    var fbConfig = {
+      apiKey:            "AIzaSyA9SqXG_HpkEj9mZXAzQnG8Oh9c5CiDNQ4",
+      authDomain:        "greencat-d6419.firebaseapp.com",
+      projectId:         "greencat-d6419",
+      storageBucket:     "greencat-d6419.firebasestorage.app",
+      messagingSenderId: "1039922914232",
+      appId:             "1:1039922914232:web:5271fcd79d932b762ee54d"
+    };
+    if (!firebase.apps.length) firebase.initializeApp(fbConfig);
+    auth = firebase.auth();
+
+    auth.onAuthStateChanged(function(user) {
+      document.getElementById('init-screen').style.display = 'none';
+      if (user) {
+        document.getElementById('login-page').style.display  = 'none';
+        document.getElementById('dashboard').style.display   = 'flex';
+        document.getElementById('hdr-email').textContent     = user.email;
+        initDashboard();
+      } else {
+        document.getElementById('login-page').style.display  = 'flex';
+        document.getElementById('dashboard').style.display   = 'none';
+      }
+    });
+  } catch(e) {
+    document.getElementById('init-screen').innerHTML =
+      '<div style="color:#FF4554;font-size:12px;padding:20px;text-align:center">Firebase Error: ' + e.message + '</div>';
+  }
+}
+
+/* AUTH */
+function doLogin() {
+  var email = document.getElementById('inp-email').value.trim();
+  var pass  = document.getElementById('inp-pass').value;
+  var errEl = document.getElementById('login-err');
+  errEl.textContent = '';
+  if (!email || !pass) { errEl.textContent = 'กรุณากรอก Email และ Password'; return; }
+
+  auth.signInWithEmailAndPassword(email, pass).catch(function(e) {
+    if (e.code === 'auth/user-not-found' || e.code === 'auth/invalid-credential' || e.code === 'auth/wrong-password') {
+      auth.createUserWithEmailAndPassword(email, pass).catch(function(e2) {
+        errEl.textContent = e2.message;
+      });
+    } else {
+      errEl.textContent = e.message;
+    }
+  });
+}
+
+function doLogout() { auth.signOut(); }
+
+document.getElementById('inp-pass').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+/* CHART */
+function initDashboard() {
+  if (chart) { chart.destroy(); chart = null; }
+  var ctx = document.getElementById('goldChart').getContext('2d');
+  chart = new Chart(ctx, {
+    type: 'line',
+    data: { labels: [], datasets: [{
+      label: 'XAU/USD', data: [],
+      borderColor: '#D4AF37', borderWidth: 2,
+      pointRadius: 0, pointHoverRadius: 4, pointHoverBackgroundColor: '#D4AF37',
+      fill: true,
+      backgroundColor: function(c) {
+        var g = c.chart.ctx.createLinearGradient(0, 0, 0, c.chart.height);
+        g.addColorStop(0, 'rgba(212,175,55,0.18)'); g.addColorStop(1, 'rgba(212,175,55,0)'); return g;
+      },
+      tension: 0.35
+    }]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { intersect: false, mode: 'index' },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#0E0E0E', borderColor: 'rgba(212,175,55,0.25)', borderWidth: 1,
+          titleColor: '#D4AF37', bodyColor: '#DDD8CC', padding: 12,
+          callbacks: { label: function(c) { return '  $' + c.parsed.y.toFixed(2); } }
+        },
+        annotation: { annotations: {} }
+      },
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,0.025)' }, ticks: { color: '#55503E', font: { family: 'DM Mono', size: 9 }, maxTicksLimit: 7, maxRotation: 0 } },
+        y: { position: 'right', grid: { color: 'rgba(255,255,255,0.025)' }, ticks: { color: '#55503E', font: { family: 'DM Mono', size: 9 }, callback: function(v) { return '$' + v.toFixed(0); } } }
+      }
+    }
+  });
+  fetchData(currentTF);
+}
+
+/* FETCH */
+function fetchData(tf) {
+  document.getElementById('chart-mask').style.display = 'flex';
+  var intervals = { '1d': '5m', '5d': '1h', '1mo': '1d', '3mo': '1d' };
+  var yUrl  = 'https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=' + intervals[tf] + '&range=' + tf;
+  var proxy = 'https://api.allorigins.win/get?url=' + encodeURIComponent(yUrl);
+
+  fetch(proxy, { cache: 'no-store' })
+    .then(function(r) { return r.json(); })
+    .then(function(json) {
+      var d = JSON.parse(json.contents);
+      if (!d.chart || !d.chart.result || !d.chart.result.length) throw new Error('ไม่มีข้อมูล');
+      var res = d.chart.result[0];
+      var q   = res.indicators.quote[0];
+
+      rawData = res.timestamp.map(function(t, i) {
+        return { time: new Date(t * 1000), close: q.close[i], high: q.high[i], low: q.low[i], open: q.open[i] };
+      }).filter(function(p) { return p.close != null; });
+
+      if (!rawData.length) throw new Error('ข้อมูลว่าง');
+
+      var labels = rawData.map(function(d) {
+        if (tf === '1d')  return d.time.toLocaleTimeString('th-TH', {hour:'2-digit', minute:'2-digit'});
+        if (tf === '5d')  return d.time.toLocaleDateString('th-TH', {weekday:'short'}) + ' ' + d.time.toLocaleTimeString('th-TH', {hour:'2-digit'});
+        return d.time.toLocaleDateString('th-TH', {month:'short', day:'numeric'});
+      });
+
+      chart.data.labels = labels;
+      chart.data.datasets[0].data = rawData.map(function(d) { return d.close; });
+      chart.update();
+
+      var last  = rawData[rawData.length - 1];
+      var first = rawData[0];
+      var hs    = rawData.map(function(d) { return d.high; }).filter(Boolean);
+      var ls    = rawData.map(function(d) { return d.low;  }).filter(Boolean);
+      var chg   = last.close - first.open;
+      var pct   = (chg / first.open) * 100;
+
+      document.getElementById('cur-price').textContent = '$' + last.close.toFixed(2);
+      var chgEl = document.getElementById('cur-chg');
+      chgEl.textContent = (chg >= 0 ? '+' : '') + chg.toFixed(2) + '  (' + pct.toFixed(2) + '%)';
+      chgEl.className   = 'price-chg ' + (chg >= 0 ? 'up' : 'dn');
+      document.getElementById('st-high').textContent = '$' + Math.max.apply(null, hs).toFixed(2);
+      document.getElementById('st-low').textContent  = '$' + Math.min.apply(null, ls).toFixed(2);
+      document.getElementById('st-open').textContent = '$' + first.open.toFixed(2);
+      var sc = document.getElementById('st-chg');
+      sc.textContent = (pct >= 0 ? '+' : '') + pct.toFixed(2) + '%';
+      sc.style.color  = pct >= 0 ? 'var(--green)' : 'var(--red)';
+    })
+    .catch(function(err) {
+      document.getElementById('ai-text').innerHTML = '<span style="color:var(--red)">⚠️ ดึงข้อมูลไม่ได้: ' + err.message + '<br>ลอง Refresh อีกครั้ง</span>';
+    })
+    .finally(function() {
+      document.getElementById('chart-mask').style.display = 'none';
+    });
+}
+
+function setTF(tf, btn) {
+  currentTF = tf;
+  document.querySelectorAll('.tf-btn').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  fetchData(tf);
+}
+
+/* AI */
+function runAI() {
+  if (rawData.length < 5) { alert('กรุณารอข้อมูลราคาโหลดก่อน'); return; }
+  var key = document.getElementById('api-key').value.trim();
+  if (!key) { alert('กรุณาใส่ Anthropic API Key ก่อน'); return; }
+
+  var btn = document.getElementById('btn-ai');
+  btn.disabled = true; btn.textContent = '⏳ ANALYZING...';
+  document.getElementById('ai-text').innerHTML = '<span style="color:var(--gold)">🤖 AI กำลังวิเคราะห์...</span>';
+
+  var recent = rawData.slice(-50);
+  var last   = rawData[rawData.length - 1];
+  var hs     = rawData.map(function(d) { return d.high; }).filter(Boolean);
+  var ls     = rawData.map(function(d) { return d.low;  }).filter(Boolean);
+  var sma10  = avg(recent.slice(-10).map(function(d) { return d.close; }));
+  var sma20  = avg(recent.slice(-20).map(function(d) { return d.close; }));
+  var closes = recent.map(function(d) { return d.close.toFixed(2); }).join(', ');
+
+  var prompt = 'You are a professional gold (XAUUSD) technical analyst.\n\nMarket data XAU/USD:\n- Current Price: $' + last.close.toFixed(2) + '\n- Period High: $' + Math.max.apply(null,hs).toFixed(2) + '\n- Period Low: $' + Math.min.apply(null,ls).toFixed(2) + '\n- SMA(10): $' + sma10.toFixed(2) + '\n- SMA(20): $' + sma20.toFixed(2) + '\n- Recent closes (old to new): ' + closes + '\n\nAnalyze price action, trend, support/resistance. Provide a concrete trade setup.\nReply ONLY with valid JSON, no markdown:\n{"signal":"BUY or SELL or WAIT","entry":number,"tp":number,"sl":number,"analysis":"Thai 2-3 sentences","confidence":integer}';
+
+  fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': key,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 600, messages: [{ role: 'user', content: prompt }] })
+  })
+  .then(function(r) { return r.json(); })
+  .then(function(data) {
+    if (data.error) throw new Error(data.error.message);
+    var raw    = data.content.map(function(c) { return c.text || ''; }).join('');
+    var clean  = raw.replace(/```json|```/g, '').trim();
+    var result = JSON.parse(clean);
+    renderAI(result);
+  })
+  .catch(function(err) {
+    document.getElementById('ai-text').innerHTML = '<span style="color:var(--red)">⚠️ AI Error: ' + err.message + '</span>';
+  })
+  .finally(function() {
+    btn.disabled = false; btn.textContent = '⚡ AI ANALYZE';
+  });
+}
+
+function renderAI(r) {
+  var sigEl = document.getElementById('sig-badge');
+  sigEl.textContent = r.signal;
+  sigEl.className   = 'signal-badge sig-' + r.signal.toLowerCase();
+  document.getElementById('sig-conf').textContent = 'Confidence: ' + r.confidence + '%';
+  document.getElementById('lv-entry').textContent = '$' + (+r.entry).toFixed(2);
+  document.getElementById('lv-tp').textContent    = '$' + (+r.tp).toFixed(2);
+  document.getElementById('lv-sl').textContent    = '$' + (+r.sl).toFixed(2);
+  var risk = Math.abs(r.entry - r.sl), reward = Math.abs(r.tp - r.entry);
+  document.getElementById('lv-rr').textContent = risk > 0 ? '1 : ' + (reward/risk).toFixed(2) : '—';
+
+  chart.options.plugins.annotation.annotations = {
+    entryLine: mkLine(r.entry, '#4B9FFF', 'Entry $' + (+r.entry).toFixed(2)),
+    tpLine:    mkLine(r.tp,    '#00C896', 'TP    $' + (+r.tp).toFixed(2)),
+    slLine:    mkLine(r.sl,    '#FF4554', 'SL    $' + (+r.sl).toFixed(2)),
+  };
+  chart.update();
+
+  document.getElementById('ai-text').innerHTML =
+    '<div style="margin-bottom:9px"><span class="ai-tag">📊 Analysis</span></div>' +
+    r.analysis +
+    '<div style="margin-top:9px;color:var(--text-dim);font-size:10px">Signal: <span style="color:var(--gold)">' + r.signal + '</span> &nbsp;|&nbsp; Conf: <span style="color:var(--gold)">' + r.confidence + '%</span></div>';
+}
+
+function mkLine(y, color, label) {
+  return { type:'line', yMin:y, yMax:y, borderColor:color, borderWidth:1.5, borderDash:[10,5],
+    label: { display:true, content:label, position:'start', backgroundColor:color+'22', color:color, font:{family:'DM Mono',size:9}, padding:{x:7,y:3} } };
+}
+
+function avg(arr) { return arr.reduce(function(a,b){ return a+b; }, 0) / arr.length; }
+</script>
+</body>
+</html>
