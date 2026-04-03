@@ -157,7 +157,7 @@
 <!-- Dashboard -->
 <div id="dashboard">
   <div class="hdr">
-    <div class="hdr-logo">🐱 GreenCat <span class="hdr-tag">| GOLD TERMINAL</span></div>
+    <div class="hdr-logo"> GreenCat <span class="hdr-tag">| GOLD TERMINAL</span></div>
     <div class="hdr-right">
       <div class="live-dot"><span class="dot"></span>LIVE</div>
       <span class="hdr-email" id="hdr-email"></span>
@@ -256,13 +256,14 @@ var auth, chart, rawData = [], currentTF = '1d';
 function startApp() {
   try {
     var fbConfig = {
-      apiKey:            "AIzaSyA9SqXG_HpkEj9mZXAzQnG8Oh9c5CiDNQ4",
-      authDomain:        "greencat-d6419.firebaseapp.com",
-      projectId:         "greencat-d6419",
-      storageBucket:     "greencat-d6419.firebasestorage.app",
-      messagingSenderId: "1039922914232",
-      appId:             "1:1039922914232:web:5271fcd79d932b762ee54d"
-    };
+  apiKey: "AIzaSyA9SqXG_HpkEj9mZXAzQnG8Oh9c5CiDNQ4",
+  authDomain: "greencat-d6419.firebaseapp.com",
+  projectId: "greencat-d6419",
+  storageBucket: "greencat-d6419.firebasestorage.app",
+  messagingSenderId: "1039922914232",
+  appId: "1:1039922914232:web:112844c51f25b3d22ee54d",
+  measurementId: "G-8B1XH6M6FW"
+};
     if (!firebase.apps.length) firebase.initializeApp(fbConfig);
     auth = firebase.auth();
 
