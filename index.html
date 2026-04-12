@@ -1,1 +1,2694 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENOM STORE — Premium</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Chakra+Petch:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════
+   ROOT TOKENS
+════════════════════════════════════════════════ */
+:root{
+  --bg:        #030303;
+  --bg2:       #070707;
+  --bg3:       #0b0b0b;
+  --panel:     #0e0e0e;
+  --panel2:    #121212;
+  --panel3:    #161616;
+  --border:    rgba(255,255,255,0.06);
+  --border2:   rgba(255,255,255,0.1);
+  --border3:   rgba(255,255,255,0.16);
+  --lime:      #b8ff00;
+  --lime2:     #d4ff4d;
+  --lime3:     #e8ffaa;
+  --lime-dim:  rgba(184,255,0,0.12);
+  --lime-glow: 0 0 30px rgba(184,255,0,0.18), 0 0 60px rgba(184,255,0,0.08);
+  --amber:     #ffaa00;
+  --amber-dim: rgba(255,170,0,0.12);
+  --red:       #ff2d2d;
+  --white:     #f0f0f0;
+  --grey1:     #888;
+  --grey2:     #555;
+  --grey3:     #333;
+  --text:      #cccccc;
+  --text2:     #888;
+  --shadow:    0 8px 40px rgba(0,0,0,0.8);
+  --shadow2:   0 2px 16px rgba(0,0,0,0.6);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Chakra Petch',sans-serif;
+  font-weight:400;
+  overflow-x:hidden;
+  line-height:1.5;
+}
+img{display:block;width:100%;height:100%;object-fit:cover;}
+button{cursor:pointer;font-family:'Chakra Petch',sans-serif;border:none;}
+a{color:inherit;text-decoration:none;}
+input,textarea{font-family:'Chakra Petch',sans-serif;}
+::-webkit-scrollbar{width:3px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--lime);border-radius:0;}
 
+/* ════════════════════════════════════════════════
+   NAV
+════════════════════════════════════════════════ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 2rem;
+  background:rgba(3,3,3,0.96);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+  transition:border-color .3s;
+}
+.nav.scrolled{border-bottom-color:rgba(184,255,0,0.2);}
+.nav-logo{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.6rem;letter-spacing:.12em;
+  color:var(--white);display:flex;align-items:center;gap:.5rem;
+}
+.nav-logo-dot{width:8px;height:8px;background:var(--lime);display:inline-block;}
+.nav-links{display:flex;gap:2rem;list-style:none;}
+.nav-links a{
+  font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--grey1);transition:color .2s;
+  font-family:'Space Mono',monospace;
+}
+.nav-links a:hover{color:var(--white);}
+.nav-right{display:flex;align-items:center;gap:.8rem;}
+.nav-search-box{
+  display:flex;align-items:center;gap:0;
+  border:1px solid var(--border2);
+  background:var(--bg2);
+}
+.nav-search-box svg{padding-left:.7rem;flex-shrink:0;color:var(--grey2);}
+.nav-search{
+  background:transparent;border:none;outline:none;
+  color:var(--white);padding:.4rem .7rem;
+  font-family:'Space Mono',monospace;font-size:.65rem;
+  letter-spacing:.08em;width:140px;transition:width .3s;
+}
+.nav-search:focus{width:180px;}
+.nav-btn{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--grey1);width:38px;height:38px;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;position:relative;
+}
+.nav-btn:hover{border-color:var(--lime);color:var(--lime);}
+.nav-badge{
+  position:absolute;top:-6px;right:-6px;
+  background:var(--lime);color:var(--bg);
+  width:16px;height:16px;border-radius:50%;
+  font-size:.58rem;font-weight:700;
+  display:none;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;
+}
+.nav-badge.show{display:flex;}
+.nav-cart-main{
+  background:var(--lime);color:var(--bg);
+  padding:.42rem 1.1rem;
+  font-family:'Space Mono',monospace;font-size:.65rem;
+  letter-spacing:.1em;font-weight:700;
+  display:flex;align-items:center;gap:.5rem;
+  transition:all .2s;
+}
+.nav-cart-main:hover{background:var(--lime2);}
+
+/* ════════════════════════════════════════════════
+   HERO — COVER
+════════════════════════════════════════════════ */
+.hero{
+  position:relative;min-height:100vh;
+  display:flex;flex-direction:column;
+  justify-content:flex-end;
+  overflow:hidden;padding-top:60px;
+}
+/* Cover BG — แก้ตรงนี้เพื่อใส่รูป */
+.hero-cover{
+  position:absolute;inset:0;z-index:0;
+  /* ─── ใส่รูปพื้นหลัง ───
+     background-image: url('your-cover.jpg');
+     background-size: cover;
+     background-position: center;
+  */
+  background:
+    linear-gradient(180deg,rgba(3,3,3,0) 0%,rgba(3,3,3,0.2) 40%,rgba(3,3,3,.85) 75%,var(--bg) 100%),
+    linear-gradient(135deg,#080808 0%,#0d100a 40%,#090d07 100%);
+}
+/* Grid lines effect */
+.hero-cover::after{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(184,255,0,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(184,255,0,0.04) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+/* Photo placeholder */
+.hero-photo-label{
+  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:1;text-align:center;pointer-events:none;opacity:.15;
+}
+.hero-photo-label p{font-family:'Space Mono',monospace;font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;color:var(--lime);margin-top:.8rem;}
+
+.hero-body{
+  position:relative;z-index:2;
+  padding:0 3rem 5rem;
+  display:grid;grid-template-columns:1fr auto;align-items:flex-end;gap:2rem;
+}
+@media(max-width:768px){.hero-body{grid-template-columns:1fr;padding:0 1.5rem 4rem;}}
+
+.hero-text{}
+.hero-kicker{
+  display:inline-flex;align-items:center;gap:.8rem;
+  border:1px solid rgba(184,255,0,.25);
+  padding:.3rem .9rem;margin-bottom:1.5rem;
+}
+.hero-kicker-dot{width:5px;height:5px;background:var(--lime);border-radius:50%;animation:blink 1.5s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.hero-kicker span{font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--lime);}
+
+.hero-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(4.5rem,12vw,10rem);
+  line-height:.9;letter-spacing:.04em;
+  color:var(--white);margin-bottom:.5rem;
+}
+.hero-title em{color:var(--lime);font-style:normal;}
+.hero-subtitle{
+  font-family:'Space Mono',monospace;
+  font-size:.8rem;letter-spacing:.12em;
+  color:var(--grey1);margin-bottom:2.5rem;text-transform:uppercase;
+}
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap;}
+.btn-lime{
+  background:var(--lime);color:var(--bg);
+  padding:.78rem 1.8rem;
+  font-family:'Space Mono',monospace;font-size:.7rem;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:.6rem;
+  transition:all .2s;
+}
+.btn-lime:hover{background:var(--lime2);box-shadow:var(--lime-glow);}
+.btn-ghost{
+  background:transparent;border:1px solid var(--border3);
+  color:var(--text);padding:.78rem 1.8rem;
+  font-family:'Space Mono',monospace;font-size:.7rem;
+  letter-spacing:.1em;text-transform:uppercase;
+  display:inline-flex;align-items:center;gap:.6rem;
+  transition:all .2s;
+}
+.btn-ghost:hover{border-color:var(--lime);color:var(--lime);}
+
+/* Stats strip */
+.hero-stats{
+  display:flex;flex-direction:column;gap:0;
+  border:1px solid var(--border2);
+  background:rgba(10,10,10,0.7);
+  backdrop-filter:blur(10px);
+  min-width:160px;
+}
+.hero-stat{
+  padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);
+}
+.hero-stat:last-child{border-bottom:none;}
+.hero-stat-val{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;line-height:1;color:var(--lime);}
+.hero-stat-key{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.16em;text-transform:uppercase;color:var(--grey2);margin-top:.2rem;}
+
+/* Scroll hint */
+.hero-scroll{
+  position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);
+  z-index:2;display:flex;flex-direction:column;align-items:center;gap:.5rem;
+  animation:float 2s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(7px);}}
+.hero-scroll span{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.22em;text-transform:uppercase;color:var(--grey2);}
+
+/* ════════════════════════════════════════════════
+   AD ZONE A — HERO STRIP (Marquee-style)
+════════════════════════════════════════════════ */
+.adzone-a{
+  background:var(--lime);
+  padding:.7rem 0;
+  overflow:hidden;position:relative;
+}
+.adzone-a-track{
+  display:flex;gap:0;
+  animation:marquee 20s linear infinite;
+  width:max-content;
+}
+@keyframes marquee{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+.adzone-a-item{
+  display:flex;align-items:center;gap:.8rem;
+  padding:0 2.5rem;border-right:1px solid rgba(0,0,0,0.15);
+  white-space:nowrap;
+}
+.adzone-a-item span{font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--bg);}
+.adzone-a-item svg{flex-shrink:0;color:var(--bg);opacity:.6;}
+
+/* ════════════════════════════════════════════════
+   AD ZONE B — HOT PICKS BANNER (premium)
+════════════════════════════════════════════════ */
+.adzone-b{
+  background:linear-gradient(135deg,#0a0f08 0%,#0d1a0c 50%,#080e07 100%);
+  border-top:1px solid rgba(184,255,0,0.08);
+  border-bottom:1px solid rgba(184,255,0,0.08);
+  position:relative;overflow:hidden;
+}
+.adzone-b::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 40% 80% at 0% 50%,rgba(184,255,0,0.06) 0%,transparent 60%),
+    radial-gradient(ellipse 30% 60% at 100% 50%,rgba(184,255,0,0.04) 0%,transparent 60%);
+}
+.adzone-b-inner{
+  max-width:1400px;margin:0 auto;padding:2.5rem 2rem;
+  display:grid;grid-template-columns:280px 1fr;align-items:center;gap:3rem;
+  position:relative;z-index:1;
+}
+@media(max-width:700px){.adzone-b-inner{grid-template-columns:1fr;gap:1.5rem;}}
+.adzone-b-label{
+  font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--lime);margin-bottom:.7rem;
+  display:flex;align-items:center;gap:.6rem;
+}
+.adzone-b-label::before{content:'';width:16px;height:1px;background:var(--lime);}
+.adzone-b-title{
+  font-family:'Bebas Neue',sans-serif;font-size:clamp(1.8rem,4vw,2.8rem);
+  letter-spacing:.06em;color:var(--white);margin-bottom:.4rem;line-height:1;
+}
+.adzone-b-sub{font-size:.78rem;color:var(--grey1);line-height:1.65;}
+/* product cards inside ad B */
+.adzone-b-products{display:flex;gap:.8rem;flex-wrap:wrap;}
+.ad-product-card{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:10px;
+  min-width:160px;
+  display:flex;flex-direction:column;gap:0;
+  transition:all .25s;cursor:pointer;
+  position:relative;overflow:hidden;
+}
+.ad-product-card:hover{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.06);transform:translateY(-3px);}
+.apc-img{
+  width:100%;aspect-ratio:1.2/1;
+  background:#0d1a0c;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;flex-shrink:0;border-radius:10px 10px 0 0;
+}
+.apc-img img{width:100%;height:100%;object-fit:cover;transition:transform .35s;}
+.ad-product-card:hover .apc-img img{transform:scale(1.06);}
+.apc-img-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;width:100%;height:100%;}
+.apc-img-ph svg{color:rgba(184,255,0,0.18);}
+.apc-img-ph span{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:.18em;color:rgba(184,255,0,0.2);}
+.apc-info{padding:.8rem;}
+.apc-name{font-weight:700;font-size:.78rem;color:var(--white);margin-bottom:.4rem;line-height:1.3;}
+.apc-size-pick{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.5rem;}
+.apc-sz{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--grey1);padding:.18rem .45rem;
+  font-family:'Space Mono',monospace;font-size:.55rem;
+  transition:all .2s;border-radius:3px;
+}
+.apc-sz:hover,.apc-sz.active{border-color:var(--lime);color:var(--lime);background:var(--lime-dim);}
+.apc-price{font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--lime);line-height:1;margin-bottom:.6rem;}
+.apc-order-btn{
+  width:100%;background:var(--lime);color:var(--bg);border:none;border-radius:6px;
+  padding:.45rem;font-family:'Space Mono',monospace;font-size:.6rem;
+  font-weight:700;letter-spacing:.08em;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  transition:all .2s;
+}
+.apc-order-btn:hover{background:var(--lime2);box-shadow:0 4px 12px rgba(184,255,0,0.2);}
+
+/* ════════════════════════════════════════════════
+   CATEGORY BAR
+════════════════════════════════════════════════ */
+.catbar{
+  position:sticky;top:60px;z-index:800;
+  background:rgba(3,3,3,0.97);
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(20px);
+}
+.catbar-inner{
+  max-width:1400px;margin:0 auto;padding:0 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  overflow-x:auto;gap:1rem;
+}
+.cat-tabs{display:flex;flex-shrink:0;}
+.cat-tab{
+  background:none;border:none;padding:.95rem 1.3rem;
+  font-family:'Space Mono',monospace;font-size:.62rem;
+  letter-spacing:.1em;text-transform:uppercase;
+  color:var(--grey2);border-bottom:2px solid transparent;
+  transition:all .2s;white-space:nowrap;
+  display:flex;align-items:center;gap:.5rem;
+}
+.cat-tab:hover{color:var(--text);}
+.cat-tab.active{color:var(--lime);border-bottom-color:var(--lime);}
+.cat-badge{
+  background:var(--bg3);color:var(--grey1);
+  padding:.05rem .4rem;font-size:.55rem;border-radius:2px;
+}
+.cat-tab.active .cat-badge{background:var(--lime);color:var(--bg);}
+.catbar-meta{display:flex;align-items:center;gap:1rem;flex-shrink:0;padding:.5rem 0;}
+.catbar-count{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--grey2);white-space:nowrap;}
+.catbar-count span{color:var(--lime);}
+
+/* ════════════════════════════════════════════════
+   SECTION WRAPPER
+════════════════════════════════════════════════ */
+.section{padding:4rem 0;}
+.section-inner{max-width:1400px;margin:0 auto;padding:0 2rem;}
+.section-head{margin-bottom:2.5rem;}
+.eyebrow{
+  font-family:'Space Mono',monospace;font-size:.6rem;
+  letter-spacing:.2em;text-transform:uppercase;color:var(--lime);
+  display:flex;align-items:center;gap:.8rem;margin-bottom:.8rem;
+}
+.eyebrow::before{content:'';width:16px;height:1px;background:var(--lime);}
+.sec-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2rem,5vw,3.5rem);
+  letter-spacing:.06em;color:var(--white);line-height:1;
+}
+.sec-title em{color:var(--lime);font-style:normal;}
+
+/* ════════════════════════════════════════════════
+   AD ZONE C — PROMO STRIP (premium inline)
+════════════════════════════════════════════════ */
+.adzone-c{
+  background:linear-gradient(90deg,#080f08 0%,#0b160a 40%,#080f08 100%);
+  border:1px solid rgba(184,255,0,0.12);
+  border-radius:12px;
+  display:flex;align-items:stretch;
+  margin-bottom:2.5rem;
+  overflow:hidden;position:relative;
+}
+.adzone-c::before{
+  content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(
+    90deg,transparent,transparent 80px,
+    rgba(184,255,0,0.015) 80px,rgba(184,255,0,0.015) 81px
+  );
+}
+.adzone-c-accent{
+  width:4px;flex-shrink:0;
+  background:linear-gradient(180deg,var(--lime) 0%,rgba(184,255,0,0.3) 100%);
+}
+.adzone-c-body{
+  flex:1;display:flex;align-items:center;justify-content:space-between;
+  padding:1.2rem 2rem;gap:2rem;flex-wrap:wrap;position:relative;z-index:1;
+}
+.adzone-c-text strong{
+  display:block;font-size:.92rem;font-weight:700;color:var(--white);margin-bottom:.25rem;
+  letter-spacing:.02em;
+}
+.adzone-c-text span{font-size:.78rem;color:var(--grey1);}
+.adzone-c-actions{display:flex;align-items:center;gap:.6rem;flex-shrink:0;}
+.adzone-c-prods{display:flex;gap:.5rem;flex-wrap:wrap;}
+/* pill */
+.ad-pill{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:8px;
+  padding:.4rem .85rem;display:flex;align-items:center;gap:.6rem;
+  transition:all .2s;cursor:pointer;
+}
+.ad-pill:hover{border-color:rgba(184,255,0,0.4);background:rgba(184,255,0,0.06);}
+.ad-pill-name{font-size:.7rem;color:var(--text);font-weight:500;}
+.ad-pill-price{font-family:'Bebas Neue',monospace;font-size:1rem;color:var(--lime);line-height:1;}
+.ad-pill-cart{
+  background:var(--lime);color:var(--bg);border:none;border-radius:4px;
+  width:22px;height:22px;display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:.7rem;font-weight:700;
+  transition:all .2s;flex-shrink:0;
+}
+.ad-pill-cart:hover{background:var(--lime2);}
+
+/* ════════════════════════════════════════════════
+   PRODUCT GRID — FIXED 3 COLS
+════════════════════════════════════════════════ */
+.products-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  background:transparent;
+  border:none;
+}
+@media(max-width:600px){.products-grid{grid-template-columns:repeat(3,1fr);gap:6px;}}
+
+/* ════════════════════════════════════════════════
+   PRODUCT CARD — matches featured card style
+════════════════════════════════════════════════ */
+.pcard{
+  background:var(--panel);
+  border-radius:12px;
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  transition:all .25s;
+  cursor:pointer;
+}
+.pcard:hover{
+  border-color:rgba(184,255,0,0.4);
+  background:var(--panel2);
+  transform:translateY(-3px);
+  box-shadow:0 10px 30px rgba(0,0,0,0.5), 0 0 18px rgba(184,255,0,0.07);
+}
+.pcard:active{transform:scale(0.98);}
+
+.pcard-badge{
+  position:absolute;top:8px;left:8px;z-index:4;
+  font-family:'Space Mono',monospace;font-size:.52rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;
+  padding:.18rem .55rem;border-radius:3px;
+}
+.badge-new{background:var(--lime);color:var(--bg);}
+.badge-hot{background:#e02020;color:#fff;}
+.badge-sale{background:var(--amber);color:var(--bg);}
+
+.pcard-num{
+  position:absolute;top:8px;right:8px;z-index:4;
+  font-family:'Space Mono',monospace;font-size:.48rem;
+  letter-spacing:.08em;color:rgba(255,255,255,.18);
+}
+
+/* image — same as featured */
+.pcard-img{
+  width:100%;aspect-ratio:1/1;
+  background:linear-gradient(145deg,#0e1e12,#0b1509);
+  position:relative;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  border-radius:12px 12px 0 0;flex-shrink:0;
+}
+.pcard-img-inner{
+  width:100%;height:100%;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  transition:transform .38s ease;
+}
+.pcard:hover .pcard-img-inner{transform:scale(1.07);}
+.pcard-img-inner img{width:100%;height:100%;object-fit:cover;border-radius:12px 12px 0 0;}
+.pcard-ph-icon{color:rgba(184,255,0,0.15);}
+.pcard-ph-txt{font-family:'Space Mono',monospace;font-size:.46rem;letter-spacing:.18em;color:rgba(184,255,0,0.18);margin-top:.4rem;text-transform:uppercase;}
+
+/* view overlay */
+.pcard-img-overlay{
+  position:absolute;inset:0;background:rgba(0,0,0,.6);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;border-radius:12px 12px 0 0;
+}
+.pcard-img:hover .pcard-img-overlay{opacity:1;}
+.pcard-view{
+  border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);
+  color:#fff;padding:.45rem .9rem;border-radius:6px;
+  font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.08em;
+  display:flex;align-items:center;gap:.4rem;transition:all .2s;
+}
+.pcard-view:hover{background:rgba(255,255,255,.18);}
+
+/* card body — identical to afc-body */
+.pcard-body{
+  padding:.8rem .8rem .85rem;
+  flex:1;display:flex;flex-direction:column;
+}
+.pcard-cat{
+  font-family:'Space Mono',monospace;font-size:.5rem;
+  letter-spacing:.16em;text-transform:uppercase;
+  color:rgba(184,255,0,0.6);margin-bottom:.28rem;
+}
+.pcard-name{
+  font-size:.82rem;font-weight:700;color:var(--white);
+  margin-bottom:.35rem;line-height:1.3;
+  cursor:pointer;transition:color .2s;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.pcard-name:hover{color:var(--lime);}
+/* desc เล็กๆ เหมือน featured */
+.pcard-desc{
+  font-size:.7rem;color:var(--grey1);
+  margin-bottom:.65rem;line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+
+/* size chips — IDENTICAL to afc-sizes */
+.pcard-sizes{display:flex;gap:.28rem;margin-bottom:.65rem;flex-wrap:wrap;}
+.pcard-sz{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--grey2);padding:.2rem .42rem;
+  font-family:'Space Mono',monospace;font-size:.52rem;
+  transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:0;
+  border-radius:4px;
+}
+.pcard-sz .szw{font-size:.54rem;font-weight:700;}
+.pcard-sz .szp{font-size:.46rem;color:var(--grey3);transition:color .2s;}
+.pcard-sz:hover,.pcard-sz.active{border-color:var(--lime);color:var(--lime);background:var(--lime-dim);}
+.pcard-sz.active .szp,.pcard-sz:hover .szp{color:var(--amber);}
+
+/* price row */
+.pcard-price-row{display:flex;align-items:baseline;gap:.28rem;margin-bottom:.65rem;}
+.pcard-price-big{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:1.35rem;letter-spacing:.04em;
+  color:var(--lime);line-height:1;
+}
+.pcard-price-unit{font-size:.62rem;color:var(--grey2);}
+
+/* ADD TO CART btn — matches afc-btn */
+.pcard-size-btn{
+  width:100%;
+  background:transparent;border:1px solid var(--lime);color:var(--lime);
+  border-radius:6px;padding:.55rem;
+  font-family:'Space Mono',monospace;font-size:.6rem;font-weight:700;
+  letter-spacing:.08em;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  transition:all .25s;position:relative;overflow:hidden;margin-top:auto;
+}
+.pcard-size-btn::before{
+  content:'';position:absolute;inset:0;background:var(--lime);
+  transform:scaleX(0);transform-origin:left;transition:transform .3s;z-index:0;
+}
+.pcard-size-btn:hover::before{transform:scaleX(1);}
+.pcard-size-btn:hover{color:var(--bg);}
+.pcard-size-btn-txt{position:relative;z-index:1;transition:color .3s;display:flex;align-items:center;gap:.4rem;}
+.pcard-size-btn:hover .pcard-size-btn-txt{color:var(--bg);}
+
+/* ── SIZE SELECTOR SHEET ── */
+.sz-sheet-overlay{
+  position:fixed;inset:0;z-index:3500;
+  background:rgba(0,0,0,0.75);
+  opacity:0;pointer-events:none;
+  transition:opacity .25s;
+  backdrop-filter:blur(6px);
+}
+.sz-sheet-overlay.open{opacity:1;pointer-events:all;}
+.sz-sheet{
+  position:fixed;left:0;right:0;bottom:-100%;z-index:3501;
+  background:#0d1a10;
+  border-top:1px solid rgba(184,255,0,0.25);
+  border-radius:24px 24px 0 0;
+  padding:1.4rem 1.4rem 2rem;
+  transition:bottom .35s cubic-bezier(.16,1,.3,1);
+  max-width:480px;margin:0 auto;
+}
+.sz-sheet.open{bottom:0;}
+.sz-sheet-handle{
+  width:36px;height:4px;background:rgba(255,255,255,0.15);
+  border-radius:2px;margin:0 auto .9rem;
+}
+.sz-sheet-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1rem;
+}
+.sz-sheet-prod{
+  display:flex;align-items:center;gap:.7rem;
+}
+.sz-sheet-prod-img{
+  width:44px;height:44px;border-radius:8px;
+  background:#1a2e1a;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;flex-shrink:0;
+}
+.sz-sheet-prod-img img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.sz-sheet-prod-name{font-weight:700;font-size:.9rem;color:#f0f0f0;line-height:1.3;}
+.sz-sheet-prod-cat{font-family:'Space Mono',monospace;font-size:.55rem;color:var(--lime);letter-spacing:.12em;text-transform:uppercase;margin-top:.15rem;}
+.sz-sheet-close{
+  background:rgba(255,255,255,0.08);border:none;border-radius:50%;
+  width:30px;height:30px;display:flex;align-items:center;justify-content:center;
+  color:#aaa;flex-shrink:0;transition:all .2s;
+}
+.sz-sheet-close:hover{background:rgba(255,255,255,0.14);color:#fff;}
+
+.sz-sheet-label{
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--grey2);margin-bottom:.7rem;
+}
+.sz-options{display:flex;flex-direction:column;gap:.5rem;margin-bottom:1.2rem;}
+.sz-option{
+  background:#121f14;border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:.85rem 1rem;
+  display:flex;align-items:center;justify-content:space-between;
+  cursor:pointer;transition:all .2s;
+}
+.sz-option:hover,.sz-option.selected{
+  border-color:var(--lime);background:rgba(184,255,0,0.08);
+}
+.sz-option-left{display:flex;align-items:center;gap:.8rem;}
+.sz-option-radio{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;flex-shrink:0;
+}
+.sz-option.selected .sz-option-radio{border-color:var(--lime);}
+.sz-option-radio-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--lime);
+  opacity:0;transition:opacity .2s;
+}
+.sz-option.selected .sz-option-radio-dot{opacity:1;}
+.sz-option-weight{font-size:.92rem;font-weight:700;color:#f0f0f0;}
+.sz-option-price{
+  font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:var(--lime);
+  letter-spacing:.04em;
+}
+.sz-sheet-add-btn{
+  width:100%;background:var(--lime);color:var(--bg);border:none;
+  border-radius:50px;padding:.85rem;
+  font-family:'Chakra Petch',sans-serif;font-size:.9rem;font-weight:700;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  transition:all .2s;
+  box-shadow:0 4px 16px rgba(184,255,0,0.25);
+}
+.sz-sheet-add-btn:hover{background:var(--lime2);box-shadow:0 6px 24px rgba(184,255,0,0.4);}
+.sz-sheet-add-btn:active{transform:scale(0.98);}
+.sz-sheet-line-btn{
+  width:100%;background:#06c755;color:#fff;border:none;
+  border-radius:50px;padding:.75rem;margin-top:.5rem;
+  font-family:'Chakra Petch',sans-serif;font-size:.85rem;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:.5rem;
+  transition:all .2s;
+}
+.sz-sheet-line-btn:hover{background:#00d862;}
+
+/* ════════════════════════════════════════════════
+   AD ZONE D — PREMIUM FEATURED + IMAGE CARDS
+════════════════════════════════════════════════ */
+.adzone-d{
+  background:var(--bg);
+  border-top:1px solid var(--border);
+  border-bottom:1px solid var(--border);
+  padding:5rem 2rem;
+  position:relative;overflow:hidden;
+}
+.adzone-d::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 90% at 15% 50%,rgba(184,255,0,0.05) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 70% at 85% 20%,rgba(184,255,0,0.03) 0%,transparent 60%);
+}
+.adzone-d-inner{
+  max-width:1400px;margin:0 auto;position:relative;z-index:1;
+}
+.adzone-d-header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:2.5rem;flex-wrap:wrap;gap:1.5rem;
+}
+.adzone-d-content .ad-kicker{
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--lime);margin-bottom:.8rem;
+  display:flex;align-items:center;gap:.7rem;
+}
+.adzone-d-content .ad-kicker::before{content:'';width:20px;height:1px;background:var(--lime);}
+.adzone-d-title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.2rem,5vw,4.5rem);
+  letter-spacing:.04em;color:var(--white);line-height:.9;margin-bottom:.6rem;
+}
+.adzone-d-sub{font-size:.82rem;color:var(--grey1);line-height:1.7;max-width:420px;}
+.adzone-d-view-all{
+  background:transparent;border:1px solid rgba(184,255,0,0.3);color:var(--lime);
+  padding:.6rem 1.4rem;font-family:'Space Mono',monospace;font-size:.65rem;
+  letter-spacing:.1em;text-transform:uppercase;transition:all .2s;flex-shrink:0;
+  display:flex;align-items:center;gap:.5rem;
+}
+.adzone-d-view-all:hover{background:var(--lime);color:var(--bg);}
+/* 4-column featured product cards */
+.adzone-d-products{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1rem;
+}
+@media(max-width:900px){.adzone-d-products{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:500px){.adzone-d-products{grid-template-columns:1fr 1fr;gap:.6rem;}}
+
+.ad-featured-card{
+  background:var(--panel);
+  border:1px solid var(--border);
+  cursor:pointer;position:relative;overflow:hidden;
+  transition:all .28s;
+  display:flex;flex-direction:column;
+  border-radius:12px;
+}
+.ad-featured-card:hover{
+  border-color:rgba(184,255,0,0.4);
+  background:var(--panel2);
+  transform:translateY(-4px);
+  box-shadow:0 12px 36px rgba(0,0,0,0.5), 0 0 20px rgba(184,255,0,0.07);
+}
+/* image area inside featured card */
+.afc-img{
+  width:100%;aspect-ratio:1/1;
+  background:linear-gradient(145deg,#0e1e12,#0b1509);
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;position:relative;flex-shrink:0;
+  border-radius:12px 12px 0 0;
+}
+.afc-img img{width:100%;height:100%;object-fit:cover;transition:transform .4s ease;}
+.ad-featured-card:hover .afc-img img{transform:scale(1.08);}
+.afc-img-ph{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.5rem;width:100%;height:100%;
+}
+.afc-img-ph svg{color:rgba(184,255,0,0.15);}
+.afc-img-ph span{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.2em;color:rgba(184,255,0,0.18);text-transform:uppercase;}
+/* badge over image */
+.afc-badge{
+  position:absolute;top:8px;left:8px;z-index:2;
+  font-family:'Space Mono',monospace;font-size:.55rem;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;padding:.18rem .55rem;border-radius:3px;
+}
+.afc-b-hot{background:#e02020;color:#fff;}
+.afc-b-new{background:var(--lime);color:var(--bg);}
+.afc-b-sale{background:var(--amber);color:var(--bg);}
+/* rank badge */
+.afc-rank{
+  position:absolute;top:8px;right:8px;z-index:2;
+  width:26px;height:26px;border-radius:50%;
+  background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:.9rem;color:var(--lime);
+  border:1px solid rgba(184,255,0,0.25);
+}
+
+.afc-body{padding:.9rem;flex:1;display:flex;flex-direction:column;}
+.afc-cat{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(184,255,0,0.6);margin-bottom:.3rem;}
+.afc-name{font-size:.82rem;font-weight:700;color:var(--white);margin-bottom:.5rem;line-height:1.3;}
+.afc-sizes{display:flex;gap:.3rem;margin-bottom:.7rem;flex-wrap:wrap;}
+.afc-sz{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--grey2);padding:.2rem .45rem;
+  font-family:'Space Mono',monospace;font-size:.54rem;
+  transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:0;
+  border-radius:4px;
+}
+.afc-sz .sw{font-size:.56rem;font-weight:700;}
+.afc-sz .sp{font-size:.48rem;color:var(--grey3);transition:color .2s;}
+.afc-sz:hover,.afc-sz.active{border-color:var(--lime);color:var(--lime);background:var(--lime-dim);}
+.afc-sz.active .sp,.afc-sz:hover .sp{color:var(--amber);}
+.afc-price-row{display:flex;align-items:baseline;gap:.3rem;margin-bottom:.7rem;}
+.afc-price{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--lime);letter-spacing:.04em;line-height:1;}
+.afc-price-unit{font-size:.65rem;color:var(--grey2);}
+.afc-btn{
+  width:100%;background:transparent;border:1px solid var(--lime);color:var(--lime);
+  padding:.55rem;font-family:'Space Mono',monospace;font-size:.6rem;font-weight:700;
+  letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:.4rem;
+  transition:all .25s;position:relative;overflow:hidden;border-radius:6px;margin-top:auto;
+}
+.afc-btn::before{
+  content:'';position:absolute;inset:0;background:var(--lime);
+  transform:scaleX(0);transform-origin:left;transition:transform .3s;z-index:0;
+}
+.afc-btn:hover::before{transform:scaleX(1);}
+.afc-btn:hover{color:var(--bg);}
+.afc-btn span{position:relative;z-index:1;transition:color .3s;}
+.afc-btn:hover span{color:var(--bg);}
+
+/* ════════════════════════════════════════════════
+   HOW TO ORDER
+════════════════════════════════════════════════ */
+.how-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  gap:1px;background:var(--border);
+  border:1px solid var(--border);
+  margin-top:2rem;
+}
+@media(max-width:768px){.how-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:480px){.how-grid{grid-template-columns:1fr;}}
+.how-card{
+  background:var(--bg2);padding:2rem 1.5rem;
+  border-right:1px solid var(--border);
+  position:relative;transition:background .2s;
+}
+.how-card:last-child{border-right:none;}
+.how-card:hover{background:var(--panel);}
+.how-num{font-family:'Bebas Neue',sans-serif;font-size:4rem;color:rgba(184,255,0,0.08);line-height:1;margin-bottom:.8rem;}
+.how-icon{color:var(--lime);margin-bottom:.7rem;}
+.how-title{font-size:.9rem;font-weight:600;color:var(--white);margin-bottom:.4rem;}
+.how-desc{font-size:.76rem;color:var(--grey1);line-height:1.6;}
+
+/* ════════════════════════════════════════════════
+   CONTACT
+════════════════════════════════════════════════ */
+.contact-grid{
+  display:grid;grid-template-columns:repeat(2,1fr);
+  gap:1px;background:var(--border);border:1px solid var(--border);
+  margin-top:2rem;
+}
+@media(max-width:600px){.contact-grid{grid-template-columns:1fr;}}
+.contact-card{
+  background:var(--bg2);padding:1.8rem;
+  display:flex;align-items:center;gap:1.2rem;
+  transition:background .2s;
+}
+.contact-card:hover{background:var(--panel);}
+.contact-icon{
+  width:46px;height:46px;flex-shrink:0;
+  border:1px solid var(--border2);background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--lime);transition:all .2s;
+}
+.contact-card:hover .contact-icon{border-color:var(--lime);background:var(--lime-dim);}
+.contact-platform{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--lime);margin-bottom:.25rem;}
+.contact-handle{font-weight:600;color:var(--white);font-size:.88rem;}
+.contact-sub{font-size:.74rem;color:var(--grey1);margin-top:.15rem;}
+
+/* ════════════════════════════════════════════════
+   FOOTER
+════════════════════════════════════════════════ */
+.footer{
+  background:var(--bg2);border-top:1px solid var(--border);
+  padding:3.5rem 2rem 2rem;
+}
+.footer-grid{
+  max-width:1400px;margin:0 auto;
+  display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;
+  gap:3rem;margin-bottom:2.5rem;
+}
+@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:480px){.footer-grid{grid-template-columns:1fr;}}
+.footer-brand{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.1em;color:var(--white);display:flex;align-items:center;gap:.5rem;margin-bottom:.7rem;}
+.footer-brand-dot{width:8px;height:8px;background:var(--lime);}
+.footer-desc{font-size:.78rem;color:var(--grey1);line-height:1.7;margin-bottom:1rem;}
+.footer-col-title{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--grey2);margin-bottom:.9rem;}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:.5rem;}
+.footer-links a{font-size:.8rem;color:var(--grey1);transition:color .2s;}
+.footer-links a:hover{color:var(--lime);}
+.footer-bottom{
+  max-width:1400px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+  padding-top:2rem;border-top:1px solid var(--border);
+}
+.footer-copy{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.1em;color:var(--grey2);}
+
+/* ════════════════════════════════════════════════
+   CART SIDEBAR
+════════════════════════════════════════════════ */
+.cart-overlay{position:fixed;inset:0;z-index:1400;background:rgba(0,0,0,.8);opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(4px);}
+.cart-overlay.open{opacity:1;pointer-events:all;}
+.cart-panel{
+  position:fixed;top:0;right:-480px;width:460px;max-width:96vw;
+  height:100vh;background:var(--bg2);
+  border-left:1px solid var(--border2);
+  z-index:1401;transition:right .4s cubic-bezier(.16,1,.3,1);
+  display:flex;flex-direction:column;
+  box-shadow:-20px 0 60px rgba(0,0,0,.7);
+}
+.cart-panel.open{right:0;}
+.cart-top{
+  padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.cart-heading{font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.08em;color:var(--white);display:flex;align-items:center;gap:.6rem;}
+.cart-heading svg{color:var(--lime);}
+.icon-btn{background:none;border:1px solid var(--border2);color:var(--grey1);width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.icon-btn:hover{border-color:var(--red);color:var(--red);}
+
+/* address block */
+.cart-addr{padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--bg3);}
+.cart-addr-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem;}
+.cart-addr-lbl{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.16em;text-transform:uppercase;color:var(--lime);display:flex;align-items:center;gap:.5rem;}
+.cart-addr-edit-btn{background:none;border:none;color:var(--lime);font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.08em;display:flex;align-items:center;gap:.3rem;transition:color .2s;}
+.cart-addr-edit-btn:hover{color:var(--lime2);}
+.cart-addr-empty-btn{
+  width:100%;background:transparent;border:1px dashed var(--border2);
+  color:var(--grey2);padding:.65rem;
+  font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;
+  display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s;
+}
+.cart-addr-empty-btn:hover{border-color:var(--lime);color:var(--lime);}
+.cart-addr-name{font-weight:600;color:var(--white);font-size:.85rem;margin-bottom:.15rem;}
+.cart-addr-text{font-size:.76rem;color:var(--grey1);line-height:1.55;}
+
+/* items */
+.cart-items{flex:1;overflow-y:auto;padding:.8rem 1.2rem;}
+.cart-empty-state{display:flex;flex-direction:column;align-items:center;justify-content:center;height:160px;gap:.7rem;color:var(--grey2);}
+.cart-empty-txt{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;}
+.cart-item{
+  display:flex;gap:.8rem;padding:.75rem 0;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  align-items:flex-start;
+}
+.cart-item:last-child{border-bottom:none;}
+.cart-item-img{
+  width:54px;height:54px;flex-shrink:0;
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;overflow:hidden;
+}
+.cart-item-img img{width:100%;height:100%;object-fit:cover;border-radius:8px;}
+.cart-item-info{flex:1;min-width:0;}
+.cart-item-name{
+  font-weight:700;font-size:.84rem;color:var(--white);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin-bottom:.18rem;
+}
+.cart-item-meta{
+  font-family:'Space Mono',monospace;font-size:.56rem;
+  letter-spacing:.08em;color:rgba(184,255,0,0.7);margin-bottom:.1rem;
+}
+.cart-item-promo{font-size:.62rem;color:var(--amber);margin-bottom:.1rem;}
+.cart-item-price{
+  font-family:'Bebas Neue',sans-serif;font-size:1rem;
+  color:var(--white);letter-spacing:.04em;
+}
+.cart-item-qty{display:flex;align-items:center;gap:.35rem;margin-top:.3rem;}
+.qty-btn{
+  background:rgba(255,255,255,0.06);border:1px solid var(--border2);
+  color:var(--grey1);width:22px;height:22px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;font-size:1rem;transition:all .2s;
+}
+.qty-btn:hover{border-color:var(--lime);color:var(--lime);background:var(--lime-dim);}
+.qty-val{
+  font-family:'Space Mono',monospace;font-size:.65rem;
+  color:var(--white);min-width:20px;text-align:center;
+}
+.cart-item-del{background:none;border:none;color:var(--grey3);padding:.3rem;transition:color .2s;flex-shrink:0;margin-top:2px;}
+.cart-item-del:hover{color:var(--red);}
+
+/* promo */
+.cart-promo{padding:.7rem 1.2rem;border-top:1px solid var(--border);background:rgba(0,0,0,0.2);}
+.promo-lbl{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey2);margin-bottom:.35rem;}
+.promo-row{display:flex;gap:.35rem;}
+.promo-input{
+  flex:1;background:var(--bg2);border:1px solid var(--border2);
+  color:var(--white);padding:.42rem .75rem;outline:none;border-radius:5px;
+  font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.06em;
+  transition:border-color .2s;
+}
+.promo-input:focus{border-color:var(--lime);}
+.promo-apply{
+  background:transparent;border:1px solid var(--lime);border-radius:5px;
+  color:var(--lime);padding:.42rem .85rem;
+  font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.08em;
+  transition:all .2s;
+}
+.promo-apply:hover{background:var(--lime);color:var(--bg);}
+.promo-ok{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--lime);margin-top:.3rem;display:none;align-items:center;gap:.35rem;}
+.promo-ok.show{display:flex;}
+
+/* cart footer — compact */
+.cart-foot{border-top:1px solid var(--border);padding:.9rem 1.2rem;}
+.cart-sum{
+  background:rgba(0,0,0,0.25);
+  border:1px solid var(--border);
+  border-radius:8px;padding:.7rem .9rem;
+  margin-bottom:.8rem;
+}
+.csum-row{display:flex;justify-content:space-between;align-items:center;font-size:.76rem;color:var(--grey1);padding:.22rem 0;}
+.csum-row.total{
+  border-top:1px solid var(--border);
+  padding-top:.55rem;margin-top:.3rem;
+}
+.csum-row.total .cl{
+  font-family:'Bebas Neue',sans-serif;font-size:.95rem;
+  color:var(--white);letter-spacing:.04em;
+}
+.csum-row.total .cv{
+  font-family:'Bebas Neue',sans-serif;font-size:1.15rem;
+  color:var(--lime);letter-spacing:.04em;
+}
+.disc-val{color:var(--lime);font-family:'Space Mono',monospace;font-size:.65rem;}
+/* buttons — smaller */
+.checkout-btn{
+  width:100%;background:var(--lime);color:var(--bg);border:none;border-radius:7px;
+  padding:.72rem;font-family:'Space Mono',monospace;font-size:.65rem;
+  font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  display:flex;align-items:center;justify-content:center;gap:.45rem;
+  transition:all .2s;margin-bottom:.4rem;
+}
+.checkout-btn:hover{background:var(--lime2);}
+.line-btn{
+  width:100%;background:#06c755;color:#fff;border:none;border-radius:7px;
+  padding:.65rem;font-family:'Chakra Petch',sans-serif;font-size:.8rem;font-weight:600;
+  display:flex;align-items:center;justify-content:center;gap:.45rem;transition:all .2s;
+}
+.line-btn:hover{background:#00d862;}
+
+/* ════════════════════════════════════════════════
+   ADDRESS MODAL
+════════════════════════════════════════════════ */
+.addr-overlay{position:fixed;inset:0;z-index:2500;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(10px);}
+.addr-overlay.open{opacity:1;pointer-events:all;}
+.addr-box{background:var(--bg2);border:1px solid var(--border2);max-width:540px;width:100%;transform:translateY(20px);transition:transform .35s cubic-bezier(.16,1,.3,1);}
+.addr-overlay.open .addr-box{transform:translateY(0);}
+.addr-head{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.addr-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.08em;color:var(--white);display:flex;align-items:center;gap:.6rem;}
+.addr-title svg{color:var(--lime);}
+.addr-body{padding:1.5rem;}
+.f-row{margin-bottom:1rem;}
+.f-label{display:block;font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey2);margin-bottom:.38rem;}
+.f-input,.f-textarea{
+  width:100%;background:var(--bg3);border:1px solid var(--border2);
+  color:var(--white);padding:.68rem .9rem;outline:none;
+  font-family:'Chakra Petch',sans-serif;font-size:.88rem;
+  transition:border-color .2s;
+}
+.f-input:focus,.f-textarea:focus{border-color:var(--lime);}
+.f-textarea{resize:vertical;min-height:80px;line-height:1.55;}
+.f-grid2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;}
+.addr-saved-bar{padding:.6rem 1.5rem;border-top:1px solid var(--border);display:none;align-items:center;gap:.5rem;font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--lime);}
+.addr-saved-bar.show{display:flex;}
+.addr-foot{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;gap:.6rem;}
+.addr-save{flex:1;background:var(--lime);color:var(--bg);border:none;padding:.82rem;font-family:'Space Mono',monospace;font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:.4rem;transition:all .2s;}
+.addr-save:hover{background:var(--lime2);}
+.addr-cancel{background:transparent;border:1px solid var(--border2);color:var(--grey1);padding:.82rem 1.2rem;font-family:'Space Mono',monospace;font-size:.65rem;letter-spacing:.08em;transition:all .2s;}
+.addr-cancel:hover{color:var(--white);border-color:var(--border3);}
+
+/* ════════════════════════════════════════════════
+   PRODUCT DETAIL MODAL
+════════════════════════════════════════════════ */
+.pmodal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;padding:1.5rem;opacity:0;pointer-events:none;transition:opacity .3s;backdrop-filter:blur(12px);}
+.pmodal-overlay.open{opacity:1;pointer-events:all;}
+.pmodal{background:var(--bg2);border:1px solid var(--border2);max-width:900px;width:100%;max-height:92vh;overflow-y:auto;transform:scale(.95) translateY(20px);transition:transform .35s cubic-bezier(.16,1,.3,1);}
+.pmodal-overlay.open .pmodal{transform:scale(1) translateY(0);}
+.pmodal-top{padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:5;}
+.pmodal-crumb{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.1em;color:var(--grey2);}
+.pmodal-crumb span{color:var(--lime);}
+.pmodal-navs{display:flex;align-items:center;gap:.4rem;}
+.pmod-nav-btn,.pmod-close-btn{background:none;border:1px solid var(--border2);color:var(--grey2);width:30px;height:30px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.pmod-nav-btn:hover{border-color:var(--border3);color:var(--white);}
+.pmod-close-btn:hover{border-color:var(--red);color:var(--red);}
+.pmodal-body{display:grid;grid-template-columns:1fr 1fr;}
+@media(max-width:620px){.pmodal-body{grid-template-columns:1fr;}}
+.pmodal-img{background:var(--bg3);border-right:1px solid var(--border);display:flex;flex-direction:column;min-height:320px;}
+.pmodal-img-main{flex:1;display:flex;align-items:center;justify-content:center;position:relative;min-height:280px;}
+.pmodal-img-main img{width:100%;height:100%;object-fit:cover;}
+.pm-ph{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.8rem;width:100%;min-height:280px;}
+.pm-ph svg{color:rgba(255,255,255,.08);}
+.pm-ph span{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.2em;color:rgba(255,255,255,.1);}
+.pmodal-img-foot{padding:.7rem 1.1rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.pmodal-pid{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.1em;color:var(--grey2);}
+.pmodal-promo-badge{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--amber);}
+.pmodal-badge-abs{position:absolute;top:0;left:0;font-family:'Space Mono',monospace;font-size:.56rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .6rem;}
+.pmodal-info{padding:1.6rem 1.4rem;}
+.pm-cat{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--lime);margin-bottom:.4rem;}
+.pm-name{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.04em;color:var(--white);margin-bottom:.6rem;line-height:1.1;}
+.pm-desc{font-size:.82rem;color:var(--grey1);line-height:1.68;margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px solid var(--border);}
+.pm-specs{margin-bottom:1.2rem;}
+.pm-spec-row{display:flex;justify-content:space-between;padding:.38rem 0;border-bottom:1px solid rgba(255,255,255,.04);}
+.pm-spec-row:first-child{border-top:1px solid rgba(255,255,255,.04);}
+.pm-spec-k{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.08em;color:var(--grey2);}
+.pm-spec-v{font-size:.8rem;color:var(--text);font-weight:500;}
+.pm-stock{display:inline-flex;align-items:center;gap:.45rem;margin-bottom:1rem;}
+.pm-stock-dot{width:6px;height:6px;border-radius:50%;background:var(--lime);animation:stockPulse 1.8s ease-in-out infinite;}
+@keyframes stockPulse{0%,100%{box-shadow:0 0 0 0 rgba(184,255,0,.4);}50%{box-shadow:0 0 0 5px transparent;}}
+.pm-stock-txt{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--lime);}
+.pm-sz-lbl{font-family:'Space Mono',monospace;font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey2);margin-bottom:.5rem;}
+.pm-sizes{display:flex;gap:.4rem;margin-bottom:1rem;flex-wrap:wrap;}
+.pm-sz{border:1px solid var(--border2);background:transparent;color:var(--grey2);padding:.45rem .85rem;font-family:'Space Mono',monospace;font-size:.65rem;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:1px;}
+.pm-sz .pmw{font-size:.68rem;font-weight:700;}
+.pm-sz .pmp{font-size:.56rem;color:var(--grey3);transition:color .2s;}
+.pm-sz:hover,.pm-sz.active{border-color:var(--lime);color:var(--lime);background:var(--lime-dim);}
+.pm-sz.active .pmp,.pm-sz:hover .pmp{color:var(--amber);}
+.pm-price-row{display:flex;align-items:baseline;gap:.4rem;margin-bottom:1.2rem;}
+.pm-price{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:var(--white);line-height:1;}
+.pm-unit{font-size:.78rem;color:var(--grey2);}
+.pm-add-btn{width:100%;background:var(--lime);color:var(--bg);border:none;padding:.92rem;font-family:'Space Mono',monospace;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:all .2s;margin-bottom:.5rem;}
+.pm-add-btn:hover{background:var(--lime2);box-shadow:var(--lime-glow);}
+.pm-line-btn{width:100%;background:#06c755;color:#fff;border:none;padding:.78rem;font-family:'Chakra Petch',sans-serif;font-size:.85rem;font-weight:600;display:flex;align-items:center;justify-content:center;gap:.5rem;transition:all .2s;margin-bottom:.9rem;}
+.pm-line-btn:hover{background:#00d862;}
+.pm-tags{display:flex;gap:.35rem;flex-wrap:wrap;}
+.pm-tag{border:1px solid var(--border);color:var(--grey2);font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.12em;padding:.18rem .5rem;text-transform:uppercase;}
+
+/* ════════════════════════════════════════════════
+   TOAST
+════════════════════════════════════════════════ */
+#toast{position:fixed;bottom:1.8rem;left:50%;transform:translateX(-50%) translateY(70px);background:var(--bg2);border:1px solid var(--lime);color:var(--lime);padding:.62rem 1.4rem;font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.1em;z-index:9999;transition:transform .3s ease;white-space:nowrap;display:flex;align-items:center;gap:.5rem;}
+#toast.show{transform:translateX(-50%) translateY(0);}
+.toast-dot{width:5px;height:5px;border-radius:50%;background:var(--lime);flex-shrink:0;}
+#btt{position:fixed;bottom:1.8rem;right:1.8rem;z-index:700;background:var(--bg2);border:1px solid var(--border2);color:var(--grey1);width:38px;height:38px;display:flex;align-items:center;justify-content:center;transition:all .2s;opacity:0;pointer-events:none;}
+#btt.show{opacity:1;pointer-events:all;}
+#btt:hover{border-color:var(--lime);color:var(--lime);}
+
+/* divider */
+.divider{height:1px;background:var(--border);}
+
+@media(max-width:900px){.nav-links,.nav-search-box{display:none;}.hero-stats{display:none;}.footer-grid{grid-template-columns:1fr 1fr;}}
+
+/* ════════════════════════════════════════════════
+   COVER / SPLASH PAGE
+════════════════════════════════════════════════ */
+#coverPage{
+  position:fixed;inset:0;z-index:9000;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  overflow:hidden;
+  cursor:pointer;
+  transition:opacity .6s ease, visibility .6s ease;
+}
+#coverPage.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+
+.cover-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    linear-gradient(180deg,rgba(3,3,3,0.15) 0%,rgba(3,3,3,0.5) 60%,rgba(3,3,3,0.95) 100%),
+    linear-gradient(135deg,#060a05 0%,#0a150a 40%,#050d05 100%);
+  /* ✏️ ใส่รูปปก: background-image:url('cover.jpg');background-size:cover;background-position:center; */
+}
+.cover-grid-lines{
+  position:absolute;inset:0;z-index:1;
+  background-image:
+    linear-gradient(rgba(184,255,0,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(184,255,0,0.04) 1px,transparent 1px);
+  background-size:60px 60px;
+  animation:coverGridMove 25s linear infinite;
+}
+@keyframes coverGridMove{0%{background-position:0 0;}100%{background-position:60px 60px;}}
+
+.cover-glow{
+  position:absolute;width:500px;height:500px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(184,255,0,0.08) 0%,transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);
+  z-index:1;
+  animation:coverGlowPulse 4s ease-in-out infinite;
+}
+@keyframes coverGlowPulse{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:.6;}50%{transform:translate(-50%,-50%) scale(1.15);opacity:1;}}
+
+.cover-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:2rem;
+  flex:1;
+}
+
+.cover-logo-dot{
+  width:10px;height:10px;background:var(--lime);border-radius:50%;
+  margin:0 auto 1.5rem;
+  box-shadow:0 0 20px rgba(184,255,0,0.6);
+  animation:dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 10px rgba(184,255,0,0.4);}50%{box-shadow:0 0 30px rgba(184,255,0,0.9),0 0 60px rgba(184,255,0,0.3);}}
+
+.cover-shop-name{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(3.5rem,15vw,8rem);
+  letter-spacing:.08em;
+  color:var(--white);
+  line-height:.9;
+  margin-bottom:.4rem;
+  text-shadow:0 0 60px rgba(184,255,0,0.15);
+}
+.cover-shop-sub{
+  font-family:'Space Mono',monospace;
+  font-size:clamp(.62rem,2.5vw,.85rem);
+  letter-spacing:.22em;text-transform:uppercase;
+  color:var(--lime);
+  margin-bottom:3rem;
+  opacity:.8;
+}
+/* Photo placeholder shown on cover */
+.cover-img-placeholder{
+  width:min(280px,70vw);height:min(280px,70vw);
+  border:1px solid rgba(184,255,0,0.12);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:.8rem;margin:0 auto 2.5rem;
+  background:rgba(184,255,0,0.03);
+  position:relative;overflow:hidden;
+}
+.cover-img-placeholder img{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  display:block;
+}
+.cover-img-placeholder-txt{
+  font-family:'Space Mono',monospace;font-size:.58rem;
+  letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(184,255,0,0.25);
+  position:relative;z-index:1;
+}
+.cover-img-placeholder svg{position:relative;z-index:1;}
+
+.cover-stats{
+  display:flex;gap:2.5rem;justify-content:center;
+  margin-bottom:auto;
+}
+.cover-stat-val{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:var(--lime);line-height:1;display:block;}
+.cover-stat-key{font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:var(--grey2);}
+
+/* Bottom tap prompt */
+.cover-tap-zone{
+  position:relative;z-index:2;
+  padding:2.5rem 2rem 3rem;
+  display:flex;flex-direction:column;align-items:center;gap:.8rem;
+}
+.cover-tap-ring{
+  width:52px;height:52px;border-radius:50%;
+  border:1.5px solid rgba(184,255,0,0.4);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;
+  animation:ringPulse 2.2s ease-in-out infinite;
+}
+@keyframes ringPulse{0%,100%{box-shadow:0 0 0 0 rgba(184,255,0,0.25);}50%{box-shadow:0 0 0 12px transparent;}}
+.cover-tap-ring svg{color:var(--lime);}
+.cover-tap-text{
+  font-family:'Space Mono',monospace;
+  font-size:.72rem;letter-spacing:.18em;text-transform:uppercase;
+  color:rgba(255,255,255,.45);
+}
+.cover-tap-hint{
+  font-family:'Chakra Petch',sans-serif;
+  font-size:.65rem;letter-spacing:.06em;
+  color:rgba(255,255,255,.22);
+}
+
+/* cart total fix */
+.csum-row.total .cl{font-size:1rem!important;}
+.csum-row.total .cv{font-size:1.1rem!important;white-space:nowrap;}
+
+/* ════════════════════════════════════════════════
+   COVER PAGE — ใหม่ สะอาด ไม่มีจุด ไม่มีกริด
+════════════════════════════════════════════════ */
+#coverPage{
+  position:fixed;inset:0;z-index:9000;
+  display:flex;flex-direction:column;
+  cursor:pointer;
+  transition:opacity .7s ease, visibility .7s ease;
+  background:#000;
+}
+#coverPage.hidden{opacity:0;visibility:hidden;pointer-events:none;}
+
+/* ── รูปปก fullscreen ── */
+.cover-photo{
+  position:absolute;inset:0;z-index:0;
+  /* ✏️ ใส่รูปปกตรงนี้:
+     background:url('cover.jpg') center/cover no-repeat;
+  */
+  background:#0a0a0a;
+}
+.cover-photo img{
+  position:absolute;inset:0;width:100%;height:100%;
+  object-fit:cover;display:block;
+}
+/* gradient overlay เบาๆ ด้านล่าง */
+.cover-overlay{
+  position:absolute;inset:0;z-index:1;
+  background:linear-gradient(
+    to bottom,
+    rgba(0,0,0,0.1) 0%,
+    rgba(0,0,0,0.0) 30%,
+    rgba(0,0,0,0.0) 55%,
+    rgba(0,0,0,0.65) 80%,
+    rgba(0,0,0,0.92) 100%
+  );
+}
+/* ── placeholder ก่อนมีรูป ── */
+.cover-ph{
+  position:absolute;inset:0;z-index:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;
+  background:#080808;
+}
+.cover-ph svg{opacity:.1;}
+.cover-ph-txt{
+  font-family:'Space Mono',monospace;font-size:.6rem;
+  letter-spacing:.25em;text-transform:uppercase;
+  color:rgba(255,255,255,.2);
+}
+
+/* ── Content bottom ── */
+.cover-bottom{
+  position:relative;z-index:2;
+  margin-top:auto;
+  padding:2.5rem 2.5rem 3.5rem;
+  display:flex;flex-direction:column;
+  align-items:flex-start;
+  gap:.5rem;
+}
+/* ชื่อร้าน */
+.cover-name{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(2.8rem,10vw,6rem);
+  letter-spacing:.06em;
+  color:#fff;
+  line-height:1;
+  text-shadow:0 2px 30px rgba(0,0,0,0.5);
+}
+.cover-tagline{
+  font-family:'Chakra Petch',sans-serif;
+  font-size:clamp(.75rem,2.5vw,.95rem);
+  letter-spacing:.12em;
+  color:rgba(255,255,255,.5);
+  font-weight:300;
+  margin-bottom:1.5rem;
+}
+/* แตะเข้าสู่ระบบ — คำเล็กๆ ด้านล่าง */
+.cover-enter{
+  font-family:'Chakra Petch',sans-serif;
+  font-size:.78rem;
+  letter-spacing:.1em;
+  color:rgba(255,255,255,.35);
+  font-weight:400;
+  display:flex;align-items:center;gap:.6rem;
+  animation:coverEntBlink 2.5s ease-in-out infinite;
+}
+@keyframes coverEntBlink{0%,100%{opacity:.35;}50%{opacity:.7;}}
+.cover-enter-line{
+  width:20px;height:1px;
+  background:rgba(255,255,255,.3);
+}
+
+/* ════════════════════════════════════════════════
+   LANGUAGE MODAL
+════════════════════════════════════════════════ */
+.lang-modal-overlay{
+  position:fixed;inset:0;z-index:4000;
+  background:rgba(0,0,0,.85);
+  display:flex;align-items:flex-end;
+  opacity:0;pointer-events:none;
+  transition:opacity .25s;
+  backdrop-filter:blur(8px);
+}
+.lang-modal-overlay.open{opacity:1;pointer-events:all;}
+.lang-modal{
+  background:var(--bg2);
+  border-top:1px solid var(--border2);
+  border-radius:16px 16px 0 0;
+  width:100%;
+  padding:1.5rem;
+  transform:translateY(100%);
+  transition:transform .35s cubic-bezier(.16,1,.3,1);
+  max-width:480px;
+  margin:0 auto;
+}
+.lang-modal-overlay.open .lang-modal{transform:translateY(0);}
+.lang-modal-handle{width:32px;height:3px;background:var(--border2);border-radius:2px;margin:0 auto 1.2rem;}
+.lang-modal-title{
+  font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.08em;
+  color:var(--white);margin-bottom:1rem;text-align:center;
+}
+.lang-options{display:flex;flex-direction:column;gap:.5rem;}
+.lang-opt{
+  background:var(--bg3);border:1px solid var(--border);
+  padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;
+  border-radius:8px;cursor:pointer;transition:all .2s;
+}
+.lang-opt:hover{border-color:var(--border2);}
+.lang-opt.active{border-color:var(--lime);background:var(--lime-dim);}
+.lang-opt-left{display:flex;align-items:center;gap:.8rem;}
+.lang-flag{font-size:1.3rem;line-height:1;}
+.lang-name{font-weight:600;color:var(--white);font-size:.9rem;}
+.lang-native{font-size:.75rem;color:var(--grey1);margin-top:.1rem;}
+.lang-check{
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;
+}
+.lang-opt.active .lang-check{border-color:var(--lime);background:var(--lime);}
+.lang-check-dot{
+  width:8px;height:8px;border-radius:50%;background:var(--bg);
+  opacity:0;transition:opacity .2s;
+}
+.lang-opt.active .lang-check-dot{opacity:1;}
+.lang-modal-close{
+  width:100%;background:transparent;border:1px solid var(--border2);color:var(--grey1);
+  padding:.8rem;border-radius:8px;margin-top:.8rem;
+  font-family:'Chakra Petch',sans-serif;font-size:.82rem;letter-spacing:.06em;
+  transition:all .2s;
+}
+.lang-modal-close:hover{color:var(--white);border-color:var(--border3);}
+
+/* PRODUCTS GRID — forced 3 columns always */
+.products-grid{
+  display:grid !important;
+  grid-template-columns:repeat(3,1fr) !important;
+  gap:12px;
+  background:transparent;
+  border:none;
+}
+@media(max-width:600px){.products-grid{grid-template-columns:repeat(3,1fr) !important;gap:8px;}}
+</style>
+</head>
+<body>
+
+<!-- ══════ COVER PAGE ══════ -->
+<div id="coverPage" onclick="enterStore()">
+  <!-- ✏️ พื้นหลัง: แก้ .cover-photo ใน CSS เป็น background:url('cover.jpg') center/cover no-repeat -->
+  <div class="cover-photo">
+    <!-- หรือใส่แท็ก img: <img src="cover.jpg" alt="cover"> -->
+    <div class="cover-ph">
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width=".5">
+        <rect x="3" y="3" width="18" height="18" rx="1"/>
+        <circle cx="8.5" cy="8.5" r="1.5"/>
+        <polyline points="21 15 16 10 5 21"/>
+      </svg>
+      <span class="cover-ph-txt">ใส่รูปปกของคุณที่นี่</span>
+    </div>
+  </div>
+  <div class="cover-overlay"></div>
+
+  <div class="cover-bottom">
+    <!-- ✏️ แก้ชื่อร้าน -->
+    <div class="cover-name">VENOM<br>STORE</div>
+    <!-- ✏️ แก้ tagline -->
+    <div class="cover-tagline">Premium · Quality · Authentic</div>
+    <div class="cover-enter">
+      <span class="cover-enter-line"></span>
+      แตะเข้าสู่ระบบ
+    </div>
+  </div>
+</div>
+
+<!-- ══════ NAV ══════ -->
+<nav class="nav" id="mainNav">
+  <div class="nav-logo">
+    <span class="nav-logo-dot"></span>
+    <!-- ✏️ แก้ชื่อร้านที่นี่ -->
+    VENOM STORE
+  </div>
+  <ul class="nav-links">
+    <li><a href="#hero">HOME</a></li>
+    <li><a href="#catalog">SHOP</a></li>
+    <li><a href="#how">HOW TO</a></li>
+    <li><a href="#contact">CONTACT</a></li>
+  </ul>
+  <div class="nav-right">
+    <div class="nav-search-box">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+      <input class="nav-search" id="searchInput" type="text" placeholder="SEARCH..." oninput="doSearch(this.value)">
+    </div>
+    <button class="nav-btn" onclick="openLangModal()" title="เปลี่ยนภาษา" id="langBtn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="2" y1="12" x2="22" y2="12"/>
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+      </svg>
+    </button>
+    <button class="nav-btn" onclick="openAddrModal()" title="ที่อยู่จัดส่ง">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    </button>
+    <button class="nav-cart-main" onclick="toggleCart()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      CART (<span id="cartQtyNav">0</span>)
+    </button>
+  </div>
+</nav>
+
+<!-- ══════ HERO ══════ -->
+<section class="hero" id="hero">
+  <div class="hero-cover">
+    <!-- ─── ใส่รูปพื้นหลังหน้าปก ───
+         เพิ่ม style="background-image:url('cover.jpg');background-size:cover;background-position:center;"
+         ใน .hero-cover ด้านบน
+    -->
+  </div>
+  <!-- placeholder ขณะยังไม่มีรูป -->
+  <div class="hero-photo-label">
+    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="rgba(184,255,0,0.5)" stroke-width=".8">
+      <rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
+    </svg>
+    <p>COVER PHOTO — ใส่รูปของคุณที่นี่</p>
+  </div>
+
+  <div class="hero-body">
+    <div class="hero-text">
+      <div class="hero-kicker">
+        <span class="hero-kicker-dot"></span>
+        <!-- ✏️ แก้ข้อความ kicker -->
+        <span>Premium Quality — 100% Authentic</span>
+      </div>
+      <!-- ✏️ แก้ชื่อร้านหลัก -->
+      <h1 class="hero-title">VENOM<br><em>STORE.</em></h1>
+      <!-- ✏️ แก้ Tagline -->
+      <p class="hero-subtitle">สินค้าคุณภาพสูง · จัดส่งทั่วประเทศ · ของแท้ทุกชิ้น</p>
+      <div class="hero-cta">
+        <a href="#catalog" class="btn-lime">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg>
+          ดูสินค้าทั้งหมด
+        </a>
+        <a href="#contact" class="btn-ghost">ติดต่อร้าน</a>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-val">500+</div><div class="hero-stat-key">ลูกค้า</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">30</div><div class="hero-stat-key">สินค้า</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">100%</div><div class="hero-stat-key">ของแท้</div></div>
+      <div class="hero-stat"><div class="hero-stat-val">1-3</div><div class="hero-stat-key">วันจัดส่ง</div></div>
+    </div>
+  </div>
+  <div class="hero-scroll">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(136,136,136,.7)" stroke-width="1.5"><polyline points="6 9 12 15 18 9"/></svg>
+    <span>SCROLL</span>
+  </div>
+</section>
+
+<!-- ══════ AD ZONE A — MARQUEE ══════ -->
+<div class="adzone-a">
+  <div class="adzone-a-track" id="marqueeTrack">
+    <!-- items generated by JS -->
+  </div>
+</div>
+
+<!-- ══════ AD ZONE B — FEATURED PRODUCT AD ══════ -->
+<div class="adzone-b">
+  <div class="adzone-b-inner">
+    <div>
+      <div class="adzone-b-label">สินค้าแนะนำ</div>
+      <!-- ✏️ แก้หัวข้อโฆษณา -->
+      <div class="adzone-b-title">HOT PICKS — สินค้าขายดี</div>
+      <!-- ✏️ แก้คำอธิบาย -->
+      <div class="adzone-b-sub">คัดมาเฉพาะสินค้าที่ลูกค้านิยมมากที่สุด กดสั่งได้เลยทันที</div>
+    </div>
+    <div class="adzone-b-products" id="adZoneBProducts">
+      <!-- generated -->
+    </div>
+  </div>
+</div>
+<div class="divider"></div>
+
+<!-- ══════ BEST SELLERS — ขายดี อยู่ด้านบน ══════ -->
+<div class="adzone-d">
+  <div class="adzone-d-inner">
+    <div class="adzone-d-header">
+      <div class="adzone-d-content">
+        <div class="ad-kicker">Bestsellers · Hot Picks</div>
+        <div class="adzone-d-title">BEST<br>SELLERS.</div>
+        <div class="adzone-d-sub">สินค้าขายดีที่สุดของร้าน กดสั่งได้เลยทันที<br>เลือกขนาด กดเพิ่มตะกร้าได้ในนี้เลย</div>
+      </div>
+      <a href="#catalog" class="adzone-d-view-all">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 12 19 12"/><polyline points="13 6 19 12 13 18"/></svg>
+        ดูสินค้าทั้งหมด
+      </a>
+    </div>
+    <div class="adzone-d-products" id="adZoneDProducts"></div>
+  </div>
+</div>
+
+<!-- ══════ CATALOG ══════ -->
+<section id="catalog">
+  <!-- Sticky category bar -->
+  <div class="catbar">
+    <div class="catbar-inner">
+      <div class="cat-tabs" id="catTabsEl">
+        <button class="cat-tab active" onclick="filterCat('ALL',this)">ทั้งหมด <span class="cat-badge" id="cb-ALL">30</span></button>
+        <button class="cat-tab" onclick="filterCat('CAT-A',this)">หมวด A <span class="cat-badge" id="cb-CAT-A">0</span></button>
+        <button class="cat-tab" onclick="filterCat('CAT-B',this)">หมวด B <span class="cat-badge" id="cb-CAT-B">0</span></button>
+        <button class="cat-tab" onclick="filterCat('CAT-C',this)">หมวด C <span class="cat-badge" id="cb-CAT-C">0</span></button>
+        <button class="cat-tab" onclick="filterCat('HOT',this)">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12.9 2.1C9 2.5 5.5 5.1 4.4 8.8c-.8 2.6 0 5.3 1.7 7.2-.5-.1-.9-.4-1.3-.7-.6-.5-1.3-.4-1.6.3-.4.9 0 2 .6 2.8 1.5 2 3.9 3.3 6.5 3.6 4.7.5 9-2.7 9.7-7.3.4-2.5-.3-5-1.9-6.9.1.8.1 1.6-.2 2.3-.6-3.3-3-6.1-5-8z"/></svg>
+          HOT <span class="cat-badge" id="cb-HOT">0</span>
+        </button>
+        <button class="cat-tab" onclick="filterCat('NEW',this)">NEW <span class="cat-badge" id="cb-NEW">0</span></button>
+        <button class="cat-tab" onclick="filterCat('SALE',this)">SALE <span class="cat-badge" id="cb-SALE">0</span></button>
+      </div>
+      <div class="catbar-meta">
+        <span class="catbar-count">แสดง <span id="showCount">30</span> รายการ</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-inner" style="padding-top:2.5rem;">
+    <div class="section-head">
+      <div class="eyebrow">Catalog</div>
+      <div class="sec-title">ALL <em>PRODUCTS</em></div>
+    </div>
+
+    <!-- AD ZONE C -->
+    <div class="adzone-c">
+      <div class="adzone-c-accent"></div>
+      <div class="adzone-c-body">
+        <div class="adzone-c-text">
+          <strong>โปรโมชั่นพิเศษ — สินค้าแนะนำวันนี้</strong>
+          <span>กดสั่งได้ทันทีจากรายการด้านขวา · จัดส่งฟรีทุกออเดอร์</span>
+        </div>
+        <div class="adzone-c-actions">
+          <div class="adzone-c-prods" id="adZoneCProducts"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRODUCTS GRID 3 COLS -->
+    <div class="products-grid" id="productsGrid"></div>
+  </div>
+</section>
+
+<!-- ══════ HOW TO ══════ -->
+<section class="section" id="how" style="background:var(--bg2);">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="eyebrow">Guide</div>
+      <div class="sec-title">HOW <em>TO ORDER</em></div>
+    </div>
+    <div class="how-grid">
+      <div class="how-card">
+        <div class="how-num">01</div>
+        <div class="how-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></div>
+        <div class="how-title">เลือกสินค้า</div>
+        <div class="how-desc">กดดูรายละเอียดสินค้า เลือกขนาดที่ต้องการ แล้วเพิ่มลงตะกร้า</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">02</div>
+        <div class="how-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+        <div class="how-title">ใส่ที่อยู่</div>
+        <div class="how-desc">กรอกชื่อ เบอร์โทร และที่อยู่จัดส่ง บันทึกไว้ใช้ครั้งต่อไปได้</div>
+      </div>
+      <div class="how-card">
+        <div class="how-num">03</div>
+        <div class="how-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div class="how-title">สั่งผ่าน LINE</div>
+        <div class="how-desc">กด "สั่งผ่าน LINE" ข้อมูลออเดอร์พร้อมที่อยู่จะส่งหาร้านอัตโนมัติ</div>
+      </div>
+      <div class="how-card" style="border-right:none;">
+        <div class="how-num">04</div>
+        <div class="how-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="15" height="13" rx="1"/><polygon points="16,8 20,8 23,11 23,16 16,16 16,8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg></div>
+        <div class="how-title">รับสินค้า</div>
+        <div class="how-desc">โอนเงิน รอรับสินค้า 1–3 วันทำการ พร้อมเลขพัสดุทาง LINE</div>
+      </div>
+    </div>
+  </div>
+</section>
+<div class="divider"></div>
+
+<!-- ══════ CONTACT ══════ -->
+<section class="section" id="contact">
+  <div class="section-inner">
+    <div class="section-head">
+      <div class="eyebrow">Contact</div>
+      <div class="sec-title">REACH <em>US.</em></div>
+    </div>
+    <div class="contact-grid">
+      <!-- ✏️ แก้ข้อมูลช่องทางทุกช่อง -->
+      <div class="contact-card">
+        <div class="contact-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div>
+          <div class="contact-platform">LINE</div>
+          <div class="contact-handle">@your_line_id</div><!-- ✏️ -->
+          <div class="contact-sub">ตอบเร็ว 24 ชม.</div>
+        </div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></div>
+        <div>
+          <div class="contact-platform">Facebook</div>
+          <div class="contact-handle">Venom Store Page</div><!-- ✏️ -->
+          <div class="contact-sub">กดไลค์เพื่อติดตาม</div>
+        </div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg></div>
+        <div>
+          <div class="contact-platform">Instagram</div>
+          <div class="contact-handle">@venomstore</div><!-- ✏️ -->
+          <div class="contact-sub">ดูรูปสินค้าเพิ่มเติม</div>
+        </div>
+      </div>
+      <div class="contact-card">
+        <div class="contact-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.11 12 19.79 19.79 0 0 1 1 3.37a2 2 0 0 1 2-1.37h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
+        <div>
+          <div class="contact-platform">โทรศัพท์</div>
+          <div class="contact-handle">0XX-XXX-XXXX</div><!-- ✏️ -->
+          <div class="contact-sub">จ-ศ 09:00–18:00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════ FOOTER ══════ -->
+<footer class="footer">
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand"><span class="footer-brand-dot"></span>VENOM STORE</div><!-- ✏️ -->
+      <div class="footer-desc">สินค้าคุณภาพสูง คัดสรรมาเพื่อคุณ จัดส่งทั่วประเทศ รับประกันของแท้ทุกชิ้น</div><!-- ✏️ -->
+      <span style="font-family:'Space Mono',monospace;font-size:.55rem;letter-spacing:.12em;color:var(--grey3);">© 2025 VENOM STORE</span>
+    </div>
+    <div>
+      <div class="footer-col-title">Menu</div>
+      <ul class="footer-links">
+        <li><a href="#hero">Home</a></li><li><a href="#catalog">Shop</a></li>
+        <li><a href="#how">How To</a></li><li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">ขนาด / ราคา</div>
+      <ul class="footer-links">
+        <li><a href="#">25g — ราคาแตกต่างกันแต่ละสินค้า</a></li>
+        <li><a href="#">50g — ราคาแตกต่างกันแต่ละสินค้า</a></li>
+        <li><a href="#">100g — ราคาแตกต่างกันแต่ละสินค้า</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">ช่องทาง</div>
+      <ul class="footer-links">
+        <li><a href="#">LINE</a></li>
+        <li><a href="#">Facebook</a></li>
+        <li><a href="#">Instagram</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">VENOM STORE — ALL RIGHTS RESERVED 2025</span>
+    <span class="footer-copy">Premium Products · Fast Delivery</span>
+  </div>
+</footer>
+
+<!-- ══════ CART SIDEBAR ══════ -->
+<div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+<div class="cart-panel" id="cartPanel">
+  <div class="cart-top">
+    <div class="cart-heading">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      CART
+    </div>
+    <button class="icon-btn" onclick="toggleCart()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- ADDRESS -->
+  <div class="cart-addr">
+    <div class="cart-addr-head">
+      <div class="cart-addr-lbl">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        ที่อยู่จัดส่ง
+      </div>
+      <button class="cart-addr-edit-btn" onclick="openAddrModal()" id="addrEditBtn" style="display:none;">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        แก้ไข
+      </button>
+    </div>
+    <div id="addrDisplay">
+      <button class="cart-addr-empty-btn" onclick="openAddrModal()">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        เพิ่มที่อยู่จัดส่ง
+      </button>
+    </div>
+  </div>
+
+  <div class="cart-items" id="cartItemsEl">
+    <div class="cart-empty-state">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--grey3)" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      <span class="cart-empty-txt">CART IS EMPTY</span>
+    </div>
+  </div>
+
+  <!-- PROMO -->
+  <div class="cart-promo">
+    <div class="promo-lbl">Promo Code</div>
+    <div class="promo-row">
+      <input class="promo-input" id="promoInput" type="text" placeholder="ENTER CODE">
+      <button class="promo-apply" onclick="applyPromo()">APPLY</button>
+    </div>
+    <div class="promo-ok" id="promoOk">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      <span id="promoOkTxt"></span>
+    </div>
+  </div>
+
+  <div class="cart-foot">
+    <div class="cart-sum" id="cartSumEl" style="display:none;">
+      <div class="csum-row"><span>จำนวนสินค้า</span><span id="sumQty">0 ชิ้น</span></div>
+      <div class="csum-row"><span>ค่าจัดส่ง</span><span style="color:var(--lime);font-family:'Space Mono',monospace;font-size:.68rem;">FREE</span></div>
+      <div class="csum-row" id="discRow" style="display:none;"><span>ส่วนลด</span><span class="disc-val" id="discVal"></span></div>
+      <div class="csum-row total"><span class="cl">TOTAL</span><span class="cv" id="cartTotalEl">฿0</span></div>
+    </div>
+    <button class="checkout-btn" onclick="doCheckout()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      CONFIRM ORDER
+    </button>
+    <button class="line-btn" onclick="sendToLine()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      สั่งผ่าน LINE
+    </button>
+  </div>
+</div>
+
+<!-- ══════ ADDRESS MODAL ══════ -->
+<div class="addr-overlay" id="addrOverlay">
+  <div class="addr-box">
+    <div class="addr-head">
+      <div class="addr-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--lime)" stroke-width="1.8"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        ที่อยู่จัดส่ง
+      </div>
+      <button class="icon-btn" onclick="closeAddrModal()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="addr-body">
+      <div class="f-grid2">
+        <div class="f-row" style="margin-bottom:0;"><label class="f-label" for="fName">ชื่อ-นามสกุล *</label><input class="f-input" id="fName" placeholder="ชื่อ นามสกุล"></div>
+        <div class="f-row" style="margin-bottom:0;"><label class="f-label" for="fPhone">เบอร์โทร *</label><input class="f-input" id="fPhone" placeholder="0XX-XXX-XXXX"></div>
+      </div>
+      <div style="height:.9rem;"></div>
+      <div class="f-row"><label class="f-label" for="fLine1">บ้านเลขที่ / ซอย / ถนน *</label><input class="f-input" id="fLine1" placeholder="บ้านเลขที่, หมู่, ซอย, ถนน"></div>
+      <div class="f-grid2">
+        <div class="f-row" style="margin-bottom:0;"><label class="f-label" for="fDist">แขวง/ตำบล</label><input class="f-input" id="fDist" placeholder="แขวง/ตำบล"></div>
+        <div class="f-row" style="margin-bottom:0;"><label class="f-label" for="fAmp">เขต/อำเภอ</label><input class="f-input" id="fAmp" placeholder="เขต/อำเภอ"></div>
+      </div>
+      <div style="height:.9rem;"></div>
+      <div class="f-grid2">
+        <div class="f-row" style="margin-bottom:0;"><label class="f-label" for="fProv">จังหวัด *</label><input class="f-input" id="fProv" placeholder="จังหวัด"></div>
+        <div class="f-row" style="margin-bottom:0;"><label class="f-label" for="fZip">รหัสไปรษณีย์ *</label><input class="f-input" id="fZip" placeholder="10000" maxlength="5"></div>
+      </div>
+      <div style="height:.9rem;"></div>
+      <div class="f-row"><label class="f-label" for="fNote">หมายเหตุจัดส่ง</label><textarea class="f-textarea" id="fNote" placeholder="สี/จุดสังเกต บ้าน, ช่วงเวลาที่รับได้, ฯลฯ"></textarea></div>
+    </div>
+    <div class="addr-saved-bar" id="addrSavedBar">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      บันทึกที่อยู่เรียบร้อยแล้ว
+    </div>
+    <div class="addr-foot">
+      <button class="addr-save" onclick="saveAddr()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        บันทึกที่อยู่
+      </button>
+      <button class="addr-cancel" onclick="closeAddrModal()">ยกเลิก</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PRODUCT MODAL ══════ -->
+<div class="pmodal-overlay" id="pmodalOverlay" onclick="handlePModalBg(event)">
+  <div class="pmodal" id="pmodalBox">
+    <div class="pmodal-top">
+      <div class="pmodal-crumb">VENOM › <span id="pmCat">CAT</span></div>
+      <div class="pmodal-navs">
+        <button class="pmod-nav-btn" onclick="navModal(-1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg></button>
+        <button class="pmod-nav-btn" onclick="navModal(1)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg></button>
+        <button class="pmod-close-btn" onclick="closeModal()"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+    </div>
+    <div class="pmodal-body">
+      <div class="pmodal-img" id="pmImgCol"></div>
+      <div class="pmodal-info">
+        <div class="pm-cat" id="pmCatTxt"></div>
+        <div class="pm-name" id="pmName"></div>
+        <div class="pm-desc" id="pmDesc"></div>
+        <div class="pm-specs" id="pmSpecs"></div>
+        <div class="pm-stock"><span class="pm-stock-dot"></span><span class="pm-stock-txt">พร้อมส่ง</span></div>
+        <div class="pm-sz-lbl">เลือกขนาด</div>
+        <div class="pm-sizes" id="pmSizes"></div>
+        <div class="pm-price-row"><span class="pm-price" id="pmPrice">฿400</span><span class="pm-unit">บาท</span></div>
+        <button class="pm-add-btn" onclick="addFromModal()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          ADD TO CART
+        </button>
+        <button class="pm-line-btn" onclick="lineOneProduct()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          สั่งสินค้านี้ผ่าน LINE
+        </button>
+        <div class="pm-tags" id="pmTags"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ LANGUAGE MODAL ══════ -->
+<div class="lang-modal-overlay" id="langOverlay" onclick="closeLangModal()">
+  <div class="lang-modal" onclick="event.stopPropagation()">
+    <div class="lang-modal-handle"></div>
+    <div class="lang-modal-title" data-th="ตั้งค่าภาษา" data-en="Language Settings">ตั้งค่าภาษา</div>
+    <div class="lang-options">
+      <div class="lang-opt active" id="langOptTH" onclick="setLang('th')">
+        <div class="lang-opt-left">
+          <span class="lang-flag">🇹🇭</span>
+          <div>
+            <div class="lang-name">ภาษาไทย</div>
+            <div class="lang-native">Thai</div>
+          </div>
+        </div>
+        <div class="lang-check"><div class="lang-check-dot"></div></div>
+      </div>
+      <div class="lang-opt" id="langOptEN" onclick="setLang('en')">
+        <div class="lang-opt-left">
+          <span class="lang-flag">🇬🇧</span>
+          <div>
+            <div class="lang-name">English</div>
+            <div class="lang-native">ภาษาอังกฤษ</div>
+          </div>
+        </div>
+        <div class="lang-check"><div class="lang-check-dot"></div></div>
+      </div>
+    </div>
+    <button class="lang-modal-close" onclick="closeLangModal()" data-th="ปิด" data-en="Close">ปิด</button>
+  </div>
+</div>
+
+<!-- ══════ SIZE SELECTOR SHEET ══════ -->
+<div class="sz-sheet-overlay" id="szSheetOverlay" onclick="closeSzSheet()"></div>
+<div class="sz-sheet" id="szSheet">
+  <div class="sz-sheet-handle"></div>
+  <div id="szSheetContent"></div>
+</div>
+
+<div id="toast"><span class="toast-dot"></span><span id="toastTxt"></span></div>
+<button id="btt" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
+<script>
+/* ════════════════════════════════════════════════
+   ✏️ CONFIG — แก้ค่าเหล่านี้
+════════════════════════════════════════════════ */
+const LINE_ID = '@your_line_id'; // ✏️ แก้ LINE ID
+const SHOP_NAME = 'VENOM STORE'; // ✏️ แก้ชื่อร้าน
+
+/* ขนาด (label เท่านั้น — ราคาอยู่ในแต่ละสินค้า) */
+const SIZE_LABELS = ['25g','50g','100g'];
+
+/* โค้ดส่วนลด — เพิ่มได้ */
+const PROMO = {
+  'SAVE10': { pct:10, lbl:'ส่วนลด 10%' },
+  'SAVE20': { pct:20, lbl:'ส่วนลด 20%' },
+  'VIP':    { pct:15, lbl:'VIP 15%'    },
+};
+
+/* หมวดหมู่ — ✏️ แก้ id/label ให้ตรงกับ cat ในสินค้า */
+const CATS = [
+  { id:'CAT-A', label:'หมวด A' },
+  { id:'CAT-B', label:'หมวด B' },
+  { id:'CAT-C', label:'หมวด C' },
+];
+
+/* helper */
+const SIZES = SIZE_LABELS.map((w,i) => ({ w, get p(){ return 0; } })); // compat
+
+/* ════════════════════════════════════════════════
+   ✏️ สินค้า 30 ชิ้น — แก้ข้อมูลตรงนี้
+   ─────────────────────────────────────────────
+   prices: [ราคา25g, ราคา50g, ราคา100g]  ← แก้แต่ละตัวได้
+   badge : 'HOT' | 'NEW' | 'SALE' | ''
+   promo : ข้อความโปรโมชั่น
+   img   : path รูป 'img/p1.jpg' (ว่างได้)
+   adShow: true = แสดงในโฆษณาด้วย
+════════════════════════════════════════════════ */
+const PRODUCTS = [
+/* ── หมวด A ──────────────────────────────── */
+{id:1,  name:'Green Herb Classic',    cat:'CAT-A', desc:'สมุนไพรคัดพิเศษ คุณภาพพรีเมียม', detail:'ผลิตภัณฑ์สมุนไพรธรรมชาติเกรด A คัดจากแหล่งปลูกที่ดีที่สุด ปลอดสารพิษ เก็บรักษาได้นาน', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','เชียงใหม่'],['อายุ','24 เดือน']], tags:['PREMIUM','ORGANIC'], badge:'NEW',  promo:'',         img:'', adShow:true,  prices:[350, 650, 1100] },
+{id:2,  name:'Dark Forest Blend',     cat:'CAT-A', desc:'สูตรพิเศษจากป่าลึก อโรม่าเข้มข้น', detail:'ผสมจากพืชหายากในป่า ให้กลิ่นหอมเข้มและรสชาติจัดจ้าน นิยมในหมู่ผู้รู้จริง', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','เชียงราย'],['อายุ','24 เดือน']], tags:['BESTSELLER'],   badge:'HOT',  promo:'ซื้อ 2 ฟรี 1', img:'', adShow:true,  prices:[420, 780, 1350] },
+{id:3,  name:'Crystal White Premium', cat:'CAT-A', desc:'เกรดพิเศษ ขาวสะอาด บริสุทธิ์',    detail:'คุณภาพระดับพรีเมียม ผ่านกระบวนการคัดกรองพิเศษ ความบริสุทธิ์สูงสุด', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['QUALITY'],      badge:'',     promo:'',         img:'', adShow:false, prices:[380, 700, 1200] },
+{id:4,  name:'Gold Edition Select',   cat:'CAT-A', desc:'รุ่นทองคำ หายาก จำนวนจำกัด',      detail:'สินค้า Limited Edition คัดพิเศษเพียงปีละครั้ง สำหรับผู้ที่ต้องการสิ่งที่ดีที่สุด', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['SALE','LIMITED'], badge:'SALE', promo:'ลด 15%',    img:'', adShow:true,  prices:[450, 850, 1500] },
+{id:5,  name:'Tropical Exotic Mix',   cat:'CAT-A', desc:'ผสมสมุนไพรเมืองร้อน หอมหวาน',    detail:'ส่วนผสมพิเศษจากพืชในเขตร้อน ให้กลิ่นหอมหวานและรสชาติที่ไม่เหมือนใคร', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ภาคใต้'],['อายุ','24 เดือน']], tags:['PREMIUM'],      badge:'',     promo:'',         img:'', adShow:false, prices:[370, 680, 1180] },
+{id:6,  name:'Midnight Black Label',  cat:'CAT-A', desc:'สูตรดำลึก หายาก เข้มข้นสุดขีด',   detail:'สูตรพิเศษสีดำ หายากที่สุดในรุ่น ให้ประสบการณ์ที่แตกต่างอย่างสิ้นเชิง', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['HOT'],          badge:'HOT',  promo:'',         img:'', adShow:false, prices:[500, 950, 1650] },
+{id:7,  name:'Fresh Morning Dew',     cat:'CAT-A', desc:'สดชื่น ธรรมชาติ เก็บใหม่ทุกวัน', detail:'เก็บเกี่ยวตอนเช้าขณะน้ำค้างยังอยู่ ให้ความสดชื่นและกลิ่นหอมธรรมชาติ', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','เชียงใหม่'],['อายุ','24 เดือน']], tags:['QUALITY'],      badge:'',     promo:'',         img:'', adShow:false, prices:[340, 630, 1080] },
+{id:8,  name:'Purple Haze Organic',   cat:'CAT-A', desc:'สีม่วงธรรมชาติ ออร์แกนิก 100%',   detail:'ปลูกแบบออร์แกนิกสมบูรณ์แบบ ไม่มีสารเคมีใดๆ ปลอดภัยและดีต่อสุขภาพ', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['NEW'],          badge:'NEW',  promo:'',         img:'', adShow:false, prices:[390, 720, 1250] },
+{id:9,  name:'Mountain High Reserve', cat:'CAT-A', desc:'จากภูเขาสูง บริสุทธิ์ ไร้มลพิษ',  detail:'ปลูกที่ความสูงเหนือระดับน้ำทะเล 1,500 เมตร อากาศบริสุทธิ์ ไร้มลพิษ', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ดอยอินทนนท์'],['อายุ','24 เดือน']], tags:['PREMIUM'],      badge:'',     promo:'',         img:'', adShow:false, prices:[430, 800, 1380] },
+{id:10, name:'Sweet Honey Kush',      cat:'CAT-A', desc:'หวาน หอม นุ่มนวล เป็นที่นิยม',    detail:'รสชาติหวานละมุน กลิ่นหอมคล้ายน้ำผึ้งธรรมชาติ เป็นที่ชื่นชอบของผู้ใช้ใหม่', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['SALE'],         badge:'SALE', promo:'ลด 20%',    img:'', adShow:false, prices:[360, 670, 1150] },
+/* ── หมวด B ──────────────────────────────── */
+{id:11, name:'Blue Dream Legacy',     cat:'CAT-B', desc:'ตำนานสายพันธุ์ดั้งเดิม คลาสสิก',  detail:'สายพันธุ์ดั้งเดิมที่ตกทอดมาหลายรุ่น รสชาติเป็นเอกลักษณ์ที่ไม่มีใครลอกเลียนได้', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['QUALITY'],      badge:'',     promo:'',         img:'', adShow:false, prices:[410, 760, 1300] },
+{id:12, name:'Fire OG Supreme',       cat:'CAT-B', desc:'ไฟแรง เด่น เป็นที่พูดถึง',         detail:'สายพันธุ์ที่มีชื่อเสียงโด่งดัง ให้ความรู้สึกเด่นชัดและทรงพลัง เป็นที่ต้องการสูง', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['HOT'],          badge:'HOT',  promo:'',         img:'', adShow:true,  prices:[480, 900, 1580] },
+{id:13, name:'Northern Lights No.5',  cat:'CAT-B', desc:'แสงเหนือ สายพันธุ์ระดับโลก',       detail:'หนึ่งในสายพันธุ์ที่ได้รับรางวัลระดับโลกมากที่สุด รสชาติสมดุลและกลิ่นหอมเป็นเอกลักษณ์', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['PREMIUM'],      badge:'',     promo:'',         img:'', adShow:false, prices:[440, 820, 1420] },
+{id:14, name:'Gelato Dessert Pack',   cat:'CAT-B', desc:'หวานเหมือนไอศกรีม กลิ่นหอมฟุ้ง', detail:'รสชาติหวานหอมราวกับไอศกรีมพรีเมียม กลิ่นฟุ้งยั่วยวนใจ เป็นที่นิยมสูงสุด', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['NEW'],          badge:'NEW',  promo:'',         img:'', adShow:false, prices:[460, 860, 1480] },
+{id:15, name:'Amnesia Haze Pure',     cat:'CAT-B', desc:'สายพันธุ์ฮาเซ แท้ บริสุทธิ์',      detail:'สายพันธุ์ Haze แท้ 100% บริสุทธิ์ไม่ผสม ให้กลิ่นเอิร์ธตี้และรสจัดจ้าน', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['ORGANIC'],      badge:'',     promo:'',         img:'', adShow:false, prices:[395, 730, 1260] },
+{id:16, name:'Runtz Collection',      cat:'CAT-B', desc:'รันท์ซ สีสันสวย กลิ่นหอมหวาน',    detail:'มีหลากสี ทั้งม่วง ส้ม เขียว กลิ่นหอมหวานผลไม้ เป็น Collection ที่สวยงามที่สุด', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['PREMIUM'],      badge:'',     promo:'',         img:'', adShow:false, prices:[470, 880, 1520] },
+{id:17, name:'Zkittlez Rainbow',      cat:'CAT-B', desc:'สีรุ้ง หวานอมเปรี้ยว ผลไม้รวม',   detail:'รสชาติผลไม้หลากหลายในชิ้นเดียว หวานอมเปรี้ยว กลิ่นรุ้งรื่น', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['SALE'],         badge:'SALE', promo:'ลด 10%',    img:'', adShow:false, prices:[415, 770, 1330] },
+{id:18, name:'Wedding Cake Luxury',   cat:'CAT-B', desc:'เวดดิ้งเค้ก หรูหรา ราคาพิเศษ',   detail:'สายพันธุ์ระดับลักชัวรี่ กลิ่นหอมคล้ายเค้กแต่งงาน ให้ความรู้สึกผ่อนคลายอย่างอ่อนโยน', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['QUALITY'],      badge:'',     promo:'',         img:'', adShow:false, prices:[490, 920, 1600] },
+{id:19, name:'Sour Diesel Rocket',    cat:'CAT-B', desc:'เปรี้ยว แรง พลังงานสูง',           detail:'สายพันธุ์ Sour Diesel แท้ ให้พลังงานและความตื่นตัวสูง เหมาะสำหรับช่วงกลางวัน', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['HOT'],          badge:'HOT',  promo:'',         img:'', adShow:false, prices:[400, 750, 1290] },
+{id:20, name:'Pineapple Express Trop',cat:'CAT-B', desc:'สับปะรด มะละกอ เมืองร้อน หอม',   detail:'กลิ่นสับปะรดและผลไม้เมืองร้อน รสชาติสดชื่นหวานละมุน เป็นที่รักของทุกคน', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['PREMIUM'],      badge:'',     promo:'',         img:'', adShow:false, prices:[375, 695, 1190] },
+/* ── หมวด C ──────────────────────────────── */
+{id:21, name:'White Widow OG',        cat:'CAT-C', desc:'ไวท์ วิโดว์ ตำนานดั้งเดิม',        detail:'ตำนานสายพันธุ์จาก Amsterdam ขาวโพลน ไตรโคมหนาแน่น รสชาติเป็นเอกลักษณ์', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['NEW'],          badge:'NEW',  promo:'',         img:'', adShow:false, prices:[385, 715, 1230] },
+{id:22, name:'Chemdawg Original',     cat:'CAT-C', desc:'เคมด็อก แท้ กลิ่นเคมี เด่นชัด',   detail:'รสชาติเคมีเฉพาะตัวที่ไม่มีใครลอกได้ เป็นต้นกำเนิดของสายพันธุ์ดังๆ มากมาย', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['QUALITY'],      badge:'',     promo:'',         img:'', adShow:false, prices:[420, 785, 1360] },
+{id:23, name:'Gorilla Glue #4 Elite', cat:'CAT-C', desc:'กอริลล่ากลู เหนียวพิเศษ ดีเยี่ยม',detail:'เหนียวแน่นที่สุดในรุ่น ไตรโคมหนาแน่นจนเหนียวมือ คุณภาพระดับ Elite', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['PREMIUM'],      badge:'',     promo:'',         img:'', adShow:false, prices:[510, 960, 1680] },
+{id:24, name:'Banana Kush Smoothie',  cat:'CAT-C', desc:'กล้วยหอม นุ่มลิ้น ผ่อนคลาย',     detail:'กลิ่นกล้วยสุกหอมหวาน รสชาตินุ่มลิ้น เหมาะสำหรับผ่อนคลายหลังเลิกงาน', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['SALE'],         badge:'SALE', promo:'ลด 25%',    img:'', adShow:true,  prices:[360, 665, 1140] },
+{id:25, name:'Strawberry Cough Wild', cat:'CAT-C', desc:'สตรอเบอร์รี่แดง หอมหวาน สดชื่น', detail:'กลิ่นสตรอเบอร์รี่ป่าสดชื่น รสหวานอ่อน เหมาะสำหรับผู้เริ่มต้น', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['QUALITY'],      badge:'',     promo:'',         img:'', adShow:false, prices:[355, 660, 1130] },
+{id:26, name:'Durban Poison African', cat:'CAT-C', desc:'ดูร์บัน ต้นตำรับแอฟริกา แท้',      detail:'สายพันธุ์จากแอฟริกาใต้ที่ขึ้นชื่อว่าบริสุทธิ์ที่สุด ให้พลังงานและความกระตือรือร้น', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['HOT'],          badge:'HOT',  promo:'',         img:'', adShow:false, prices:[440, 820, 1420] },
+{id:27, name:'Super Silver Haze',     cat:'CAT-C', desc:'ซิลเวอร์เฮซ เงางาม บริสุทธิ์',    detail:'ไตรโคมสีเงินแวววาว ได้รับรางวัล Cannabis Cup 3 ปีซ้อน รสชาติสมดุลสมบูรณ์แบบ', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['PREMIUM'],      badge:'',     promo:'',         img:'', adShow:false, prices:[455, 850, 1470] },
+{id:28, name:'Lavender Dream Floral', cat:'CAT-C', desc:'ลาเวนเดอร์ ดอกไม้ ผ่อนคลาย',     detail:'กลิ่นดอกลาเวนเดอร์สุขุม ผ่อนคลายจิตใจ เหมาะสำหรับก่อนนอนหรือทำสมาธิ', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['NEW'],          badge:'NEW',  promo:'',         img:'', adShow:false, prices:[380, 705, 1215] },
+{id:29, name:'Jack Herer Heritage',   cat:'CAT-C', desc:'แจ็ค เฮเรอร์ มรดกแห่งตำนาน',      detail:'ตั้งชื่อตามนักเคลื่อนไหวผู้ยิ่งใหญ่ เป็นสายพันธุ์ที่ได้รับการยอมรับระดับสากล', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['QUALITY'],      badge:'',     promo:'',         img:'', adShow:false, prices:[410, 765, 1315] },
+{id:30, name:'Mimosa Sunrise Special',cat:'CAT-C', desc:'มิโมซ่า ส้มหอม ยามเช้า สดใส',     detail:'กลิ่นส้มสดสีรุ้งยามอรุณรุ่ง ให้ความสดชื่นและพลังงานเริ่มต้นวันใหม่อย่างดีเยี่ยม', specs:[['น้ำหนัก','ตามขนาดที่เลือก'],['แหล่งผลิต','ไทย'],['อายุ','24 เดือน']], tags:['PREMIUM'],      badge:'',     promo:'',         img:'', adShow:false, prices:[395, 735, 1265] },
+];
+
+/* ════════ STATE ════════ */
+let selSizes = {}; // {pid: szIdx}
+let cart = [];
+let curCat = 'ALL', curSearch = '';
+let modalPid = null, modalSzIdx = 0;
+let promoCode = null, promoCodeStr = '';
+let addr = null;
+
+/* Helper: get price of product at size index */
+function getPrice(p, idx) { return p.prices[idx] ?? 0; }
+function getSzLabel(idx)  { return SIZE_LABELS[idx] ?? ''; }
+
+/* ════════ COVER PAGE ════════ */
+function enterStore() {
+  document.getElementById('coverPage').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+/* ════════ LANGUAGE SYSTEM ════════ */
+let currentLang = localStorage.getItem('vs_lang') || 'th';
+
+const LANG = {
+  th: {
+    shopName:   'VENOM STORE',
+    search:     'ค้นหาสินค้า...',
+    cart:       'ตะกร้า',
+    home:       'หน้าแรก',
+    shop:       'สินค้า',
+    howto:      'วิธีสั่ง',
+    contact:    'ติดต่อ',
+    selectSize: 'แตะเลือกขนาด',
+    addCart:    '+ ตะกร้า',
+    detail:     'รายละเอียด',
+    inStock:    'พร้อมส่ง',
+    addToCart:  'เพิ่มลงตะกร้า',
+    orderLine:  'สั่งสินค้านี้ผ่าน LINE',
+    lineOrder:  'สั่งผ่าน LINE',
+    confirm:    'ยืนยันออเดอร์',
+    addrTitle:  'ที่อยู่จัดส่ง',
+    addrAdd:    'เพิ่มที่อยู่จัดส่ง',
+    addrSave:   'บันทึกที่อยู่',
+    addrSaved:  'บันทึกเรียบร้อยแล้ว',
+    cancel:     'ยกเลิก',
+    delivery:   'ค่าจัดส่ง',
+    free:       'ฟรี',
+    total:      'ยอดรวม',
+    items:      'ชิ้น',
+    noProducts: 'ไม่พบสินค้า',
+    cartEmpty:  'ยังไม่มีสินค้าในตะกร้า',
+    promoCode:  'โค้ดส่วนลด',
+    apply:      'ใช้โค้ด',
+    fromSize:   'เริ่มต้น',
+    baht:       'บาท',
+    size:       'ขนาด',
+    readyShip:  'มีสินค้าพร้อมส่ง',
+    allProd:    'ทั้งหมด',
+    showing:    'รายการ',
+    langTitle:  'ตั้งค่าภาษา',
+    close:      'ปิด',
+  },
+  en: {
+    shopName:   'VENOM STORE',
+    search:     'Search...',
+    cart:       'Cart',
+    home:       'Home',
+    shop:       'Shop',
+    howto:      'How To',
+    contact:    'Contact',
+    selectSize: 'Select Size',
+    addCart:    '+ Cart',
+    detail:     'Detail',
+    inStock:    'In Stock',
+    addToCart:  'Add to Cart',
+    orderLine:  'Order via LINE',
+    lineOrder:  'Order via LINE',
+    confirm:    'Confirm Order',
+    addrTitle:  'Shipping Address',
+    addrAdd:    'Add Address',
+    addrSave:   'Save Address',
+    addrSaved:  'Address saved!',
+    cancel:     'Cancel',
+    delivery:   'Delivery',
+    free:       'FREE',
+    total:      'Total',
+    items:      'item(s)',
+    noProducts: 'No products found',
+    cartEmpty:  'Cart is empty',
+    promoCode:  'Promo Code',
+    apply:      'Apply',
+    fromSize:   'From',
+    baht:       'THB',
+    size:       'Size',
+    readyShip:  'Ready to ship',
+    allProd:    'All',
+    showing:    'items',
+    langTitle:  'Language Settings',
+    close:      'Close',
+  }
+};
+
+function t(key) { return LANG[currentLang][key] || LANG.th[key] || key; }
+
+function setLang(lang) {
+  currentLang = lang;
+  localStorage.setItem('vs_lang', lang);
+  document.getElementById('langOptTH').classList.toggle('active', lang==='th');
+  document.getElementById('langOptEN').classList.toggle('active', lang==='en');
+  applyLang();
+  renderProducts(getFiltered());
+  buildAdZoneB(); buildAdZoneC(); buildAdZoneD();
+  updateCartUI();
+  closeLangModal();
+}
+
+function applyLang() {
+  // nav
+  const si = document.getElementById('searchInput');
+  if(si) si.placeholder = t('search');
+  const cq = document.getElementById('cartQtyNav');
+  if(cq && cq.parentElement) {
+    cq.parentElement.childNodes.forEach(n => {
+      if(n.nodeType===3) n.textContent = ` ${t('cart')} (`;
+    });
+  }
+  // data-th/data-en elements
+  document.querySelectorAll('[data-th]').forEach(el => {
+    el.textContent = currentLang==='th' ? el.dataset.th : (el.dataset.en || el.dataset.th);
+  });
+}
+
+function openLangModal() {
+  document.getElementById('langOverlay').classList.add('open');
+}
+function closeLangModal() {
+  document.getElementById('langOverlay').classList.remove('open');
+}
+
+/* ════════ INIT ════════ */
+function init() {
+  document.body.style.overflow = 'hidden'; // lock scroll on cover
+  // set lang option active state
+  document.getElementById('langOptTH').classList.toggle('active', currentLang==='th');
+  document.getElementById('langOptEN').classList.toggle('active', currentLang==='en');
+  PRODUCTS.forEach(p => selSizes[p.id] = 0);
+  loadAddr();
+  buildMarquee();
+  buildCatCounts();
+  buildAdZoneB();
+  buildAdZoneC();
+  buildAdZoneD();
+  renderProducts(PRODUCTS);
+  applyLang();
+}
+
+/* ════════ MARQUEE ════════ */
+function buildMarquee() {
+  const msgs = [
+    '✦ จัดส่งฟรีทุกออเดอร์',
+    '✦ สินค้าแท้ 100%',
+    '✦ 1–3 วันถึงมือ',
+    '✦ สั่งผ่าน LINE ได้เลย',
+    '✦ มีสินค้าพร้อมส่ง',
+    '✦ 500+ ลูกค้าไว้วางใจ',
+  ];
+  const items = [...msgs, ...msgs].map(m => `<div class="adzone-a-item"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="5"/></svg><span>${m}</span></div>`).join('');
+  document.getElementById('marqueeTrack').innerHTML = items;
+}
+
+/* ════════ CAT COUNTS ════════ */
+function buildCatCounts() {
+  const c = { ALL:PRODUCTS.length, HOT:0, NEW:0, SALE:0 };
+  CATS.forEach(ct => c[ct.id] = 0);
+  PRODUCTS.forEach(p => {
+    if(c[p.cat]!==undefined) c[p.cat]++;
+    if(p.badge && c[p.badge]!==undefined) c[p.badge]++;
+  });
+  Object.entries(c).forEach(([k,v]) => { const el=document.getElementById('cb-'+k); if(el) el.textContent=v; });
+}
+
+/* ════════ AD ZONE B — product cards ════════ */
+function buildAdZoneB() {
+  const ads = PRODUCTS.filter(p => p.adShow).slice(0,3);
+  document.getElementById('adZoneBProducts').innerHTML = ads.map(p => {
+    const imgH = p.img
+      ? `<img src="${p.img}" alt="${p.name}">`
+      : `<div class="apc-img-ph"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>PHOTO</span></div>`;
+    return `
+    <div class="ad-product-card">
+      <div class="apc-img">${imgH}</div>
+      <div class="apc-info">
+        <div class="apc-name">${p.name}</div>
+        ${p.promo ? `<div style="font-size:.6rem;color:var(--amber);font-family:'Space Mono',monospace;margin-bottom:.35rem;">${p.promo}</div>` : ''}
+        <div class="apc-size-pick">${SIZE_LABELS.map((w,i)=>`<button class="apc-sz ${i===0?'active':''}" onclick="pickAdSz(this)" data-pid="${p.id}" data-si="${i}">${w}</button>`).join('')}</div>
+        <div class="apc-price" id="apc-price-${p.id}">฿${getPrice(p,0).toLocaleString()}</div>
+        <button class="apc-order-btn" onclick="adDirectOrder(${p.id})">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          สั่งเลย
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ════════ AD ZONE C — pills ════════ */
+function buildAdZoneC() {
+  const ads = PRODUCTS.filter(p => p.badge==='HOT'||p.adShow).slice(0,3);
+  document.getElementById('adZoneCProducts').innerHTML = ads.map(p => {
+    const idx = selSizes[p.id]||0;
+    return `<div class="ad-pill" onclick="openModal(${p.id})">
+      <span class="ad-pill-name">${p.name}</span>
+      <span class="ad-pill-price">฿${getPrice(p,idx).toLocaleString()}</span>
+      <button class="ad-pill-cart" onclick="event.stopPropagation();adDirectOrder(${p.id})">+</button>
+    </div>`;
+  }).join('');
+}
+
+/* ════════ AD ZONE D — featured cards with image ════════ */
+function buildAdZoneD() {
+  const ads = PRODUCTS.filter(p => p.adShow||p.badge==='HOT'||p.badge==='NEW').slice(0,4);
+  document.getElementById('adZoneDProducts').innerHTML = ads.map((p,rank) => {
+    const bc = {HOT:'afc-b-hot',NEW:'afc-b-new',SALE:'afc-b-sale'}[p.badge]||'';
+    const imgH = p.img
+      ? `<img src="${p.img}" alt="${p.name}">`
+      : `<div class="afc-img-ph"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>PHOTO</span></div>`;
+    return `
+    <div class="ad-featured-card" onclick="openModal(${p.id})">
+      <div class="afc-img">
+        ${imgH}
+        ${p.badge?`<div class="afc-badge ${bc}">${p.badge}</div>`:''}
+        <div class="afc-rank">${rank+1}</div>
+      </div>
+      <div class="afc-body">
+        <div class="afc-cat">${catLabel(p.cat)}</div>
+        <div class="afc-name">${p.name}</div>
+        ${p.promo?`<div style="font-size:.58rem;color:var(--amber);font-family:'Space Mono',monospace;margin-bottom:.35rem;">${p.promo}</div>`:''}
+        <div class="afc-sizes">${SIZE_LABELS.map((w,i)=>`<button class="afc-sz ${i===0?'active':''}" onclick="event.stopPropagation();pickAfcSz(this,${p.id})" data-pid="${p.id}" data-si="${i}"><span class="sw">${w}</span><span class="sp">฿${getPrice(p,i).toLocaleString()}</span></button>`).join('')}</div>
+        <div class="afc-price-row">
+          <span class="afc-price" id="afc-price-${p.id}">฿${getPrice(p,0).toLocaleString()}</span>
+          <span class="afc-price-unit">บาท</span>
+        </div>
+        <button class="afc-btn" onclick="event.stopPropagation();adDirectOrder(${p.id})">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+          <span>+ ตะกร้า</span>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function pickAdSz(btn) {
+  const pid=+btn.dataset.pid, si=+btn.dataset.si;
+  const p=PRODUCTS.find(x=>x.id===pid);
+  selSizes[pid]=si;
+  document.querySelectorAll(`[data-pid="${pid}"].apc-sz`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const pe=document.getElementById('apc-price-'+pid);
+  if(pe) pe.textContent='฿'+getPrice(p,si).toLocaleString();
+}
+function pickAfcSz(btn, pid) {
+  const si=+btn.dataset.si;
+  const p=PRODUCTS.find(x=>x.id===pid);
+  selSizes[pid]=si;
+  document.querySelectorAll(`[data-pid="${pid}"].afc-sz`).forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const pe=document.getElementById('afc-price-'+pid);
+  if(pe) pe.textContent='฿'+getPrice(p,si).toLocaleString();
+}
+
+function adDirectOrder(pid) {
+  addToCart(pid);
+  toggleCart();
+}
+
+/* ════════ FILTER ════════ */
+function getFiltered() {
+  return PRODUCTS.filter(p => {
+    const mc = curCat==='ALL'||p.cat===curCat||p.badge===curCat;
+    const q  = curSearch.toLowerCase();
+    const ms = !q||p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q);
+    return mc&&ms;
+  });
+}
+function filterCat(f, btn) {
+  curCat=f;
+  document.querySelectorAll('.cat-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts(getFiltered());
+}
+function doSearch(q) { curSearch=q; renderProducts(getFiltered()); }
+
+/* ════════ RENDER GRID — 3 columns fixed, matches featured card ════════ */
+function renderProducts(list) {
+  document.getElementById('showCount').textContent = list.length;
+  const g = document.getElementById('productsGrid');
+  g.style.gridTemplateColumns = 'repeat(3, 1fr)';
+
+  if(!list.length) {
+    g.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:5rem 2rem;color:var(--grey2);font-family:'Space Mono',monospace;font-size:.62rem;letter-spacing:.12em;">${t('noProducts')}</div>`;
+    return;
+  }
+  g.innerHTML = list.map(p => {
+    const bc = {HOT:'badge-hot',NEW:'badge-new',SALE:'badge-sale'}[p.badge]||'';
+    const imgInner = p.img
+      ? `<img src="${p.img}" alt="${p.name}">`
+      : `<div class="pcard-ph-icon"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.7"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></div><div class="pcard-ph-txt">PHOTO</div>`;
+    const p0 = getPrice(p, 0);
+    const szChips = SIZE_LABELS.map((w,i) => `
+      <button class="pcard-sz ${i===0?'active':''}"
+        onclick="event.stopPropagation();selSzCard(${p.id},${i},this)"
+        data-pid="${p.id}" data-si="${i}">
+        <span class="szw">${w}</span>
+        <span class="szp">฿${getPrice(p,i).toLocaleString()}</span>
+      </button>`).join('');
+    return `
+    <div class="pcard" onclick="openSzSheet(${p.id})">
+      ${p.badge ? `<div class="pcard-badge ${bc}">${p.badge}</div>` : ''}
+      <div class="pcard-num">#${String(p.id).padStart(2,'0')}</div>
+      <div class="pcard-img" onclick="event.stopPropagation();openModal(${p.id})">
+        <div class="pcard-img-inner">${imgInner}</div>
+        <div class="pcard-img-overlay">
+          <button class="pcard-view">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+      <div class="pcard-body">
+        <div class="pcard-cat">${catLabel(p.cat)}</div>
+        <div class="pcard-name" onclick="event.stopPropagation();openModal(${p.id})">${p.name}</div>
+        <div class="pcard-desc">${p.desc}</div>
+        <div class="pcard-sizes">${szChips}</div>
+        <div class="pcard-price-row">
+          <span class="pcard-price-big" id="pc-price-${p.id}">฿${p0.toLocaleString()}</span>
+          <span class="pcard-price-unit">บาท</span>
+        </div>
+        <button class="pcard-size-btn" onclick="event.stopPropagation();openSzSheet(${p.id})">
+          <span class="pcard-size-btn-txt">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+              <line x1="3" y1="6" x2="21" y2="6"/>
+              <path d="M16 10a4 4 0 01-8 0"/>
+            </svg>
+            ${t('addCart')}
+          </span>
+        </button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* size chip click on card */
+function selSzCard(pid, idx, btn) {
+  selSizes[pid] = idx;
+  document.querySelectorAll(`[data-pid="${pid}"].pcard-sz`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const p = PRODUCTS.find(x => x.id === pid);
+  const el = document.getElementById('pc-price-' + pid);
+  if(el && p) el.textContent = '฿' + getPrice(p, idx).toLocaleString();
+}
+
+/* ════════ SIZE SHEET ════════ */
+let sheetPid = null, sheetSzIdx = 0;
+
+function openSzSheet(pid) {
+  const p = PRODUCTS.find(x=>x.id===pid);
+  if(!p) return;
+  sheetPid = pid; sheetSzIdx = selSizes[pid]??0;
+
+  const imgH = p.img
+    ? `<img src="${p.img}" alt="${p.name}">`
+    : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="rgba(184,255,0,0.3)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+
+  const opts = SIZE_LABELS.map((w,i) => `
+    <div class="sz-option ${i===sheetSzIdx?'selected':''}" onclick="pickSheetSz(${i})">
+      <div class="sz-option-left">
+        <div class="sz-option-radio"><div class="sz-option-radio-dot"></div></div>
+        <span class="sz-option-weight">${w}</span>
+      </div>
+      <span class="sz-option-price">฿${getPrice(p,i).toLocaleString()}</span>
+    </div>`).join('');
+
+  document.getElementById('szSheetContent').innerHTML = `
+    <div class="sz-sheet-header">
+      <div class="sz-sheet-prod">
+        <div class="sz-sheet-prod-img">${imgH}</div>
+        <div>
+          <div class="sz-sheet-prod-name">${p.name}</div>
+          <div class="sz-sheet-prod-cat">${catLabel(p.cat)}</div>
+        </div>
+      </div>
+      <button class="sz-sheet-close" onclick="closeSzSheet()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    ${p.promo?`<div style="font-size:.72rem;color:var(--amber);font-family:'Space Mono',monospace;margin-bottom:.8rem;padding:.4rem .7rem;background:rgba(255,170,0,0.08);border-radius:6px;">${p.promo}</div>`:''}
+    <div class="sz-sheet-label">เลือกขนาด</div>
+    <div class="sz-options" id="szOptions">${opts}</div>
+    <button class="sz-sheet-add-btn" onclick="addFromSheet()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg>
+      เพิ่มลงตะกร้า — ฿<span id="sheetPriceDisplay">${getPrice(p,sheetSzIdx).toLocaleString()}</span>
+    </button>
+    <button class="sz-sheet-line-btn" onclick="lineFromSheet()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      สั่งสินค้านี้ผ่าน LINE
+    </button>`;
+
+  document.getElementById('szSheetOverlay').classList.add('open');
+  document.getElementById('szSheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeSzSheet() {
+  document.getElementById('szSheetOverlay').classList.remove('open');
+  document.getElementById('szSheet').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function pickSheetSz(idx) {
+  sheetSzIdx = idx;
+  selSizes[sheetPid] = idx;
+  const p = PRODUCTS.find(x=>x.id===sheetPid);
+  document.querySelectorAll('.sz-option').forEach((el,i)=>{
+    el.classList.toggle('selected', i===idx);
+  });
+  const priceEl = document.getElementById('sheetPriceDisplay');
+  if(priceEl) priceEl.textContent = getPrice(p,idx).toLocaleString();
+  const cp = document.getElementById('pc-price-'+sheetPid);
+  if(cp) cp.textContent = '฿'+getPrice(p,idx).toLocaleString();
+}
+
+function addFromSheet() {
+  if(!sheetPid) return;
+  const p=PRODUCTS.find(x=>x.id===sheetPid);
+  const price=getPrice(p,sheetSzIdx), w=getSzLabel(sheetSzIdx);
+  const ex=cart.find(i=>i.pid===sheetPid&&i.si===sheetSzIdx);
+  if(ex) ex.qty++;
+  else cart.push({pid:sheetPid,name:p.name,img:p.img,cat:p.cat,si:sheetSzIdx,w,price,qty:1,promo:p.promo});
+  updateCartUI();
+  toast('เพิ่ม '+p.name+' ('+w+')');
+  closeSzSheet();
+  setTimeout(toggleCart, 250);
+}
+
+function lineFromSheet() {
+  if(!sheetPid) return;
+  const p=PRODUCTS.find(x=>x.id===sheetPid);
+  const price=getPrice(p,sheetSzIdx), w=getSzLabel(sheetSzIdx);
+  const addrTxt=addr?`\n\n📍 ${addr.name} (${addr.phone})\n${[addr.line1,addr.dist,addr.amp,addr.prov,addr.zip].filter(Boolean).join(' ')}`:'\n\n[กรุณาแจ้งที่อยู่จัดส่ง]';
+  const msg=`สนใจสินค้า: ${p.name}\nขนาด: ${w} — ฿${price.toLocaleString()}${p.promo?'\nโปรโมชั่น: '+p.promo:''}\nหมวด: ${catLabel(p.cat)}${addrTxt}`;
+  window.open(`https://line.me/R/oaMessage/${LINE_ID.replace('@','')}/?${encodeURIComponent(msg)}`,'_blank');
+}
+
+function catLabel(id) { return CATS.find(c=>c.id===id)?.label||id; }
+
+/* selSz no longer used in grid — kept for compat */
+function selSz(pid, idx) {
+  selSizes[pid]=idx;
+  const p=PRODUCTS.find(x=>x.id===pid);
+  const el=document.getElementById('pc-price-'+pid);
+  if(el&&p) el.textContent='฿'+getPrice(p,idx).toLocaleString();
+}
+
+/* ════════ ADD TO CART ════════ */
+function addToCart(pid) {
+  const p=PRODUCTS.find(x=>x.id===pid);
+  const idx=selSizes[pid]??0;
+  const price=getPrice(p,idx), w=getSzLabel(idx);
+  const ex=cart.find(i=>i.pid===pid&&i.si===idx);
+  if(ex) ex.qty++;
+  else cart.push({pid,name:p.name,img:p.img,cat:p.cat,si:idx,w,price,qty:1,promo:p.promo});
+  updateCartUI();
+  toast('เพิ่ม '+p.name+' ('+w+')');
+}
+function delCart(idx){cart.splice(idx,1);updateCartUI();}
+function chgQty(idx,d){cart[idx].qty+=d;if(cart[idx].qty<=0)cart.splice(idx,1);updateCartUI();}
+
+function updateCartUI() {
+  const qty=cart.reduce((s,i)=>s+i.qty,0);
+  document.getElementById('cartQtyNav').textContent=qty;
+  const badge=document.getElementById('cartBadge');
+  if(badge){badge.textContent=qty;badge.className='nav-badge'+(qty?' show':'');}
+
+  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const disc=promoCode?Math.round(sub*promoCode.pct/100):0;
+  const total=sub-disc;
+
+  document.getElementById('cartTotalEl').textContent='฿'+total.toLocaleString();
+  document.getElementById('sumQty').textContent=qty+' ชิ้น';
+  document.getElementById('cartSumEl').style.display=cart.length?'block':'none';
+  const dr=document.getElementById('discRow');dr.style.display=disc?'flex':'none';
+  if(disc)document.getElementById('discVal').textContent='-฿'+disc.toLocaleString();
+
+  const box=document.getElementById('cartItemsEl');
+  if(!cart.length){
+    box.innerHTML=`<div class="cart-empty-state"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--grey3)" stroke-width="1"><path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 01-8 0"/></svg><span class="cart-empty-txt">CART IS EMPTY</span></div>`;
+    return;
+  }
+  box.innerHTML=cart.map((it,idx)=>{
+    const imgH=it.img?`<img src="${it.img}" alt="${it.name}">`:`<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--grey3)" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`;
+    return `<div class="cart-item">
+      <div class="cart-item-img">${imgH}</div>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${it.name}</div>
+        <div class="cart-item-meta">${it.w} · ${catLabel(it.cat)}</div>
+        ${it.promo?`<div class="cart-item-promo">${it.promo}</div>`:''}
+        <div class="cart-item-price">฿${(it.price*it.qty).toLocaleString()}</div>
+        <div class="cart-item-qty">
+          <button class="qty-btn" onclick="chgQty(${idx},-1)">−</button>
+          <span class="qty-val">${it.qty}</span>
+          <button class="qty-btn" onclick="chgQty(${idx},1)">+</button>
+        </div>
+      </div>
+      <button class="cart-item-del" onclick="delCart(${idx})"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>`;
+  }).join('');
+}
+
+function toggleCart(){
+  document.getElementById('cartOverlay').classList.toggle('open');
+  document.getElementById('cartPanel').classList.toggle('open');
+}
+
+/* ════════ PROMO ════════ */
+function applyPromo() {
+  const code=document.getElementById('promoInput').value.trim().toUpperCase();
+  if(PROMO[code]){
+    promoCode=PROMO[code];promoCodeStr=code;
+    const el=document.getElementById('promoOk');
+    el.classList.add('show');
+    document.getElementById('promoOkTxt').textContent=promoCode.lbl;
+    updateCartUI();toast('CODE '+code+' — '+promoCode.lbl);
+  } else { toast('โค้ดนี้ไม่ถูกต้อง'); }
+}
+
+/* ════════ ADDRESS ════════ */
+function loadAddr() {
+  try{addr=JSON.parse(localStorage.getItem('vs_addr'));}catch(e){}
+  renderAddrDisplay();
+}
+function saveAddr() {
+  const n=v('fName'),ph=v('fPhone'),l1=v('fLine1'),prov=v('fProv'),zip=v('fZip');
+  if(!n||!ph||!l1||!prov||!zip){toast('กรุณากรอกข้อมูลที่จำเป็น (*)');return;}
+  addr={name:n,phone:ph,line1:l1,dist:v('fDist'),amp:v('fAmp'),prov,zip,note:v('fNote')};
+  localStorage.setItem('vs_addr',JSON.stringify(addr));
+  renderAddrDisplay();
+  const bar=document.getElementById('addrSavedBar');bar.classList.add('show');
+  setTimeout(()=>{bar.classList.remove('show');closeAddrModal();},1200);
+}
+function v(id){return document.getElementById(id).value.trim();}
+function renderAddrDisplay() {
+  const d=document.getElementById('addrDisplay');
+  const eb=document.getElementById('addrEditBtn');
+  if(!addr){
+    eb.style.display='none';
+    d.innerHTML=`<button class="cart-addr-empty-btn" onclick="openAddrModal()"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>เพิ่มที่อยู่จัดส่ง</button>`;
+  } else {
+    eb.style.display='flex';
+    const parts=[addr.line1,addr.dist,addr.amp,addr.prov,addr.zip].filter(Boolean).join(' ');
+    d.innerHTML=`<div class="cart-addr-name">${addr.name} · ${addr.phone}</div><div class="cart-addr-text">${parts}${addr.note?'<br>หมายเหตุ: '+addr.note:''}</div>`;
+  }
+}
+function fillAddrForm(){
+  if(!addr)return;
+  ['fName','fPhone','fLine1','fDist','fAmp','fProv','fZip','fNote'].forEach(id=>{
+    const map={fName:'name',fPhone:'phone',fLine1:'line1',fDist:'dist',fAmp:'amp',fProv:'prov',fZip:'zip',fNote:'note'};
+    document.getElementById(id).value=addr[map[id]]||'';
+  });
+}
+function openAddrModal(){fillAddrForm();document.getElementById('addrOverlay').classList.add('open');document.body.style.overflow='hidden';}
+function closeAddrModal(){document.getElementById('addrOverlay').classList.remove('open');document.body.style.overflow='';}
+
+/* ════════ LINE ORDER ════════ */
+function buildOrderMsg() {
+  if(!cart.length)return null;
+  const sub=cart.reduce((s,i)=>s+i.price*i.qty,0);
+  const disc=promoCode?Math.round(sub*promoCode.pct/100):0;
+  const total=sub-disc;
+  const items=cart.map(i=>`  • ${i.name} (${i.w}) x${i.qty} = ฿${(i.price*i.qty).toLocaleString()}`+(i.promo?` [${i.promo}]`:'')).join('\n');
+  const promoTxt=promoCode?`\nโค้ด: ${promoCodeStr} (${promoCode.lbl})\nส่วนลด: -฿${disc.toLocaleString()}`:'';
+  const addrTxt=addr
+    ?`\n\n📍 ที่อยู่จัดส่ง\n${addr.name} (${addr.phone})\n${[addr.line1,addr.dist,addr.amp,addr.prov,addr.zip].filter(Boolean).join(' ')}${addr.note?'\nหมายเหตุ: '+addr.note:''}`
+    :'\n\n[กรุณาแจ้งที่อยู่จัดส่ง]';
+  return `สั่งสินค้า ${SHOP_NAME}\n\nรายการ:\n${items}\nค่าจัดส่ง: ฟรี${promoTxt}\nยอดรวม: ฿${total.toLocaleString()}${addrTxt}`;
+}
+function sendToLine(){
+  if(!cart.length){toast('กรุณาเพิ่มสินค้าก่อน');return;}
+  const msg=buildOrderMsg();
+  window.open(`https://line.me/R/oaMessage/${LINE_ID.replace('@','')}/?${encodeURIComponent(msg)}`,'_blank');
+}
+function doCheckout(){
+  if(!cart.length){toast('กรุณาเพิ่มสินค้าก่อน');return;}
+  alert('📋 สรุปออเดอร์\n\n'+buildOrderMsg()+'\n\n——\nกดปุ่ม "สั่งผ่าน LINE" เพื่อส่งออเดอร์');
+}
+function lineOneProduct(){
+  if(!modalPid)return;
+  const p=PRODUCTS.find(x=>x.id===modalPid);
+  const price=getPrice(p,modalSzIdx), w=getSzLabel(modalSzIdx);
+  const addrTxt=addr?`\n\n📍 ${addr.name} (${addr.phone})\n${[addr.line1,addr.dist,addr.amp,addr.prov,addr.zip].filter(Boolean).join(' ')}`:'\n\n[กรุณาแจ้งที่อยู่จัดส่ง]';
+  const msg=`สนใจสินค้า: ${p.name}\nขนาด: ${w} — ฿${price.toLocaleString()}${p.promo?'\nโปรโมชั่น: '+p.promo:''}\nหมวด: ${catLabel(p.cat)}${addrTxt}`;
+  window.open(`https://line.me/R/oaMessage/${LINE_ID.replace('@','')}/?${encodeURIComponent(msg)}`,'_blank');
+}
+
+/* ════════ PRODUCT MODAL ════════ */
+function openModal(pid) {
+  const p=PRODUCTS.find(x=>x.id===pid);
+  modalPid=pid; modalSzIdx=selSizes[pid]??0;
+  document.getElementById('pmCat').textContent=catLabel(p.cat);
+  document.getElementById('pmCatTxt').textContent=catLabel(p.cat);
+  document.getElementById('pmName').textContent=p.name;
+  document.getElementById('pmDesc').textContent=p.detail||p.desc;
+  document.getElementById('pmSpecs').innerHTML=(p.specs||[]).map(([k,vl])=>`<div class="pm-spec-row"><span class="pm-spec-k">${k}</span><span class="pm-spec-v">${vl}</span></div>`).join('');
+  document.getElementById('pmTags').innerHTML=(p.tags||[]).map(t=>`<span class="pm-tag">${t}</span>`).join('');
+  const bc={HOT:'badge-hot',NEW:'badge-new',SALE:'badge-sale'}[p.badge]||'';
+  document.getElementById('pmImgCol').innerHTML=`
+    ${p.badge?`<div class="pmodal-badge-abs ${bc}">${p.badge}</div>`:''}
+    <div class="pmodal-img-main">${p.img?`<img src="${p.img}" alt="${p.name}">`:`<div class="pm-ph"><svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="0.8"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg><span>PRODUCT IMAGE</span></div>`}</div>
+    <div class="pmodal-img-foot">
+      <span class="pmodal-pid">SKU #${String(p.id).padStart(3,'0')}</span>
+      ${p.promo?`<span class="pmodal-promo-badge">${p.promo}</span>`:''}
+    </div>`;
+  document.getElementById('pmSizes').innerHTML=SIZE_LABELS.map((w,i)=>`<button class="pm-sz ${i===modalSzIdx?'active':''}" onclick="selModalSz(${i},this)"><span class="pmw">${w}</span><span class="pmp">฿${getPrice(p,i).toLocaleString()}</span></button>`).join('');
+  document.getElementById('pmPrice').textContent='฿'+getPrice(p,modalSzIdx).toLocaleString();
+  document.getElementById('pmodalOverlay').classList.add('open');
+  document.body.style.overflow='hidden';
+  document.getElementById('pmodalBox').scrollTop=0;
+}
+function selModalSz(idx,btn){
+  modalSzIdx=idx;
+  const p=PRODUCTS.find(x=>x.id===modalPid);
+  document.querySelectorAll('.pm-sz').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('pmPrice').textContent='฿'+getPrice(p,idx).toLocaleString();
+}
+function closeModal(){document.getElementById('pmodalOverlay').classList.remove('open');document.body.style.overflow='';}
+function handlePModalBg(e){if(e.target===document.getElementById('pmodalOverlay'))closeModal();}
+function navModal(d){
+  if(!modalPid)return;
+  const list=getFiltered(),idx=list.findIndex(p=>p.id===modalPid),next=list[idx+d];
+  if(next)openModal(next.id);
+}
+function addFromModal(){
+  if(!modalPid)return;
+  const p=PRODUCTS.find(x=>x.id===modalPid);
+  const price=getPrice(p,modalSzIdx), w=getSzLabel(modalSzIdx);
+  const ex=cart.find(i=>i.pid===modalPid&&i.si===modalSzIdx);
+  if(ex)ex.qty++;
+  else cart.push({pid:modalPid,name:p.name,img:p.img,cat:p.cat,si:modalSzIdx,w,price,qty:1,promo:p.promo});
+  updateCartUI();toast('เพิ่ม '+p.name+' ('+w+')');
+  closeModal();setTimeout(toggleCart,150);
+}
+
+/* ════════ KEYBOARD ════════ */
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeModal();closeAddrModal();closeSzSheet();}
+  if(e.key==='ArrowLeft')navModal(-1);
+  if(e.key==='ArrowRight')navModal(1);
+});
+
+/* ════════ TOAST ════════ */
+let tTimer;
+function toast(msg){
+  document.getElementById('toastTxt').textContent=msg;
+  const t=document.getElementById('toast');
+  t.classList.add('show');clearTimeout(tTimer);
+  tTimer=setTimeout(()=>t.classList.remove('show'),2600);
+}
+
+/* ════════ SCROLL ════════ */
+window.addEventListener('scroll',()=>{
+  const y=window.scrollY;
+  document.getElementById('btt').className=y>500?'show':'';
+  document.getElementById('mainNav').className='nav'+(y>10?' scrolled':'');
+});
+
+/* ════════ RUN ════════ */
+init();
+</script>
+</body>
+</html>
