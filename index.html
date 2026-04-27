@@ -1978,12 +1978,12 @@ function uRef(){ return DB.ref(`v4/${CU.uid}/rounds`); }
 function loadData(){
   uRef().on('value', snap=>{
     rounds=[];
-    snap.forEach(c=>rounds.push({id:c.key,...c.val()}));
+    snap.forEach(c=>rounds.set({id:c.key,...c.val()}));
     rounds.sort((a,b)=>a.timestamp-b.timestamp);
     updateAll();
   });
 }
-function saveRound(r){ uRef().push({result:r,timestamp:Date.now()}); }
+function saveRound(r){ uRef().set({result:r,timestamp:Date.now()}); }
 function delRound(id){ uRef().child(id).remove(); }
 function clearAll(){ uRef().remove(); }
 
