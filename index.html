@@ -1976,7 +1976,7 @@ function doLogout(){ stopTimer(); AUTH.signOut(); }
 function uRef(){ return DB.ref(`v4/${CU.uid}/rounds`); }
 
 function loadData(){
-  uRef().on('value', snap=>{
+  uRef().limitToLast(10).on('value', snap=>{
     rounds=[];
     snap.forEach(c=>rounds.push({id:c.key,...c.val()}));
     rounds.sort((a,b)=>a.timestamp-b.timestamp);
