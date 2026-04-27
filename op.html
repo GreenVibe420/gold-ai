@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TaxEasy — ระบบคำนวณภาษี</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged }
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+  import { getDatabase, ref, get, set, update }
+    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+
+  /* ─── Firebase Config ─── */
+  const firebaseConfig = {
+    apiKey: "AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",
+    authDomain: "greencat-c40c6.firebaseapp.com",
+    databaseURL: "https://greencat-c40c6-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "greencat-c40c6",
+    storageBucket: "greencat-c40c6.firebasestorage.app",
+    messagingSenderId: "574032692697",
+    appId: "1:574032692697:web:2778aaf8d0c5a07c15c5c8",
+    measurementId: "G-N4LFVEEMJW"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getDatabase(app);
+
+  /* ─── Quota Logic ──────────────────────────────────────────────────────────
+   *  Each anonymous user gets 1 free calculation stored in Realtime DB
+   *  under /users/{uid}/quota  (integer ≥ 0)
+   *  quota > 0  → allow calculation, decrement
+   *  quota === 0 → block and show payment modal
+   * ──────────────────────────────────────────────────────────────────────── */
+
+  let currentUser = null;
+
+  // Sign in anonymously on page load
+  signInAnonymously(auth).catch(console.error);
+
+  onAuthStateChanged(auth, async user => {
+    if (!user) return;
+    currentUser = user;
+
+    const userRef = ref(db, `users/${user.uid}`);
+    const snap = await get(userRef);
+
+    if (!snap.exists()) {
+      // First-time visitor → grant 1 free calculation
+      await set(userRef, { quota: 1, totalCalcs: 0 });
+    }
+    // Update UI badge
+    await refreshQuotaBadge();
+  });
+
+  /* Read current quota from DB */
+  async function getQuota() {
+    if (!currentUser) return 0;
+    const snap = await get(ref(db, `users/${currentUser.uid}/quota`));
+    return snap.exists() ? snap.val() : 0;
+  }
+
+  /* Decrement quota after successful calc */
+  async function decrementQuota() {
+    if (!currentUser) return;
+    const uid = currentUser.uid;
+    const snap = await get(ref(db, `users/${uid}`));
+    const data = snap.val() || {};
+    const newQuota = Math.max(0, (data.quota || 0) - 1);
+    await update(ref(db, `users/${uid}`), {
+      quota: newQuota,
+      totalCalcs: (data.totalCalcs || 0) + 1
+    });
+    await refreshQuotaBadge();
+  }
+
+  /* Add quota after mock payment (top-up 1 calculation) */
+  async function addQuotaAfterPayment() {
+    if (!currentUser) return;
+    const uid = currentUser.uid;
+    const snap = await get(ref(db, `users/${uid}`));
+    const data = snap.val() || {};
+    await update(ref(db, `users/${uid}`), {
+      quota: (data.quota || 0) + 1
+    });
+    await refreshQuotaBadge();
+  }
+
+  async function refreshQuotaBadge() {
+    const q = await getQuota();
+    const badge = document.getElementById('quota-badge');
+    if (badge) {
+      const lang = document.documentElement.lang === 'en' ? 'en' : 'th';
+      badge.textContent = lang === 'th'
+        ? `เครดิตคงเหลือ: ${q} ครั้ง`
+        : `Credits left: ${q}`;
+      badge.className = q > 0 ? 'quota-badge quota-ok' : 'quota-badge quota-empty';
+    }
+  }
+
+  /* ─── Main entry point called by each "Calculate" button ─── */
+  window.handleCalculate = async function(calcFn) {
+    const q = await getQuota();
+    if (q <= 0) {
+      // No quota → show payment modal
+      showPaymentModal();
+      return;
+    }
+    // Has quota → run the calc, then decrement
+    calcFn();
+    await decrementQuota();
+  };
+
+  /* ─── Payment simulation ─── */
+  window.submitMockPayment = async function() {
+    const ref_ = document.getElementById('slip-input').value.trim();
+    if (!ref_) {
+      alert(document.documentElement.lang === 'en'
+        ? 'Please enter a reference number'
+        : 'กรุณากรอกเลขอ้างอิงการโอน');
+      return;
+    }
+    document.getElementById('pay-btn').disabled = true;
+    document.getElementById('pay-btn').textContent = '⏳ กำลังตรวจสอบ...';
+    // Simulate async verification
+    await new Promise(r => setTimeout(r, 1800));
+    await addQuotaAfterPayment();
+    closePaymentModal();
+    showSuccessToast();
+    document.getElementById('pay-btn').disabled = false;
+  };
+
+  window.refreshQuotaBadge = refreshQuotaBadge;
+</script>
+
+<style>
+/* ═══════════════════════════════════════════════
+   CSS VARIABLES & BASE
+═══════════════════════════════════════════════ */
+:root {
+  --bg:        #F7F8FC;
+  --surface:   #FFFFFF;
+  --border:    #E2E6F0;
+  --navy:      #0F2557;
+  --navy-mid:  #1A3A7A;
+  --accent:    #2563EB;
+  --accent-lt: #EFF4FF;
+  --gold:      #F59E0B;
+  --gold-lt:   #FFFBEB;
+  --green:     #10B981;
+  --green-lt:  #ECFDF5;
+  --red:       #EF4444;
+  --red-lt:    #FEF2F2;
+  --text:      #1E293B;
+  --muted:     #64748B;
+  --radius:    14px;
+  --shadow:    0 4px 24px rgba(15,37,87,.08);
+  --shadow-lg: 0 12px 48px rgba(15,37,87,.14);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Sarabun', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════
+   HEADER
+═══════════════════════════════════════════════ */
+header {
+  background: var(--navy);
+  padding: 0 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: 0 2px 20px rgba(0,0,0,.25);
+}
+.header-inner {
+  max-width: 900px;
+  margin: auto;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--gold);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+.logo-text {
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+.logo-sub {
+  color: rgba(255,255,255,.55);
+  font-size: 11px;
+  font-weight: 400;
+  display: block;
+  margin-top: -4px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.lang-btn {
+  background: rgba(255,255,255,.12);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 20px;
+  padding: 5px 14px;
+  font-size: 13px;
+  font-family: 'Sarabun', sans-serif;
+  cursor: pointer;
+  transition: background .2s;
+}
+.lang-btn:hover { background: rgba(255,255,255,.22); }
+
+/* Quota badge */
+.quota-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+.quota-ok    { background: var(--green-lt); color: var(--green); }
+.quota-empty { background: var(--red-lt); color: var(--red); }
+
+/* ═══════════════════════════════════════════════
+   MAIN LAYOUT
+═══════════════════════════════════════════════ */
+main {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 28px 16px 80px;
+}
+
+/* Hero strip */
+.hero {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+  border-radius: var(--radius);
+  padding: 32px 28px;
+  margin-bottom: 28px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  overflow: hidden;
+  position: relative;
+}
+.hero::after {
+  content: '₿';
+  position: absolute;
+  right: -10px;
+  top: -20px;
+  font-size: 140px;
+  opacity: .04;
+}
+.hero-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+.hero-sub   { color: rgba(255,255,255,.65); font-size: 15px; }
+
+/* Tab Navigation */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 22px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.tabs::-webkit-scrollbar { display: none; }
+.tab-btn {
+  padding: 10px 20px;
+  border-radius: 30px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--muted);
+  font-family: 'Sarabun', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all .18s;
+}
+.tab-btn:hover { border-color: var(--accent); color: var(--accent); }
+.tab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(37,99,235,.35);
+}
+
+/* Card */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 28px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+.card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--navy);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-desc {
+  color: var(--muted);
+  font-size: 14px;
+  margin-bottom: 22px;
+}
+
+/* Tax panel */
+.tax-panel { display: none; }
+.tax-panel.active { display: block; }
+
+/* Form */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 16px;
+  margin-bottom: 20px;
+}
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+label span { color: var(--muted); font-weight: 400; }
+input[type="number"], select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 15px;
+  color: var(--text);
+  background: #fff;
+  outline: none;
+  transition: border-color .18s, box-shadow .18s;
+}
+input[type="number"]:focus, select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Range slider */
+.range-row { display: flex; align-items: center; gap: 10px; }
+input[type="range"] { flex: 1; accent-color: var(--accent); }
+.range-val {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 500;
+  min-width: 48px;
+  text-align: right;
+}
+
+/* Allowance checkboxes */
+.allowance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .18s;
+}
+.check-item:hover { border-color: var(--accent); background: var(--accent-lt); }
+.check-item input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
+.check-item label { cursor: pointer; font-size: 13px; font-weight: 500; }
+.check-item .amt { font-size: 11px; color: var(--muted); margin-left: auto; font-family: 'IBM Plex Mono', monospace; }
+
+/* Calc button */
+.calc-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .18s;
+  box-shadow: 0 4px 14px rgba(37,99,235,.3);
+}
+.calc-btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,.4); }
+.calc-btn:active { transform: translateY(0); }
+
+/* Result box */
+.result-box {
+  display: none;
+  margin-top: 22px;
+  padding: 22px;
+  background: linear-gradient(135deg, var(--green-lt), #f0fdf4);
+  border: 2px solid var(--green);
+  border-radius: var(--radius);
+  animation: slideUp .3s ease;
+}
+.result-box.visible { display: block; }
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.result-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--green);
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.result-rows { display: flex; flex-direction: column; gap: 10px; }
+.result-row  {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 14px;
+  background: #fff;
+  border-radius: 10px;
+  border: 1px solid rgba(16,185,129,.2);
+}
+.result-label { font-size: 14px; color: var(--muted); }
+.result-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+}
+.result-value.highlight {
+  font-size: 18px;
+  color: var(--navy);
+}
+.result-value.tax { color: var(--red); }
+
+/* Divider */
+.divider {
+  border: none;
+  border-top: 1px dashed var(--border);
+  margin: 16px 0;
+}
+
+/* ═══════════════════════════════════════════════
+   PAYMENT MODAL
+═══════════════════════════════════════════════ */
+.modal-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(10,20,50,.6);
+  backdrop-filter: blur(4px);
+  z-index: 500;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+  animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes popIn {
+  from { opacity:0; transform:scale(.88); }
+  to   { opacity:1; transform:scale(1); }
+}
+.modal-icon {
+  width: 60px;
+  height: 60px;
+  background: var(--gold-lt);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  margin: 0 auto 16px;
+}
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy);
+  text-align: center;
+  margin-bottom: 8px;
+}
+.modal-sub {
+  font-size: 14px;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 22px;
+}
+.price-tag {
+  background: var(--gold-lt);
+  border: 2px solid var(--gold);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 22px;
+}
+.price-tag .price {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--navy);
+}
+.price-tag .price-unit { font-size: 14px; color: var(--muted); }
+
+/* QR area */
+.qr-box {
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 18px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+.qr-mock {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 10px;
+  background: var(--border);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+  position: relative;
+  overflow: hidden;
+}
+/* Simple QR-like grid pattern */
+.qr-mock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(0,0,0,.07) 8px, rgba(0,0,0,.07) 9px),
+    repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(0,0,0,.07) 8px, rgba(0,0,0,.07) 9px);
+}
+.qr-note { font-size: 12px; color: var(--muted); }
+
+.modal-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 14px;
+  outline: none;
+  margin-bottom: 14px;
+  transition: border-color .18s;
+}
+.modal-input:focus { border-color: var(--accent); }
+
+.pay-btn {
+  width: 100%;
+  padding: 14px;
+  background: var(--gold);
+  color: var(--navy);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .18s;
+  margin-bottom: 10px;
+}
+.pay-btn:hover { background: #d97706; }
+.pay-btn:disabled { opacity: .6; cursor: not-allowed; }
+
+.cancel-link {
+  display: block;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline;
+}
+.cancel-link:hover { color: var(--text); }
+
+/* ═══════════════════════════════════════════════
+   TOAST
+═══════════════════════════════════════════════ */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(80px);
+  background: var(--navy);
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 999;
+  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
+  white-space: nowrap;
+  box-shadow: 0 8px 30px rgba(0,0,0,.25);
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ═══════════════════════════════════════════════
+   CONTACT SECTION
+═══════════════════════════════════════════════ */
+.contact-card {
+  background: linear-gradient(135deg, #06B6D4, #0891B2);
+  border-radius: var(--radius);
+  padding: 28px;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.contact-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+.contact-sub   { font-size: 14px; opacity: .8; }
+.line-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #06C755;
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 12px 22px;
+  font-family: 'Sarabun', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: all .18s;
+  box-shadow: 0 4px 14px rgba(6,199,85,.4);
+}
+.line-btn:hover { background: #05b84d; transform: translateY(-2px); }
+
+/* FAQ / note cards */
+.info-strip {
+  background: var(--accent-lt);
+  border: 1px solid rgba(37,99,235,.2);
+  border-radius: 10px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--accent);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+/* Section heading */
+.section-heading {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+  margin: 28px 0 14px;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 20px;
+  font-size: 12px;
+  color: var(--muted);
+  border-top: 1px solid var(--border);
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .hero { padding: 22px 18px; }
+  .hero-title { font-size: 21px; }
+  .card { padding: 20px 16px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .logo-sub { display: none; }
+  .contact-card { flex-direction: column; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo">
+      <div class="logo-icon">📊</div>
+      <div>
+        <span class="logo-text">TaxEasy</span>
+        <span class="logo-sub" data-th="ระบบคำนวณภาษี" data-en="Tax Calculator">ระบบคำนวณภาษี</span>
+      </div>
+    </a>
+    <div class="header-right">
+      <span id="quota-badge" class="quota-badge quota-ok">กำลังโหลด...</span>
+      <button class="lang-btn" onclick="toggleLanguage()" id="lang-toggle">🌐 EN</button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════════
+     MAIN
+════════════════════════════════════════════ -->
+<main>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div>
+      <div class="hero-title" data-th="คำนวณภาษีได้ง่ายๆ ไม่ต้องงง 🎯" data-en="Tax Made Simple — No More Confusion 🎯">
+        คำนวณภาษีได้ง่ายๆ ไม่ต้องงง 🎯
+      </div>
+      <div class="hero-sub" data-th="ภาษีเงินได้บุคคล · VAT · ภาษีหัก ณ ที่จ่าย — ครบในที่เดียว" data-en="Personal Income Tax · VAT · Withholding Tax — All in one place">
+        ภาษีเงินได้บุคคล · VAT · ภาษีหัก ณ ที่จ่าย — ครบในที่เดียว
+      </div>
+    </div>
+  </div>
+
+  <!-- Info strip -->
+  <div class="info-strip">
+    <span>💡</span>
+    <span data-th="คุณมีสิทธิ์คำนวณภาษีฟรี 1 ครั้ง หลังจากนั้นค่าบริการครั้งละ <strong>19 บาท</strong> เท่านั้น" 
+          data-en="You get <strong>1 free</strong> calculation. After that, only <strong>฿19 per calculation</strong>.">
+      คุณมีสิทธิ์คำนวณภาษีฟรี 1 ครั้ง หลังจากนั้นค่าบริการครั้งละ <strong>19 บาท</strong> เท่านั้น
+    </span>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('pit', this)">
+      <span data-th="🧑 ภาษีเงินได้บุคคลธรรมดา" data-en="🧑 Personal Income Tax">🧑 ภาษีเงินได้บุคคลธรรมดา</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('vat', this)">
+      <span data-th="🏪 ภาษีมูลค่าเพิ่ม (VAT)" data-en="🏪 Value Added Tax (VAT)">🏪 ภาษีมูลค่าเพิ่ม (VAT)</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('wht', this)">
+      <span data-th="📋 ภาษีหัก ณ ที่จ่าย" data-en="📋 Withholding Tax">📋 ภาษีหัก ณ ที่จ่าย</span>
+    </button>
+    <button class="tab-btn" onclick="switchTab('corp', this)">
+      <span data-th="🏢 ภาษีนิติบุคคล" data-en="🏢 Corporate Tax">🏢 ภาษีนิติบุคคล</span>
+    </button>
+  </div>
+
+  <!-- ────────────────────────────────────────
+       TAB 1: Personal Income Tax (PIT)
+  ──────────────────────────────────────── -->
+  <div class="tax-panel active" id="panel-pit">
+    <div class="card">
+      <div class="card-title">🧑 <span data-th="ภาษีเงินได้บุคคลธรรมดา" data-en="Personal Income Tax">ภาษีเงินได้บุคคลธรรมดา</span></div>
+      <div class="card-desc" data-th="กรอกรายได้และค่าลดหย่อนของคุณ แล้วเราจะคำนวณภาษีให้ทันที" data-en="Enter your income and deductions — we'll calculate your tax instantly.">
+        กรอกรายได้และค่าลดหย่อนของคุณ แล้วเราจะคำนวณภาษีให้ทันที
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label data-th="รายได้รวมทั้งปี (บาท)" data-en="Total Annual Income (THB)">รายได้รวมทั้งปี (บาท)</label>
+          <input type="number" id="pit-income" placeholder="เช่น 600000" min="0" />
+          <span class="hint" data-th="รวมเงินเดือน โบนัส และรายได้อื่นๆ" data-en="Include salary, bonus, and other income">รวมเงินเดือน โบนัส และรายได้อื่นๆ</span>
+        </div>
+        <div class="form-group">
+          <label data-th="ประเภทรายได้" data-en="Income Type">ประเภทรายได้</label>
+          <select id="pit-type">
+            <option value="40_1" data-th="40(1) เงินเดือน ค่าจ้าง" data-en="40(1) Salary/Wages">40(1) เงินเดือน ค่าจ้าง</option>
+            <option value="40_2" data-th="40(2) รับจ้างทำงาน" data-en="40(2) Freelance/Contract">40(2) รับจ้างทำงาน</option>
+            <option value="40_8" data-th="40(8) ธุรกิจทั่วไป" data-en="40(8) General Business">40(8) ธุรกิจทั่วไป</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="card-title" style="font-size:15px; margin-bottom:12px;">
+        ✅ <span data-th="เลือกค่าลดหย่อนที่คุณมีสิทธิ์" data-en="Select your applicable deductions">เลือกค่าลดหย่อนที่คุณมีสิทธิ์</span>
+      </div>
+      <div class="allowance-grid">
+        <div class="check-item">
+          <input type="checkbox" id="all-personal" checked />
+          <label for="all-personal" data-th="ค่าลดหย่อนส่วนตัว" data-en="Personal Allowance">ค่าลดหย่อนส่วนตัว</label>
+          <span class="amt">60,000</span>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="all-spouse" />
+          <label for="all-spouse" data-th="คู่สมรส" data-en="Spouse">คู่สมรส</label>
+          <span class="amt">60,000</span>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="all-child" />
+          <label for="all-child" data-th="บุตร (คนแรก)" data-en="Child (1st)">บุตร (คนแรก)</label>
+          <span class="amt">30,000</span>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="all-parent" />
+          <label for="all-parent" data-th="ค่าเลี้ยงดูบิดา/มารดา" data-en="Parent Support">ค่าเลี้ยงดูบิดา/มารดา</label>
+          <span class="amt">30,000</span>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="all-life-ins" />
+          <label for="all-life-ins" data-th="ประกันชีวิต" data-en="Life Insurance">ประกันชีวิต</label>
+          <span class="amt">≤100,000</span>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="all-rmf" />
+          <label for="all-rmf" data-th="กองทุน RMF" data-en="RMF Fund">กองทุน RMF</label>
+          <span class="amt">≤500,000</span>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="all-ssf" />
+          <label for="all-ssf" data-th="กองทุน SSF" data-en="SSF Fund">กองทุน SSF</label>
+          <span class="amt">≤200,000</span>
+        </div>
+        <div class="check-item">
+          <input type="checkbox" id="all-pvd" />
+          <label for="all-pvd" data-th="กองทุนสำรองเลี้ยงชีพ" data-en="Provident Fund">กองทุนสำรองเลี้ยงชีพ</label>
+          <span class="amt">≤500,000</span>
+        </div>
+      </div>
+
+      <!-- Additional deductions inputs -->
+      <div class="form-grid">
+        <div class="form-group" id="life-ins-input" style="display:none">
+          <label data-th="เบี้ยประกันชีวิต (บาท)" data-en="Life Insurance Premium (THB)">เบี้ยประกันชีวิต (บาท)</label>
+          <input type="number" id="pit-life-ins" placeholder="0" min="0" max="100000" />
+        </div>
+        <div class="form-group" id="rmf-input" style="display:none">
+          <label data-th="ยอด RMF (บาท)" data-en="RMF Amount (THB)">ยอด RMF (บาท)</label>
+          <input type="number" id="pit-rmf" placeholder="0" min="0" />
+        </div>
+        <div class="form-group" id="ssf-input" style="display:none">
+          <label data-th="ยอด SSF (บาท)" data-en="SSF Amount (THB)">ยอด SSF (บาท)</label>
+          <input type="number" id="pit-ssf" placeholder="0" min="0" />
+        </div>
+        <div class="form-group" id="pvd-input" style="display:none">
+          <label data-th="ยอดกองทุนสำรองฯ (บาท)" data-en="Provident Fund (THB)">ยอดกองทุนสำรองฯ (บาท)</label>
+          <input type="number" id="pit-pvd" placeholder="0" min="0" />
+        </div>
+      </div>
+
+      <button class="calc-btn" onclick="handleCalculate(calcPIT)">
+        <span data-th="✨ คำนวณภาษีเลย!" data-en="✨ Calculate Tax Now!">✨ คำนวณภาษีเลย!</span>
+      </button>
+
+      <!-- PIT Result -->
+      <div class="result-box" id="pit-result">
+        <div class="result-title">✅ <span data-th="ผลการคำนวณ" data-en="Calculation Result">ผลการคำนวณ</span></div>
+        <div class="result-rows">
+          <div class="result-row">
+            <span class="result-label" data-th="รายได้รวม" data-en="Total Income">รายได้รวม</span>
+            <span class="result-value" id="pit-r-income">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="ค่าใช้จ่ายที่หักได้" data-en="Expense Deduction">ค่าใช้จ่ายที่หักได้</span>
+            <span class="result-value" id="pit-r-expense">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="ค่าลดหย่อนรวม" data-en="Total Allowances">ค่าลดหย่อนรวม</span>
+            <span class="result-value" id="pit-r-allowance">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="เงินได้สุทธิ" data-en="Net Taxable Income">เงินได้สุทธิ</span>
+            <span class="result-value" id="pit-r-net">—</span>
+          </div>
+          <hr class="divider" />
+          <div class="result-row" style="background: #fff7ed; border-color: rgba(239,68,68,.2);">
+            <span class="result-label" style="font-weight:700;" data-th="ภาษีที่ต้องจ่าย" data-en="Tax Payable">ภาษีที่ต้องจ่าย</span>
+            <span class="result-value highlight tax" id="pit-r-tax">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="อัตราภาษีที่แท้จริง" data-en="Effective Tax Rate">อัตราภาษีที่แท้จริง</span>
+            <span class="result-value" id="pit-r-rate">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────
+       TAB 2: VAT
+  ──────────────────────────────────────── -->
+  <div class="tax-panel" id="panel-vat">
+    <div class="card">
+      <div class="card-title">🏪 <span data-th="ภาษีมูลค่าเพิ่ม (VAT)" data-en="Value Added Tax (VAT)">ภาษีมูลค่าเพิ่ม (VAT)</span></div>
+      <div class="card-desc" data-th="คำนวณ VAT 7% ได้ง่ายๆ ทั้งแบบรวม VAT แล้ว และแบบที่ยังไม่รวม" data-en="Calculate 7% VAT — both inclusive and exclusive.">
+        คำนวณ VAT 7% ได้ง่ายๆ ทั้งแบบรวม VAT แล้ว และแบบที่ยังไม่รวม
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label data-th="ยอดเงิน (บาท)" data-en="Amount (THB)">ยอดเงิน (บาท)</label>
+          <input type="number" id="vat-amount" placeholder="เช่น 10000" min="0" />
+        </div>
+        <div class="form-group">
+          <label data-th="ประเภทการคำนวณ" data-en="Calculation Type">ประเภทการคำนวณ</label>
+          <select id="vat-type">
+            <option value="excl" data-th="ยังไม่รวม VAT (บวกเพิ่ม 7%)" data-en="Exclusive — Add 7% VAT">ยังไม่รวม VAT (บวกเพิ่ม 7%)</option>
+            <option value="incl" data-th="รวม VAT แล้ว (ถอด VAT ออก)" data-en="Inclusive — Extract VAT">รวม VAT แล้ว (ถอด VAT ออก)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-th="อัตรา VAT (%)" data-en="VAT Rate (%)">อัตรา VAT (%)</label>
+          <div class="range-row">
+            <input type="range" id="vat-rate" min="0" max="15" step="0.5" value="7" oninput="document.getElementById('vat-rate-val').textContent=this.value+'%'" />
+            <span class="range-val" id="vat-rate-val">7%</span>
+          </div>
+        </div>
+      </div>
+      <button class="calc-btn" onclick="handleCalculate(calcVAT)">
+        <span data-th="✨ คำนวณ VAT" data-en="✨ Calculate VAT">✨ คำนวณ VAT</span>
+      </button>
+      <div class="result-box" id="vat-result">
+        <div class="result-title">✅ <span data-th="ผลการคำนวณ" data-en="Calculation Result">ผลการคำนวณ</span></div>
+        <div class="result-rows">
+          <div class="result-row">
+            <span class="result-label" data-th="ยอดก่อน VAT" data-en="Amount Before VAT">ยอดก่อน VAT</span>
+            <span class="result-value" id="vat-r-base">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="VAT" data-en="VAT Amount">VAT</span>
+            <span class="result-value tax" id="vat-r-vat">—</span>
+          </div>
+          <div class="result-row" style="background: #fff7ed; border-color:rgba(239,68,68,.2);">
+            <span class="result-label" style="font-weight:700;" data-th="ยอดรวม VAT" data-en="Total with VAT">ยอดรวม VAT</span>
+            <span class="result-value highlight" id="vat-r-total">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────
+       TAB 3: Withholding Tax (WHT)
+  ──────────────────────────────────────── -->
+  <div class="tax-panel" id="panel-wht">
+    <div class="card">
+      <div class="card-title">📋 <span data-th="ภาษีหัก ณ ที่จ่าย" data-en="Withholding Tax">ภาษีหัก ณ ที่จ่าย</span></div>
+      <div class="card-desc" data-th="คำนวณภาษีที่ถูกหัก ณ ที่จ่าย ตามประเภทรายได้และอัตราที่กำหนด" data-en="Calculate withholding tax by income type and applicable rate.">
+        คำนวณภาษีที่ถูกหัก ณ ที่จ่าย ตามประเภทรายได้และอัตราที่กำหนด
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label data-th="ยอดจ่าย (บาท)" data-en="Payment Amount (THB)">ยอดจ่าย (บาท)</label>
+          <input type="number" id="wht-amount" placeholder="เช่น 50000" min="0" />
+        </div>
+        <div class="form-group">
+          <label data-th="ประเภทรายได้ที่หัก ณ ที่จ่าย" data-en="WHT Income Type">ประเภทรายได้ที่หัก ณ ที่จ่าย</label>
+          <select id="wht-type" onchange="updateWHTRate()">
+            <option value="1" data-rate="3" data-th="ค่าจ้าง/บริการ — 3%" data-en="Services — 3%">ค่าจ้าง/บริการ — 3%</option>
+            <option value="2" data-rate="5" data-th="ค่าเช่า — 5%" data-en="Rent — 5%">ค่าเช่า — 5%</option>
+            <option value="3" data-rate="1" data-th="ค่าขนส่ง — 1%" data-en="Transport — 1%">ค่าขนส่ง — 1%</option>
+            <option value="4" data-rate="3" data-th="ค่าโฆษณา — 3%" data-en="Advertising — 3%">ค่าโฆษณา — 3%</option>
+            <option value="5" data-rate="10" data-th="เงินปันผล — 10%" data-en="Dividends — 10%">เงินปันผล — 10%</option>
+            <option value="6" data-rate="15" data-th="ดอกเบี้ย — 15%" data-en="Interest — 15%">ดอกเบี้ย — 15%</option>
+            <option value="custom" data-rate="0" data-th="กำหนดเอง" data-en="Custom Rate">กำหนดเอง</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-th="อัตราหัก ณ ที่จ่าย (%)" data-en="WHT Rate (%)">อัตราหัก ณ ที่จ่าย (%)</label>
+          <input type="number" id="wht-rate" value="3" min="0" max="100" step="0.5" />
+        </div>
+        <div class="form-group">
+          <label data-th="ผู้รับเงินเป็น" data-en="Recipient Type">ผู้รับเงินเป็น</label>
+          <select id="wht-entity">
+            <option value="person" data-th="บุคคลธรรมดา" data-en="Individual">บุคคลธรรมดา</option>
+            <option value="corp" data-th="นิติบุคคล" data-en="Corporate">นิติบุคคล</option>
+          </select>
+        </div>
+      </div>
+      <button class="calc-btn" onclick="handleCalculate(calcWHT)">
+        <span data-th="✨ คำนวณภาษีหัก ณ ที่จ่าย" data-en="✨ Calculate Withholding Tax">✨ คำนวณภาษีหัก ณ ที่จ่าย</span>
+      </button>
+      <div class="result-box" id="wht-result">
+        <div class="result-title">✅ <span data-th="ผลการคำนวณ" data-en="Calculation Result">ผลการคำนวณ</span></div>
+        <div class="result-rows">
+          <div class="result-row">
+            <span class="result-label" data-th="ยอดจ่ายเต็ม" data-en="Gross Payment">ยอดจ่ายเต็ม</span>
+            <span class="result-value" id="wht-r-gross">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="ภาษีที่หัก ณ ที่จ่าย" data-en="WHT Amount">ภาษีที่หัก ณ ที่จ่าย</span>
+            <span class="result-value tax" id="wht-r-wht">—</span>
+          </div>
+          <div class="result-row" style="background:#fff7ed; border-color:rgba(239,68,68,.2);">
+            <span class="result-label" style="font-weight:700;" data-th="ยอดจ่ายจริง (หักแล้ว)" data-en="Net Payment (after WHT)">ยอดจ่ายจริง (หักแล้ว)</span>
+            <span class="result-value highlight" id="wht-r-net">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="รหัสบัญชีภาษี" data-en="Tax Account Code">รหัสบัญชีภาษี</span>
+            <span class="result-value" id="wht-r-code" style="font-size:13px;">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────
+       TAB 4: Corporate Tax
+  ──────────────────────────────────────── -->
+  <div class="tax-panel" id="panel-corp">
+    <div class="card">
+      <div class="card-title">🏢 <span data-th="ภาษีเงินได้นิติบุคคล" data-en="Corporate Income Tax">ภาษีเงินได้นิติบุคคล</span></div>
+      <div class="card-desc" data-th="คำนวณภาษีนิติบุคคลตามขนาดกิจการและกำไรสุทธิ" data-en="Calculate corporate tax by business size and net profit.">
+        คำนวณภาษีนิติบุคคลตามขนาดกิจการและกำไรสุทธิ
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label data-th="กำไรสุทธิ (บาท)" data-en="Net Profit (THB)">กำไรสุทธิ (บาท)</label>
+          <input type="number" id="corp-profit" placeholder="เช่น 1000000" min="0" />
+        </div>
+        <div class="form-group">
+          <label data-th="ประเภทบริษัท" data-en="Company Type">ประเภทบริษัท</label>
+          <select id="corp-type">
+            <option value="sme" data-th="SME (ทุนจดทะเบียนไม่เกิน 5 ล้านบาท)" data-en="SME (Registered Capital ≤ 5M THB)">SME (ทุน ≤ 5 ล้านบาท)</option>
+            <option value="listed" data-th="บริษัทจดทะเบียนในตลาดหลักทรัพย์" data-en="Listed Company (SET)">บริษัทจดทะเบียน SET</option>
+            <option value="general" data-th="บริษัททั่วไป" data-en="General Company">บริษัททั่วไป</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label data-th="รายได้รวมทั้งปี (บาท)" data-en="Total Revenue (THB)">รายได้รวมทั้งปี (บาท)</label>
+          <input type="number" id="corp-revenue" placeholder="เช่น 5000000" min="0" />
+          <span class="hint" data-th="ใช้ตรวจสอบเงื่อนไข SME" data-en="Used to verify SME conditions">ใช้ตรวจสอบเงื่อนไข SME</span>
+        </div>
+      </div>
+      <button class="calc-btn" onclick="handleCalculate(calcCorp)">
+        <span data-th="✨ คำนวณภาษีนิติบุคคล" data-en="✨ Calculate Corporate Tax">✨ คำนวณภาษีนิติบุคคล</span>
+      </button>
+      <div class="result-box" id="corp-result">
+        <div class="result-title">✅ <span data-th="ผลการคำนวณ" data-en="Calculation Result">ผลการคำนวณ</span></div>
+        <div class="result-rows">
+          <div class="result-row">
+            <span class="result-label" data-th="กำไรสุทธิ" data-en="Net Profit">กำไรสุทธิ</span>
+            <span class="result-value" id="corp-r-profit">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="อัตราภาษี" data-en="Tax Rate">อัตราภาษี</span>
+            <span class="result-value" id="corp-r-rate">—</span>
+          </div>
+          <div class="result-row">
+            <span class="result-label" data-th="หมายเหตุ" data-en="Note">หมายเหตุ</span>
+            <span class="result-value" id="corp-r-note" style="font-size:12px; color:var(--muted)">—</span>
+          </div>
+          <hr class="divider" />
+          <div class="result-row" style="background:#fff7ed; border-color:rgba(239,68,68,.2);">
+            <span class="result-label" style="font-weight:700;" data-th="ภาษีที่ต้องจ่าย" data-en="Tax Payable">ภาษีที่ต้องจ่าย</span>
+            <span class="result-value highlight tax" id="corp-r-tax">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ────────────────────────────────────────
+       CONTACT SECTION
+  ──────────────────────────────────────── -->
+  <div class="section-heading" data-th="ติดต่อเรา" data-en="CONTACT US">ติดต่อเรา</div>
+
+  <div class="contact-card">
+    <div>
+      <div class="contact-title" data-th="มีข้อสงสัย หรือต้องการความช่วยเหลือ?" data-en="Got questions or need help?">มีข้อสงสัย หรือต้องการความช่วยเหลือ?</div>
+      <div class="contact-sub" data-th="ทีมงานของเราพร้อมตอบทุกคำถามเกี่ยวกับภาษีของคุณ 7 วัน ตั้งแต่ 9:00–21:00 น." data-en="Our team is ready to answer all your tax questions — 7 days, 9AM–9PM.">
+        ทีมงานพร้อมตอบทุกคำถามภาษี 7 วัน ตั้งแต่ 9:00–21:00 น.
+      </div>
+    </div>
+    <a href="https://line.me/ti/p/~@taxeasy" target="_blank" class="line-btn">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19.365 9.89c.25 0 .452.2.452.443v.01c0 .244-.202.443-.452.443H17.69v1.066h1.675c.25 0 .452.2.452.443v.01c0 .244-.202.443-.452.443h-2.128a.447.447 0 01-.452-.443V9.333c0-.244.203-.443.452-.443h2.128zm-9.942.443c0-.244.202-.443.452-.443.25 0 .452.2.452.443v3.077c0 .244-.202.443-.452.443a.447.447 0 01-.452-.443V10.333zm-1.793-.443H5.502c-.25 0-.452.2-.452.443v3.077c0 .244.203.443.452.443.25 0 .452-.2.452-.443V11.4l1.504 2.217a.455.455 0 00.377.196.447.447 0 00.452-.443V10.333a.447.447 0 00-.452-.443c-.25 0-.452.2-.452.443v1.95L5.88 10.066a.455.455 0 00-.25-.176zm5.38 0h-2.128a.447.447 0 00-.452.443v3.077c0 .244.203.443.452.443h2.128c.25 0 .452-.2.452-.443v-.01c0-.244-.202-.443-.452-.443H11.31v-.733h1.7c.25 0 .452-.2.452-.443v-.01c0-.244-.202-.443-.452-.443h-1.7v-.733h1.7c.25 0 .452-.2.452-.443v-.01c0-.244-.202-.443-.452-.443zM24 10.396c0-4.817-4.832-8.735-10.775-8.735C7.283 1.661 2.45 5.58 2.45 10.396c0 4.32 3.831 7.938 9.005 8.624.35.076.83.231.95.531.109.271.071.696.035.97l-.153.92c-.047.27-.215 1.057.927.576 1.142-.48 6.162-3.63 8.41-6.213C23.37 14.022 24 12.277 24 10.396z"/>
+      </svg>
+      <span data-th="แอดไลน์เราเลย!" data-en="Add us on LINE!">แอดไลน์เราเลย!</span>
+    </a>
+  </div>
+
+  <!-- Quick contact info -->
+  <div class="card" style="padding:20px 24px;">
+    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:22px;">📧</span>
+        <div>
+          <div style="font-size:12px; color:var(--muted);" data-th="อีเมล" data-en="Email">อีเมล</div>
+          <div style="font-size:14px; font-weight:600;">support@taxeasy.th</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:22px;">📞</span>
+        <div>
+          <div style="font-size:12px; color:var(--muted);" data-th="โทรศัพท์" data-en="Phone">โทรศัพท์</div>
+          <div style="font-size:14px; font-weight:600;">02-XXX-XXXX</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:22px;">🕐</span>
+        <div>
+          <div style="font-size:12px; color:var(--muted);" data-th="เวลาทำการ" data-en="Business Hours">เวลาทำการ</div>
+          <div style="font-size:14px; font-weight:600;" data-th="จ.–อา. 9:00–21:00" data-en="Mon–Sun 9AM–9PM">จ.–อา. 9:00–21:00</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ════════════════════════════════════════════
+     PAYMENT MODAL
+════════════════════════════════════════════ -->
+<div class="modal-backdrop" id="payment-modal">
+  <div class="modal">
+    <div class="modal-icon">💳</div>
+    <div class="modal-title" data-th="เติมเครดิตการคำนวณ" data-en="Top Up Calculation Credit">เติมเครดิตการคำนวณ</div>
+    <div class="modal-sub" data-th="เครดิตฟรีของคุณหมดแล้ว — เติม 1 ครั้ง ในราคาเพียง:" data-en="Your free credit is used up — add 1 more calculation for just:">
+      เครดิตฟรีของคุณหมดแล้ว — เติม 1 ครั้ง ในราคาเพียง:
+    </div>
+
+    <div class="price-tag">
+      <div class="price">฿19</div>
+      <div class="price-unit" data-th="ต่อ 1 การคำนวณ" data-en="per calculation">ต่อ 1 การคำนวณ</div>
+    </div>
+
+    <div class="qr-box">
+      <div class="qr-mock">QR<br>PromptPay</div>
+      <div class="qr-note" data-th="📱 สแกน QR เพื่อโอน 19 บาทผ่าน PromptPay / Mobile Banking" data-en="📱 Scan to pay ฿19 via PromptPay / Mobile Banking">
+        📱 สแกน QR เพื่อโอน 19 บาทผ่าน PromptPay / Mobile Banking
+      </div>
+      <div style="margin-top:8px; font-size:12px; color:var(--muted);" data-th="PromptPay: 0XX-XXX-XXXX" data-en="PromptPay: 0XX-XXX-XXXX">PromptPay: 0XX-XXX-XXXX</div>
+    </div>
+
+    <label style="font-size:13px; font-weight:600; display:block; margin-bottom:6px;" data-th="กรอกเลขอ้างอิงการโอน / หมายเลขสลิป" data-en="Enter transfer reference / slip number">
+      กรอกเลขอ้างอิงการโอน / หมายเลขสลิป
+    </label>
+    <input type="text" class="modal-input" id="slip-input" placeholder="เช่น 20240928-0001" maxlength="50" />
+
+    <button class="pay-btn" id="pay-btn" onclick="submitMockPayment()">
+      <span data-th="✅ ยืนยันการชำระเงิน" data-en="✅ Confirm Payment">✅ ยืนยันการชำระเงิน</span>
+    </button>
+    <a class="cancel-link" onclick="closePaymentModal()">
+      <span data-th="ยังไม่สะดวกตอนนี้ ปิดหน้าต่างนี้" data-en="Not now — close this window">ยังไม่สะดวกตอนนี้ ปิดหน้าต่างนี้</span>
+    </a>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">🎉 ชำระเงินสำเร็จ! เพิ่ม 1 เครดิตให้คุณแล้ว</div>
+
+<footer>
+  <span data-th="© 2025 TaxEasy · ข้อมูลอ้างอิงจากกรมสรรพากร · ไม่ใช่คำแนะนำทางกฎหมาย" data-en="© 2025 TaxEasy · Reference: Thai Revenue Department · Not legal advice">
+    © 2025 TaxEasy · ข้อมูลอ้างอิงจากกรมสรรพากร · ไม่ใช่คำแนะนำทางกฎหมาย
+  </span>
+</footer>
+
+<!-- ════════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+/* ─── Language System ─────────────────────────────────────────────── */
+let currentLang = 'th';
+
+function toggleLanguage() {
+  currentLang = currentLang === 'th' ? 'en' : 'th';
+  applyLanguage();
+}
+
+function applyLanguage() {
+  const isEN = currentLang === 'en';
+  document.documentElement.lang = currentLang;
+
+  // Toggle button label
+  document.getElementById('lang-toggle').textContent = isEN ? '🌐 TH' : '🌐 EN';
+
+  // Translate all elements with data-th / data-en
+  document.querySelectorAll('[data-th]').forEach(el => {
+    el.innerHTML = isEN ? el.dataset.en : el.dataset.th;
+  });
+
+  // Also translate select options
+  document.querySelectorAll('option[data-th]').forEach(el => {
+    el.textContent = isEN ? el.dataset.en : el.dataset.th;
+  });
+
+  // Refresh quota badge text
+  if (typeof refreshQuotaBadge === 'function') refreshQuotaBadge();
+
+  // Toast message
+  document.getElementById('toast').textContent = isEN
+    ? '🎉 Payment successful! 1 credit added.'
+    : '🎉 ชำระเงินสำเร็จ! เพิ่ม 1 เครดิตให้คุณแล้ว';
+}
+
+/* ─── Tab Navigation ──────────────────────────────────────────────── */
+function switchTab(panelId, btn) {
+  document.querySelectorAll('.tax-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + panelId).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ─── Modal helpers ───────────────────────────────────────────────── */
+function showPaymentModal() {
+  document.getElementById('slip-input').value = '';
+  const btn = document.getElementById('pay-btn');
+  btn.disabled = false;
+  btn.textContent = currentLang === 'th' ? '✅ ยืนยันการชำระเงิน' : '✅ Confirm Payment';
+  document.getElementById('payment-modal').classList.add('open');
+}
+function closePaymentModal() {
+  document.getElementById('payment-modal').classList.remove('open');
+}
+// Close on backdrop click
+document.getElementById('payment-modal').addEventListener('click', function(e) {
+  if (e.target === this) closePaymentModal();
+});
+
+function showSuccessToast() {
+  const t = document.getElementById('toast');
+  t.textContent = currentLang === 'th'
+    ? '🎉 ชำระเงินสำเร็จ! เพิ่ม 1 เครดิตให้คุณแล้ว'
+    : '🎉 Payment successful! 1 credit added.';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* ─── Formatters ──────────────────────────────────────────────────── */
+function fmt(n) {
+  return n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ฿';
+}
+function fmtPct(n) {
+  return n.toFixed(2) + '%';
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TAX CALCULATION FUNCTIONS
+   (These are called via window.handleCalculate from Firebase module)
+═══════════════════════════════════════════════════════════════════ */
+
+/* ─── 1. Personal Income Tax (PIT) ───────────────────────────────── */
+function calcPIT() {
+  const income = parseFloat(document.getElementById('pit-income').value) || 0;
+  const type   = document.getElementById('pit-type').value;
+
+  if (income <= 0) {
+    alert(currentLang === 'th' ? 'กรุณากรอกรายได้' : 'Please enter income');
+    return;
+  }
+
+  /* Expense deduction rate by income type */
+  const expenseRates = { '40_1': 0.50, '40_2': 0.50, '40_8': 0.60 };
+  const expenseCaps  = { '40_1': 100000, '40_2': 100000, '40_8': 600000 };
+  const rate = expenseRates[type] || 0.5;
+  const cap  = expenseCaps[type] || 100000;
+  const expense = Math.min(income * rate, cap);
+
+  /* Allowances */
+  let allowance = 0;
+  if (document.getElementById('all-personal').checked) allowance += 60000;
+  if (document.getElementById('all-spouse').checked)   allowance += 60000;
+  if (document.getElementById('all-child').checked)    allowance += 30000;
+  if (document.getElementById('all-parent').checked)   allowance += 30000;
+  if (document.getElementById('all-life-ins').checked) {
+    allowance += Math.min(parseFloat(document.getElementById('pit-life-ins').value) || 0, 100000);
+  }
+  if (document.getElementById('all-rmf').checked) {
+    const rmf = parseFloat(document.getElementById('pit-rmf').value) || 0;
+    allowance += Math.min(rmf, income * 0.30, 500000);
+  }
+  if (document.getElementById('all-ssf').checked) {
+    const ssf = parseFloat(document.getElementById('pit-ssf').value) || 0;
+    allowance += Math.min(ssf, income * 0.30, 200000);
+  }
+  if (document.getElementById('all-pvd').checked) {
+    const pvd = parseFloat(document.getElementById('pit-pvd').value) || 0;
+    allowance += Math.min(pvd, income * 0.15, 500000);
+  }
+
+  const netIncome = Math.max(0, income - expense - allowance);
+
+  /* Progressive tax brackets (2024 Thailand) */
+  const brackets = [
+    { limit: 150000,  rate: 0 },
+    { limit: 300000,  rate: 0.05 },
+    { limit: 500000,  rate: 0.10 },
+    { limit: 750000,  rate: 0.15 },
+    { limit: 1000000, rate: 0.20 },
+    { limit: 2000000, rate: 0.25 },
+    { limit: 5000000, rate: 0.30 },
+    { limit: Infinity,rate: 0.35 }
+  ];
+
+  let tax = 0, prev = 0;
+  for (const b of brackets) {
+    if (netIncome <= prev) break;
+    const taxable = Math.min(netIncome, b.limit) - prev;
+    tax += taxable * b.rate;
+    prev = b.limit;
+  }
+
+  /* Populate results */
+  document.getElementById('pit-r-income').textContent    = fmt(income);
+  document.getElementById('pit-r-expense').textContent   = fmt(expense);
+  document.getElementById('pit-r-allowance').textContent = fmt(allowance);
+  document.getElementById('pit-r-net').textContent       = fmt(netIncome);
+  document.getElementById('pit-r-tax').textContent       = fmt(tax);
+  document.getElementById('pit-r-rate').textContent      = income > 0 ? fmtPct(tax / income * 100) : '0%';
+
+  showResult('pit-result');
+}
+
+/* ─── 2. VAT ──────────────────────────────────────────────────────── */
+function calcVAT() {
+  const amount = parseFloat(document.getElementById('vat-amount').value) || 0;
+  const type   = document.getElementById('vat-type').value;
+  const rate   = parseFloat(document.getElementById('vat-rate').value) / 100;
+
+  if (amount <= 0) {
+    alert(currentLang === 'th' ? 'กรุณากรอกยอดเงิน' : 'Please enter an amount');
+    return;
+  }
+
+  let base, vat, total;
+  if (type === 'excl') {
+    base  = amount;
+    vat   = amount * rate;
+    total = amount + vat;
+  } else {
+    total = amount;
+    base  = amount / (1 + rate);
+    vat   = total - base;
+  }
+
+  document.getElementById('vat-r-base').textContent  = fmt(base);
+  document.getElementById('vat-r-vat').textContent   = fmt(vat);
+  document.getElementById('vat-r-total').textContent = fmt(total);
+
+  showResult('vat-result');
+}
+
+/* ─── 3. Withholding Tax (WHT) ────────────────────────────────────── */
+function calcWHT() {
+  const gross = parseFloat(document.getElementById('wht-amount').value) || 0;
+  const rate  = parseFloat(document.getElementById('wht-rate').value) / 100;
+  const sel   = document.getElementById('wht-type');
+  const opt   = sel.options[sel.selectedIndex];
+  const entity= document.getElementById('wht-entity').value;
+
+  if (gross <= 0) {
+    alert(currentLang === 'th' ? 'กรุณากรอกยอดจ่าย' : 'Please enter a payment amount');
+    return;
+  }
+
+  const wht = gross * rate;
+  const net = gross - wht;
+
+  // Build account code display
+  const codes = {
+    '1': 'ภ.ง.ด.53 (นิติ) / ภ.ง.ด.3 (บุคคล)',
+    '2': 'ภ.ง.ด.53 / ภ.ง.ด.3',
+    '3': 'ภ.ง.ด.53 / ภ.ง.ด.1ก',
+    '4': 'ภ.ง.ด.53 / ภ.ง.ด.3',
+    '5': 'ภ.ง.ด.2 (เงินปันผล)',
+    '6': 'ภ.ง.ด.2 (ดอกเบี้ย)',
+  };
+  const typeVal = sel.value;
+  const formCode = entity === 'corp'
+    ? (codes[typeVal] || 'ภ.ง.ด.53').split('/')[0].trim()
+    : (codes[typeVal] || 'ภ.ง.ด.3').split('/').pop().trim();
+
+  document.getElementById('wht-r-gross').textContent = fmt(gross);
+  document.getElementById('wht-r-wht').textContent   = fmt(wht);
+  document.getElementById('wht-r-net').textContent   = fmt(net);
+  document.getElementById('wht-r-code').textContent  = formCode;
+
+  showResult('wht-result');
+}
+
+/* ─── 4. Corporate Tax ────────────────────────────────────────────── */
+function calcCorp() {
+  const profit  = parseFloat(document.getElementById('corp-profit').value) || 0;
+  const revenue = parseFloat(document.getElementById('corp-revenue').value) || 0;
+  const type    = document.getElementById('corp-type').value;
+
+  if (profit < 0) {
+    alert(currentLang === 'th' ? 'กรุณากรอกกำไรสุทธิ' : 'Please enter net profit');
+    return;
+  }
+
+  let tax = 0, rateLabel = '', note = '';
+
+  if (type === 'sme') {
+    // SME: 0% ≤300k, 15% 300k–3M, 20% >3M (revenue ≤30M)
+    const qualifies = revenue <= 30_000_000;
+    if (!qualifies) {
+      note = currentLang === 'th'
+        ? 'รายได้เกิน 30 ล้านบาท — ใช้อัตรานิติบุคคลทั่วไป 20%'
+        : 'Revenue >30M THB — General corporate rate 20% applies';
+      tax = profit * 0.20;
+      rateLabel = '20%';
+    } else {
+      if (profit <= 300_000) {
+        tax = 0; rateLabel = '0%';
+        note = currentLang === 'th' ? 'กำไร ≤ 300,000 บาท — ยกเว้นภาษี' : 'Profit ≤ 300,000 THB — Exempt';
+      } else if (profit <= 3_000_000) {
+        tax = (profit - 300_000) * 0.15;
+        rateLabel = '0% / 15%';
+        note = currentLang === 'th' ? 'ส่วนที่เกิน 300,000 บาท — 15%' : 'Amount over 300,000 THB — 15%';
+      } else {
+        tax = (3_000_000 - 300_000) * 0.15 + (profit - 3_000_000) * 0.20;
+        rateLabel = '15% / 20%';
+        note = currentLang === 'th' ? 'ขั้น 300k–3M = 15%, >3M = 20%' : 'Bracket 300k–3M = 15%, >3M = 20%';
+      }
+    }
+  } else if (type === 'listed') {
+    tax = profit * 0.20;
+    rateLabel = '20%';
+    note = currentLang === 'th' ? 'บริษัทจดทะเบียน SET — อัตรา 20%' : 'SET Listed company — 20% flat';
+  } else {
+    tax = profit * 0.20;
+    rateLabel = '20%';
+    note = currentLang === 'th' ? 'บริษัททั่วไป — อัตรา 20%' : 'General company — 20% flat';
+  }
+
+  document.getElementById('corp-r-profit').textContent = fmt(profit);
+  document.getElementById('corp-r-rate').textContent   = rateLabel;
+  document.getElementById('corp-r-note').textContent   = note;
+  document.getElementById('corp-r-tax').textContent    = fmt(tax);
+
+  showResult('corp-result');
+}
+
+/* ─── Helper: show result box ─────────────────────────────────────── */
+function showResult(id) {
+  document.querySelectorAll('.result-box').forEach(b => {
+    b.classList.remove('visible');
+  });
+  const box = document.getElementById(id);
+  box.classList.add('visible');
+  setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
+
+/* ─── WHT rate auto-update ────────────────────────────────────────── */
+function updateWHTRate() {
+  const sel = document.getElementById('wht-type');
+  const opt = sel.options[sel.selectedIndex];
+  const rate = opt.dataset.rate;
+  if (rate !== undefined && sel.value !== 'custom') {
+    document.getElementById('wht-rate').value = rate;
+  }
+}
+
+/* ─── Conditional input visibility ───────────────────────────────── */
+['all-life-ins', 'all-rmf', 'all-ssf', 'all-pvd'].forEach(id => {
+  const map = {
+    'all-life-ins': 'life-ins-input',
+    'all-rmf': 'rmf-input',
+    'all-ssf': 'ssf-input',
+    'all-pvd': 'pvd-input'
+  };
+  document.getElementById(id).addEventListener('change', function() {
+    document.getElementById(map[id]).style.display = this.checked ? 'flex' : 'none';
+  });
+});
+</script>
+</body>
+</html>
