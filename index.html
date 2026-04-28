@@ -225,9 +225,9 @@
 
     <!-- Tabs -->
     <div class="flex flex-wrap justify-center gap-2 mb-10">
-      <button onclick="switchCalc('pit')" id="tab-pit" class="tab-btn tab-on px-5 py-2.5 rounded-lg text-sm font-medium transition-all"><i class="fas fa-user mr-2"></i>ภาษีเงินได้ บุคคลธรรมดา</button>
-      <button onclick="switchCalc('cit')" id="tab-cit" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-building mr-2"></i>ภาษีนิติบุคคล</button>
-      <button onclick="switchCalc('vat')" id="tab-vat" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-receipt mr-2"></i>ภาษีมูลค่าเพิ่ม (VAT)</button>
+      <button onclick="switchCalc('pit')" id="tab-pit" data-aos="fade-right" class="tab-btn tab-on px-5 py-2.5 rounded-lg text-sm font-medium transition-all"><i class="fas fa-user mr-2"></i>ภาษีเงินได้ บุคคลธรรมดา</button>
+      <button onclick="switchCalc('cit')" id="tab-cit" data-aos="fade-left" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-building mr-2"></i>ภาษีนิติบุคคล</button>
+      <button onclick="switchCalc('vat')" id="tab-vat" data-aos="fade-left" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-receipt mr-2"></i>ภาษีมูลค่าเพิ่ม (VAT)</button>
       <button onclick="switchCalc('wht')" id="tab-wht" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-hand-holding-dollar mr-2"></i>ภาษีหัก ณ ที่จ่าย</button>
       <button onclick="switchCalc('cryp')" id="tab-cryp" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-chart-line mr-2"></i>กำไรคริปโต / หุ้น</button>
     </div>
@@ -270,7 +270,7 @@
         </div>
 
         <!-- CIT -->
-        <div id="calc-cit" data-aos="fade-right" class="calc-panel hidden">
+        <div id="calc-cit" class="calc-panel hidden">
           <div class="flex items-center gap-3 mb-7">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3)"><i class="fas fa-building text-blue-400"></i></div>
             <div><h3 class="text-lg font-semibold text-white">ภาษีเงินได้นิติบุคคล</h3><p class="text-xs text-slate-500">มาตรา 65–76 แห่งประมวลรัษฎากร</p></div>
@@ -283,7 +283,7 @@
         </div>
 
         <!-- VAT -->
-        <div id="calc-vat" data-aos="fade-left" class="calc-panel hidden">
+        <div id="calc-vat" class="calc-panel hidden">
           <div class="flex items-center gap-3 mb-7">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3)"><i class="fas fa-receipt text-emerald-400"></i></div>
             <div><h3 class="text-lg font-semibold text-white">ภาษีมูลค่าเพิ่ม (VAT)</h3><p class="text-xs text-slate-500">อัตราปัจจุบัน 7%</p></div>
@@ -309,7 +309,7 @@
         </div>
 
         <!-- Crypto -->
-        <div id="calc-cryp" data-aos="fade-left" class="calc-panel hidden">
+        <div id="calc-cryp" class="calc-panel hidden">
           <div class="flex items-center gap-3 mb-7">
             <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3)"><i class="fas fa-chart-line text-violet-400"></i></div>
             <div><h3 class="text-lg font-semibold text-white">ภาษีกำไรจากคริปโต / หุ้น</h3><p class="text-xs text-slate-500">กำไรจากสินทรัพย์ดิจิทัลและหลักทรัพย์</p></div>
