@@ -1,1 +1,1661 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ElectroPlan — เครื่องมือออกแบบผังไฟฟ้า</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
 
+  <style>
+    :root {
+      --bg0: #090e14;
+      --bg1: #0f1620;
+      --bg2: #151d2b;
+      --bg3: #1c2538;
+      --border: #243044;
+      --border2: #2e3d55;
+      --accent: #2563eb;
+      --accent2: #3b82f6;
+      --accent-g: rgba(37,99,235,0.18);
+      --text1: #e2ecf8;
+      --text2: #8fa3be;
+      --text3: #4a607a;
+      --wire: #f59e0b;
+      --wire2: #fbbf24;
+      --ok: #22c55e;
+      --err: #ef4444;
+      --warn: #eab308;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg0);
+      color: var(--text1);
+      height: 100vh;
+      overflow: hidden;
+      user-select: none;
+    }
+
+    /* ─── SCROLLBAR ─── */
+    ::-webkit-scrollbar { width: 4px; height: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg1); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    /* ─── HEADER ─── */
+    #header {
+      height: 48px;
+      background: var(--bg1);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      flex-shrink: 0;
+      z-index: 50;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, var(--accent), #1d4ed8);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 16px rgba(37,99,235,0.45);
+    }
+
+    .brand-name {
+      font-family: 'IBM Plex Mono', monospace;
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text1);
+      letter-spacing: -0.02em;
+    }
+
+    .brand-ver {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      padding: 1px 6px;
+      border-radius: 4px;
+    }
+
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11px;
+      color: var(--text3);
+    }
+
+    .stat-pill {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 3px 9px;
+      color: var(--text2);
+      display: flex; align-items: center; gap: 5px;
+    }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--ok);
+      animation: blink 2.5s ease-in-out infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    .header-actions { display: flex; align-items: center; gap: 6px; }
+
+    .btn {
+      display: flex; align-items: center; gap: 6px;
+      padding: 5px 13px;
+      border-radius: 7px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      border: 1px solid transparent;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border-color: var(--border);
+      color: var(--text2);
+    }
+    .btn-ghost:hover { border-color: var(--border2); color: var(--text1); background: var(--bg2); }
+
+    .btn-danger {
+      background: rgba(239,68,68,.08);
+      border-color: rgba(239,68,68,.3);
+      color: var(--err);
+    }
+    .btn-danger:hover { background: rgba(239,68,68,.18); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover { background: var(--accent2); }
+
+    /* ─── LAYOUT ─── */
+    #layout {
+      display: flex;
+      height: calc(100vh - 48px);
+    }
+
+    /* ─── TOOLBAR ─── */
+    #toolbar {
+      width: 68px;
+      background: var(--bg1);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 0;
+      gap: 2px;
+      flex-shrink: 0;
+      overflow-y: auto;
+    }
+
+    .tool-section-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 8.5px;
+      font-weight: 600;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      width: 100%;
+      text-align: center;
+      padding: 6px 0 3px;
+    }
+
+    .tool-divider {
+      width: 36px;
+      height: 1px;
+      background: var(--border);
+      margin: 4px 0;
+    }
+
+    .tool-btn {
+      position: relative;
+      width: 52px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 8px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+      color: var(--text2);
+    }
+
+    .tool-btn:hover {
+      background: var(--bg3);
+      border-color: var(--border);
+      color: var(--text1);
+    }
+
+    .tool-btn.active {
+      background: var(--accent-g);
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+
+    .tool-btn span {
+      font-size: 9px;
+      font-family: 'IBM Plex Mono', monospace;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .tool-btn svg { width: 36px; height: 36px; }
+
+    /* Tooltip */
+    .tool-tip {
+      position: absolute;
+      left: calc(100% + 10px);
+      top: 50%; transform: translateY(-50%);
+      background: var(--bg0);
+      border: 1px solid var(--border2);
+      border-radius: 5px;
+      padding: 4px 9px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      white-space: nowrap;
+      color: var(--text1);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .12s;
+      z-index: 200;
+    }
+    .tool-btn:hover .tool-tip { opacity: 1; }
+
+    /* ─── CANVAS ─── */
+    #canvas-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background-color: var(--bg0);
+      background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px),
+        linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 20px 20px, 20px 20px, 100px 100px, 100px 100px;
+    }
+
+    #main-svg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      overflow: visible;
+    }
+
+    #canvas-wrap.cursor-default  { cursor: default; }
+    #canvas-wrap.cursor-cross    { cursor: crosshair; }
+    #canvas-wrap.cursor-copy     { cursor: copy; }
+    #canvas-wrap.cursor-notallow { cursor: not-allowed; }
+
+    .empty-hint {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      pointer-events: none;
+      color: var(--text3);
+      transition: opacity .3s;
+    }
+    .empty-hint p { font-family: 'IBM Plex Mono', monospace; font-size: 12px; margin-top: 8px; }
+    .empty-hint small { font-size: 10px; }
+
+    /* Wire styles */
+    .wire-path {
+      fill: none;
+      stroke: var(--wire);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      cursor: pointer;
+      transition: stroke .1s, stroke-width .1s;
+    }
+    .wire-path:hover { stroke: var(--wire2); stroke-width: 2.5; }
+    .wire-path.sel   { stroke: var(--accent2); stroke-width: 2.5; }
+
+    .wire-dot { fill: var(--wire); pointer-events: none; }
+    .wire-dot.sel { fill: var(--accent2); }
+
+    #temp-wire {
+      fill: none;
+      stroke: rgba(245,158,11,.5);
+      stroke-width: 2;
+      stroke-dasharray: 8 5;
+      pointer-events: none;
+      display: none;
+    }
+
+    /* Component */
+    .comp-g { cursor: pointer; }
+    .comp-g:hover .comp-hit { opacity: .08; }
+    .comp-g.sel .sel-ring { display: block; }
+    .comp-g .sel-ring { display: none; }
+    .comp-g .comp-hit { fill: white; opacity: 0; }
+
+    /* ─── SIDE PANEL ─── */
+    #side-panel {
+      width: 236px;
+      background: var(--bg1);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    #panel-empty {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      opacity: .45;
+      padding: 20px;
+      text-align: center;
+      gap: 10px;
+    }
+    #panel-empty p { font-size: 12px; color: var(--text2); font-family: 'IBM Plex Mono', monospace; line-height: 1.6; }
+
+    #panel-info { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+
+    .panel-section {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-section-title {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9.5px;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 9px;
+    }
+
+    .comp-header-card {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .comp-icon-box {
+      width: 48px; height: 48px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .comp-name { font-size: 14px; font-weight: 600; }
+    .comp-name-en { font-size: 11px; font-family: 'IBM Plex Mono', monospace; color: var(--text3); }
+
+    .spec-row {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+    .spec-row:last-child { border-bottom: none; }
+    .spec-key { font-family: 'IBM Plex Mono', monospace; font-size: 10.5px; color: var(--text2); }
+    .spec-val { font-weight: 500; color: var(--text1); font-size: 11px; }
+
+    .install-note {
+      font-size: 11.5px;
+      color: var(--text2);
+      line-height: 1.65;
+    }
+
+    .pos-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    }
+    .pos-box {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 6px 9px;
+    }
+    .pos-axis { font-size: 9px; font-family: 'IBM Plex Mono', monospace; color: var(--text3); }
+    .pos-val { font-size: 14px; font-family: 'IBM Plex Mono', monospace; color: var(--accent2); font-weight: 500; }
+
+    .del-btn {
+      width: 100%;
+      padding: 7px;
+      background: rgba(239,68,68,.08);
+      border: 1px solid rgba(239,68,68,.25);
+      border-radius: 7px;
+      color: var(--err);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: 'DM Sans', sans-serif;
+    }
+    .del-btn:hover { background: rgba(239,68,68,.18); }
+
+    /* Legend */
+    #legend-section {
+      margin-top: auto;
+      padding: 11px 14px;
+      border-top: 1px solid var(--border);
+    }
+    .legend-row { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--text2); margin-bottom: 5px; }
+
+    /* ─── CONTEXT MENU ─── */
+    #ctx-menu {
+      position: fixed;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 9px;
+      padding: 5px;
+      z-index: 999;
+      min-width: 148px;
+      box-shadow: 0 12px 36px rgba(0,0,0,.7);
+      display: none;
+    }
+    .ctx-item {
+      display: flex; align-items: center; gap: 9px;
+      padding: 7px 10px;
+      border-radius: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text2);
+      transition: all .1s;
+    }
+    .ctx-item:hover { background: var(--bg3); color: var(--text1); }
+    .ctx-item.danger:hover { background: rgba(239,68,68,.12); color: var(--err); }
+    .ctx-sep { height: 1px; background: var(--border); margin: 4px 0; }
+
+    /* ─── TUTORIAL OVERLAY ─── */
+    #tut-overlay {
+      position: fixed; inset: 0;
+      z-index: 1000;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0,0,0,.75);
+      backdrop-filter: blur(6px);
+    }
+
+    .tut-card {
+      width: 530px;
+      max-width: 93vw;
+      max-height: 92vh;
+      overflow-y: auto;
+      background: linear-gradient(160deg, #0f1822 0%, #131e2e 100%);
+      border: 1px solid var(--border2);
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 32px 80px rgba(0,0,0,.85), 0 0 0 1px rgba(255,255,255,.04);
+      position: relative;
+    }
+
+    .tut-skip {
+      position: absolute; top: 16px; right: 16px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 12px;
+      font-size: 11.5px;
+      color: var(--text3);
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: all .15s;
+    }
+    .tut-skip:hover { color: var(--text1); border-color: var(--border2); }
+
+    .tut-logo-row {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 24px;
+    }
+    .tut-logo {
+      width: 44px; height: 44px;
+      background: linear-gradient(135deg, var(--accent), #1d4ed8);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 24px rgba(37,99,235,.5);
+      flex-shrink: 0;
+    }
+    .tut-title { font-size: 19px; font-weight: 700; }
+    .tut-subtitle { font-size: 11.5px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; }
+
+    /* Step nav */
+    .step-nav { display: flex; align-items: center; gap: 0; margin-bottom: 22px; }
+    .step-dot {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: var(--accent-g); border: 1px solid var(--accent);
+      color: var(--accent2);
+      font-family: 'IBM Plex Mono', monospace; font-size: 12px; font-weight: 600;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; transition: all .2s;
+    }
+    .step-dot.active, .step-dot.done {
+      background: var(--accent); color: #fff; border-color: var(--accent2);
+    }
+    .step-dot.done { background: rgba(37,99,235,.45); }
+    .step-line {
+      flex: 1; height: 2px;
+      background: var(--border); transition: background .2s;
+    }
+    .step-line.done { background: var(--accent); }
+
+    #tut-content { min-height: 164px; }
+
+    .tut-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 24px;
+    }
+    .tut-step-counter {
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text3);
+    }
+
+    /* Tutorial content parts */
+    .tut-card-grid {
+      display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px;
+      margin-top: 14px;
+    }
+    .tut-info-card {
+      background: var(--bg0);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 11px;
+      text-align: center;
+    }
+    .tut-info-card .icon { font-size: 22px; margin-bottom: 7px; }
+    .tut-info-card .ttl { font-size: 12px; font-weight: 600; }
+    .tut-info-card .pos { font-size: 10px; color: var(--accent2); font-family: 'IBM Plex Mono', monospace; margin: 2px 0; }
+    .tut-info-card .desc { font-size: 11px; color: var(--text3); }
+
+    .tut-step-card {
+      display: flex; align-items: flex-start; gap: 11px;
+      background: var(--bg0); border: 1px solid var(--border);
+      border-radius: 9px; padding: 11px; margin-bottom: 9px;
+    }
+    .tut-num {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: var(--accent-g); border: 1px solid var(--accent);
+      color: var(--accent2);
+      font-family: 'IBM Plex Mono', monospace; font-size: 14px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .tut-step-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .tut-step-desc { font-size: 12px; color: var(--text3); line-height: 1.55; }
+
+    .tut-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+    .tut-table tr { border-bottom: 1px solid var(--border); }
+    .tut-table tr:last-child { border-bottom: none; }
+    .tut-table td { padding: 8px 6px; }
+    .tut-table td:first-child { color: var(--text3); font-size: 11px; }
+    .tut-table td:last-child { color: var(--text1); }
+
+    .tut-kbd-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 7px;
+      margin-bottom: 14px;
+    }
+    .kbd-row {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--bg0); border: 1px solid var(--border);
+      border-radius: 7px; padding: 7px 10px;
+    }
+    kbd {
+      background: var(--bg3); border: 1px solid var(--border2);
+      border-radius: 4px; padding: 2px 8px;
+      font-family: 'IBM Plex Mono', monospace; font-size: 11px;
+      color: var(--accent2); font-weight: 600;
+    }
+    .kbd-desc { font-size: 12px; color: var(--text2); }
+
+    .tut-tip {
+      background: rgba(37,99,235,.1);
+      border: 1px solid rgba(37,99,235,.35);
+      border-radius: 9px;
+      padding: 10px 13px;
+      font-size: 12px;
+      color: var(--accent2);
+      display: flex; align-items: flex-start; gap: 8px;
+      line-height: 1.55;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════ -->
+<div id="header">
+
+  <div class="header-brand">
+    <div class="brand-logo">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+    </div>
+    <span class="brand-name">ElectroPlan</span>
+    <span class="brand-ver">v1.0</span>
+  </div>
+
+  <div class="header-stats">
+    <div class="stat-pill"><div class="status-dot"></div><span id="status-text">พร้อมใช้งาน</span></div>
+    <div class="stat-pill" id="comp-count-pill">0 องค์ประกอบ</div>
+    <div class="stat-pill" id="wire-count-pill">0 สาย</div>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn btn-ghost" onclick="showTutorial()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><circle cx="12" cy="17" r=".5" fill="currentColor"/></svg>
+      คู่มือ
+    </button>
+    <button class="btn btn-danger" onclick="clearCanvas()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+      ล้างผัง
+    </button>
+    <button class="btn btn-primary" onclick="exportPNG()">
+      <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Export PNG
+    </button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MAIN LAYOUT
+════════════════════════════════════════════ -->
+<div id="layout">
+
+  <!-- ─── TOOLBAR ─── -->
+  <aside id="toolbar">
+
+    <span class="tool-section-label">เครื่องมือ</span>
+
+    <div class="tool-btn active" id="tb-select" onclick="setTool('select')" title="">
+      <svg viewBox="0 0 36 36" fill="none">
+        <path d="M9 7l6 20 4-6 6 2L9 7z" fill="#8fa3be" stroke="#8fa3be" stroke-width=".5"/>
+        <path d="M21 23l4 6" stroke="#8fa3be" stroke-width="2.5" stroke-linecap="round"/>
+      </svg>
+      <span>เลือก</span>
+      <div class="tool-tip">เลือก / ย้าย  [S]</div>
+    </div>
+
+    <div class="tool-btn" id="tb-wire" onclick="setTool('wire')">
+      <svg viewBox="0 0 36 36" fill="none">
+        <circle cx="6" cy="18" r="3" fill="#f59e0b"/>
+        <line x1="9" y1="18" x2="27" y2="18" stroke="#f59e0b" stroke-width="2"/>
+        <circle cx="30" cy="18" r="3" fill="#f59e0b"/>
+        <line x1="14" y1="18" x2="14" y2="11" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="2 2"/>
+        <line x1="22" y1="18" x2="22" y2="25" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="2 2"/>
+      </svg>
+      <span>สายไฟ</span>
+      <div class="tool-tip">ลากสายไฟ  [W]</div>
+    </div>
+
+    <div class="tool-divider"></div>
+    <span class="tool-section-label">อุปกรณ์</span>
+
+    <!-- BULB -->
+    <div class="tool-btn" id="tb-bulb" onclick="setTool('bulb')" draggable="true" ondragstart="onDragStart(event,'bulb')">
+      <svg viewBox="0 0 36 36" fill="none">
+        <circle cx="18" cy="14" r="9" stroke="#f59e0b" stroke-width="1.5" fill="rgba(245,158,11,.07)"/>
+        <path d="M13 21q-1 3.5 0 5h10q1-2.5 0-5z" stroke="#f59e0b" stroke-width="1.5" fill="rgba(245,158,11,.1)"/>
+        <line x1="14" y1="26" x2="22" y2="26" stroke="#f59e0b" stroke-width="1.5"/>
+        <line x1="15" y1="28.5" x2="21" y2="28.5" stroke="#f59e0b" stroke-width="1.5"/>
+        <line x1="15" y1="11" x2="21" y2="17" stroke="#f59e0b" stroke-width="1" opacity=".5"/>
+        <line x1="21" y1="11" x2="15" y2="17" stroke="#f59e0b" stroke-width="1" opacity=".5"/>
+        <line x1="18" y1="30" x2="18" y2="34" stroke="#4a607a" stroke-width="1.5"/>
+      </svg>
+      <span>หลอดไฟ</span>
+      <div class="tool-tip">หลอดไฟ  [B]</div>
+    </div>
+
+    <!-- SWITCH -->
+    <div class="tool-btn" id="tb-switch" onclick="setTool('switch')" draggable="true" ondragstart="onDragStart(event,'switch')">
+      <svg viewBox="0 0 36 36" fill="none">
+        <circle cx="8" cy="18" r="3.5" stroke="#67e8f9" stroke-width="1.5"/>
+        <circle cx="28" cy="18" r="3.5" stroke="#67e8f9" stroke-width="1.5"/>
+        <line x1="11.5" y1="18" x2="25" y2="12" stroke="#67e8f9" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="25" cy="12" r="2.5" fill="#67e8f9"/>
+      </svg>
+      <span>สวิตช์</span>
+      <div class="tool-tip">สวิตช์  [K]</div>
+    </div>
+
+    <!-- OUTLET -->
+    <div class="tool-btn" id="tb-outlet" onclick="setTool('outlet')" draggable="true" ondragstart="onDragStart(event,'outlet')">
+      <svg viewBox="0 0 36 36" fill="none">
+        <rect x="6" y="6" width="24" height="24" rx="3" stroke="#86efac" stroke-width="1.5" fill="rgba(134,239,172,.05)"/>
+        <circle cx="14" cy="17" r="2.5" fill="#86efac"/>
+        <circle cx="22" cy="17" r="2.5" fill="#86efac"/>
+        <rect x="15" y="21" width="6" height="4.5" rx="1" stroke="#86efac" stroke-width="1.2"/>
+      </svg>
+      <span>ปลั๊กไฟ</span>
+      <div class="tool-tip">ปลั๊กไฟ  [P]</div>
+    </div>
+
+    <!-- CU -->
+    <div class="tool-btn" id="tb-cu" onclick="setTool('cu')" draggable="true" ondragstart="onDragStart(event,'cu')">
+      <svg viewBox="0 0 36 50" fill="none">
+        <rect x="4" y="2" width="28" height="46" rx="2" stroke="#fca5a5" stroke-width="1.5" fill="rgba(252,165,165,.05)"/>
+        <rect x="4" y="2" width="28" height="10" fill="rgba(252,165,165,.12)" stroke="none"/>
+        <text x="18" y="11" font-family="monospace" font-size="6" fill="#fca5a5" text-anchor="middle" font-weight="bold">MCB</text>
+        <rect x="8" y="16" width="9" height="5" rx="1" fill="rgba(252,165,165,.2)" stroke="#fca5a5" stroke-width="1"/>
+        <rect x="19" y="16" width="9" height="5" rx="1" fill="rgba(252,165,165,.2)" stroke="#fca5a5" stroke-width="1"/>
+        <rect x="8" y="25" width="9" height="5" rx="1" fill="rgba(252,165,165,.2)" stroke="#fca5a5" stroke-width="1"/>
+        <rect x="19" y="25" width="9" height="5" rx="1" fill="rgba(252,165,165,.2)" stroke="#fca5a5" stroke-width="1"/>
+        <rect x="8" y="34" width="9" height="5" rx="1" fill="rgba(252,165,165,.2)" stroke="#fca5a5" stroke-width="1"/>
+        <rect x="19" y="34" width="9" height="5" rx="1" fill="rgba(252,165,165,.2)" stroke="#fca5a5" stroke-width="1"/>
+      </svg>
+      <span>CU Box</span>
+      <div class="tool-tip">Consumer Unit  [C]</div>
+    </div>
+
+    <!-- GROUND -->
+    <div class="tool-btn" id="tb-ground" onclick="setTool('ground')" draggable="true" ondragstart="onDragStart(event,'ground')">
+      <svg viewBox="0 0 36 36" fill="none">
+        <line x1="18" y1="8" x2="18" y2="20" stroke="#93c5fd" stroke-width="2"/>
+        <line x1="8"  y1="20" x2="28" y2="20" stroke="#93c5fd" stroke-width="2"/>
+        <line x1="11" y1="24" x2="25" y2="24" stroke="#93c5fd" stroke-width="2"/>
+        <line x1="14" y1="28" x2="22" y2="28" stroke="#93c5fd" stroke-width="2"/>
+      </svg>
+      <span>กราวด์</span>
+      <div class="tool-tip">สายดิน  [G]</div>
+    </div>
+
+    <!-- JUNCTION -->
+    <div class="tool-btn" id="tb-junction" onclick="setTool('junction')" draggable="true" ondragstart="onDragStart(event,'junction')">
+      <svg viewBox="0 0 36 36" fill="none">
+        <rect x="10" y="10" width="16" height="16" rx="2" stroke="#d8b4fe" stroke-width="1.5" fill="rgba(216,180,254,.05)"/>
+        <line x1="10" y1="18" x2="4"  y2="18" stroke="#d8b4fe" stroke-width="1.5"/>
+        <line x1="26" y1="18" x2="32" y2="18" stroke="#d8b4fe" stroke-width="1.5"/>
+        <line x1="18" y1="10" x2="18" y2="4"  stroke="#d8b4fe" stroke-width="1.5"/>
+        <line x1="18" y1="26" x2="18" y2="32" stroke="#d8b4fe" stroke-width="1.5"/>
+        <circle cx="18" cy="18" r="2.5" fill="#d8b4fe"/>
+      </svg>
+      <span>จุดต่อสาย</span>
+      <div class="tool-tip">Junction Box  [J]</div>
+    </div>
+
+    <div class="tool-divider"></div>
+
+    <div class="tool-btn" id="tb-delete" onclick="setTool('delete')" style="color:#ef4444;">
+      <svg viewBox="0 0 36 36" fill="none">
+        <polyline points="6 10 8 10 30 10" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M13 10V8a1 1 0 011-1h8a1 1 0 011 1v2" stroke="#ef4444" stroke-width="1.5"/>
+        <path d="M28 10l-1.5 18H9.5L8 10" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="14" y1="16" x2="14" y2="25" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="22" y1="16" x2="22" y2="25" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span style="color:#ef4444;">ลบ</span>
+      <div class="tool-tip">โหมดลบ  [Del]</div>
+    </div>
+
+  </aside>
+
+  <!-- ─── CANVAS ─── -->
+  <main id="canvas-wrap" class="cursor-default"
+        ondragover="event.preventDefault()"
+        ondrop="onDrop(event)"
+        onclick="onCanvasClick(event)"
+        onmousemove="onMouseMove(event)"
+        oncontextmenu="onContextMenu(event)">
+
+    <svg id="main-svg" xmlns="http://www.w3.org/2000/svg">
+      <g id="wires-g"></g>
+      <path id="temp-wire" d=""/>
+      <g id="comps-g"></g>
+    </svg>
+
+    <div class="empty-hint" id="empty-hint">
+      <svg width="56" height="56" fill="none" stroke="#243044" stroke-width="1.2" viewBox="0 0 24 24">
+        <rect x="3" y="3" width="18" height="18" rx="2"/>
+        <path d="M3 9h18M9 21V9"/>
+      </svg>
+      <p>เลือกอุปกรณ์แล้วคลิกบนผัง</p>
+      <p><small>หรือ Drag & Drop จากแถบซ้าย</small></p>
+    </div>
+
+  </main>
+
+  <!-- ─── SIDE PANEL ─── -->
+  <aside id="side-panel">
+
+    <div class="panel-header">คุณสมบัติ</div>
+
+    <div id="panel-empty">
+      <svg width="36" height="36" fill="none" stroke="#4a607a" stroke-width="1.5" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <p>คลิกเลือกองค์ประกอบ<br/>เพื่อดูรายละเอียด</p>
+    </div>
+
+    <div id="panel-info">
+
+      <!-- COMP HEADER -->
+      <div class="panel-section">
+        <div class="comp-header-card">
+          <div class="comp-icon-box" id="pi-icon"></div>
+          <div>
+            <div class="comp-name" id="pi-name"></div>
+            <div class="comp-name-en" id="pi-name-en"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPECS -->
+      <div class="panel-section">
+        <div class="panel-section-title">ข้อมูลจำเพาะ</div>
+        <div id="pi-specs"></div>
+      </div>
+
+      <!-- INSTALL -->
+      <div class="panel-section">
+        <div class="panel-section-title">มาตรฐานการติดตั้ง</div>
+        <p class="install-note" id="pi-install"></p>
+      </div>
+
+      <!-- POSITION -->
+      <div class="panel-section">
+        <div class="panel-section-title">ตำแหน่งบนผัง</div>
+        <div class="pos-grid">
+          <div class="pos-box"><div class="pos-axis">X (px)</div><div class="pos-val" id="pi-x">—</div></div>
+          <div class="pos-box"><div class="pos-axis">Y (px)</div><div class="pos-val" id="pi-y">—</div></div>
+        </div>
+      </div>
+
+      <!-- DELETE -->
+      <div class="panel-section">
+        <button class="del-btn" onclick="deleteSelected()">ลบองค์ประกอบที่เลือก</button>
+      </div>
+
+    </div>
+
+    <!-- LEGEND -->
+    <div id="legend-section">
+      <div class="panel-section-title" style="margin-bottom:8px;">สัญลักษณ์</div>
+      <div class="legend-row">
+        <svg width="22" height="8"><line x1="0" y1="4" x2="22" y2="4" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round"/></svg>
+        สายไฟ
+      </div>
+      <div class="legend-row">
+        <svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="6" stroke="#f59e0b" stroke-width="1.5" fill="none"/></svg>
+        หลอดไฟ
+      </div>
+      <div class="legend-row">
+        <svg width="18" height="18" viewBox="0 0 18 18"><line x1="2" y1="9" x2="16" y2="5" stroke="#67e8f9" stroke-width="2" stroke-linecap="round"/><circle cx="3" cy="9" r="2.5" stroke="#67e8f9" stroke-width="1.2" fill="none"/></svg>
+        สวิตช์
+      </div>
+      <div class="legend-row">
+        <svg width="18" height="18" viewBox="0 0 18 18"><rect x="2" y="2" width="14" height="14" rx="2" stroke="#86efac" stroke-width="1.5" fill="none"/></svg>
+        ปลั๊กไฟ
+      </div>
+      <div class="legend-row">
+        <svg width="18" height="22" viewBox="0 0 18 22"><rect x="2" y="2" width="14" height="18" rx="2" stroke="#fca5a5" stroke-width="1.5" fill="none"/></svg>
+        Consumer Unit
+      </div>
+    </div>
+
+  </aside>
+</div><!-- /layout -->
+
+<!-- ─── CONTEXT MENU ─── -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="ctxAction('duplicate')">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+    คัดลอก
+  </div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item danger" onclick="ctxAction('delete')">
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+    ลบ
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     TUTORIAL OVERLAY
+════════════════════════════════════════════ -->
+<div id="tut-overlay" onclick="tutBackdrop(event)">
+  <div class="tut-card" onclick="event.stopPropagation()">
+
+    <button class="tut-skip" onclick="closeTutorial()">ข้ามการสอน ✕</button>
+
+    <div class="tut-logo-row">
+      <div class="tut-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      </div>
+      <div>
+        <div class="tut-title">ยินดีต้อนรับสู่ ElectroPlan</div>
+        <div class="tut-subtitle">เครื่องมือออกแบบผังไฟฟ้าเบื้องต้น</div>
+      </div>
+    </div>
+
+    <!-- Step dots -->
+    <div class="step-nav" id="step-nav">
+      <div class="step-dot active" id="sd-1">1</div>
+      <div class="step-line" id="sl-1"></div>
+      <div class="step-dot" id="sd-2">2</div>
+      <div class="step-line" id="sl-2"></div>
+      <div class="step-dot" id="sd-3">3</div>
+      <div class="step-line" id="sl-3"></div>
+      <div class="step-dot" id="sd-4">4</div>
+    </div>
+
+    <div id="tut-content"></div>
+
+    <div class="tut-nav">
+      <button id="btn-prev" class="btn btn-ghost" onclick="tutPrev()" disabled>← ย้อนกลับ</button>
+      <span class="tut-step-counter" id="tut-counter">ขั้นที่ 1 / 4</span>
+      <button id="btn-next" class="btn btn-primary" onclick="tutNext()">ถัดไป →</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════════ -->
+<script>
+// ─────────────────────────────────────────────
+//  CONSTANTS & COMPONENT DEFINITIONS
+// ─────────────────────────────────────────────
+const GRID = 20;
+
+const DEFS = {
+  bulb: {
+    name: 'หลอดไฟ', nameEn: 'Light Bulb', color: '#f59e0b',
+    w: 38, h: 38,
+    specs: [
+      { k:'กำลังไฟ', v:'9–18 W (LED)' },
+      { k:'แรงดัน', v:'220V AC' },
+      { k:'ขั้ว', v:'E27 / B22' },
+      { k:'ฟลักซ์', v:'800–1,600 lm' },
+    ],
+    install: 'ติดตั้งสูงจากพื้นอย่างน้อย 2.4 ม. ใช้สาย THW 1.5 mm² ขั้นต่ำ ต้องอยู่บนวงจร CB 10A ร่วมกับสวิตช์ แสงควรมีค่า CRI ≥ 80',
+  },
+  switch: {
+    name: 'สวิตช์', nameEn: 'Switch', color: '#67e8f9',
+    w: 38, h: 28,
+    specs: [
+      { k:'พิกัดกระแส', v:'10A / 16A' },
+      { k:'แรงดัน', v:'250V AC' },
+      { k:'ประเภท', v:'1-Way / 2-Way' },
+      { k:'IP Rating', v:'IP44 (ห้องน้ำ)' },
+    ],
+    install: 'ติดตั้งสูง 1.2–1.4 ม. จากพื้น ต่อในวงจรแบบ Loop-In ห้ามนำสายนิวทรัลผ่านสวิตช์ ควรใช้กล่องฝัง (Gang Box) มาตรฐาน',
+  },
+  outlet: {
+    name: 'ปลั๊กไฟ', nameEn: 'Power Outlet', color: '#86efac',
+    w: 34, h: 34,
+    specs: [
+      { k:'พิกัดกระแส', v:'10A / 16A' },
+      { k:'แรงดัน', v:'220V AC' },
+      { k:'ขา', v:'3-ขา มีสายดิน' },
+      { k:'IP Rating', v:'IP44 (ชื้น)' },
+    ],
+    install: 'ติดตั้งสูง 0.30 ม. (ทั่วไป) หรือ 1.20 ม. (ครัว/น้ำ) ใช้สาย THW 2.5 mm² บนวงจร CB 20A อิสระ ต้องมีสายดินทุกจุด',
+  },
+  cu: {
+    name: 'Consumer Unit', nameEn: 'Distribution Board', color: '#fca5a5',
+    w: 46, h: 56,
+    specs: [
+      { k:'ขนาด', v:'4–24 วงจร' },
+      { k:'Main CB', v:'40 / 63 / 100A' },
+      { k:'ชนิด', v:'TPN / SPN' },
+      { k:'มาตรฐาน', v:'IEC 61439 / มอก.1365' },
+    ],
+    install: 'ติดตั้งสูง 1.5–1.8 ม. (ศูนย์กลาง Bus Bar) มีพื้นที่ด้านหน้า ≥ 0.75 ม. ห้ามซ่อนในที่ปิดสนิท ต้องมีป้ายกำกับวงจรทุกช่อง',
+  },
+  ground: {
+    name: 'สายดิน', nameEn: 'Earth / Ground', color: '#93c5fd',
+    w: 28, h: 32,
+    specs: [
+      { k:'สี', v:'เขียว-เหลือง' },
+      { k:'ขนาด', v:'≥ 2.5 mm² Cu' },
+      { k:'ความต้านทาน', v:'< 1 Ω' },
+      { k:'มาตรฐาน', v:'IEC 60364-5-54' },
+    ],
+    install: 'ต่อสายดินทุกอุปกรณ์ที่มีเปลือกโลหะ เชื่อมถึง Ground Rod หรือ Earth Bar ใน CU ห้ามตัดสายดินออกในทุกกรณี',
+  },
+  junction: {
+    name: 'กล่องต่อสาย', nameEn: 'Junction Box', color: '#d8b4fe',
+    w: 30, h: 30,
+    specs: [
+      { k:'ขนาด', v:'75×75 / 100×100 mm' },
+      { k:'วัสดุ', v:'PVC / Steel' },
+      { k:'IP Rating', v:'IP44 ขึ้นไป' },
+      { k:'สายสูงสุด', v:'≤ 6 เส้น/กล่อง' },
+    ],
+    install: 'ต้องเปิดตรวจสอบได้ตลอด ห้ามฝังถาวร ใช้ Wire Nut หรือ Terminal Block ต้องยึดแน่นกับโครงสร้าง',
+  },
+};
+
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+const S = {
+  tool: 'select',
+  comps: [],          // {id, type, x, y}
+  wires: [],          // {id, x1, y1, x2, y2}
+  selId: null,
+  wireStart: null,
+  nextId: 1,
+  tutStep: 1,
+};
+
+// ─────────────────────────────────────────────
+//  GRID SNAP
+// ─────────────────────────────────────────────
+const snap = v => Math.round(v / GRID) * GRID;
+
+function canvasPos(e) {
+  const r = document.getElementById('canvas-wrap').getBoundingClientRect();
+  return { x: snap(e.clientX - r.left), y: snap(e.clientY - r.top) };
+}
+
+// ─────────────────────────────────────────────
+//  TOOL MANAGEMENT
+// ─────────────────────────────────────────────
+function setTool(t) {
+  S.tool = t;
+  S.wireStart = null;
+  hideTempWire();
+
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`tb-${t}`)?.classList.add('active');
+
+  const cw = document.getElementById('canvas-wrap');
+  cw.className = '';
+  if (t === 'select') cw.classList.add('cursor-default');
+  else if (t === 'wire') cw.classList.add('cursor-cross');
+  else if (t === 'delete') cw.classList.add('cursor-notallow');
+  else cw.classList.add('cursor-copy');
+
+  updateStatus();
+}
+
+// ─────────────────────────────────────────────
+//  SVG HELPERS
+// ─────────────────────────────────────────────
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs = {}) {
+  const el = document.createElementNS(SVG_NS, tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  return el;
+}
+
+// ─────────────────────────────────────────────
+//  COMPONENT SVG CONTENT
+// ─────────────────────────────────────────────
+function compSVG(type, def) {
+  const { w, h, color: c } = def;
+  const cx = w / 2, cy = h / 2;
+  switch (type) {
+    case 'bulb': return `
+      <circle cx="${cx}" cy="${cy-3}" r="${Math.min(cx,cy)-4}" stroke="${c}" stroke-width="1.5" fill="${c}18"/>
+      <path d="M${cx-7} ${cy+5}q-1 3.5 0 5.5h14q1-3 0-5.5z" stroke="${c}" stroke-width="1.5" fill="${c}20"/>
+      <line x1="${cx-6}" y1="${cy+11}" x2="${cx+6}" y2="${cy+11}" stroke="${c}" stroke-width="1.5"/>
+      <line x1="${cx-4}" y1="${cy+14}" x2="${cx+4}" y2="${cy+14}" stroke="${c}" stroke-width="1.5"/>
+      <line x1="${cx-5}" y1="${cy-6}" x2="${cx+5}" y2="${cy}" stroke="${c}" stroke-width="1" opacity=".45"/>
+      <line x1="${cx+5}" y1="${cy-6}" x2="${cx-5}" y2="${cy}" stroke="${c}" stroke-width="1" opacity=".45"/>
+      <line x1="${cx}" y1="${cy+16}" x2="${cx}" y2="${h}" stroke="#4a607a" stroke-width="1.5"/>
+    `;
+    case 'switch': return `
+      <circle cx="6" cy="${h/2}" r="3.5" stroke="${c}" stroke-width="1.5" fill="none"/>
+      <circle cx="${w-6}" cy="${h/2}" r="3.5" stroke="${c}" stroke-width="1.5" fill="none"/>
+      <line x1="9.5" y1="${h/2}" x2="${w-10}" y2="${h/2-8}" stroke="${c}" stroke-width="2" stroke-linecap="round"/>
+      <circle cx="${w-10}" cy="${h/2-8}" r="2.5" fill="${c}"/>
+    `;
+    case 'outlet': return `
+      <rect x="2" y="2" width="${w-4}" height="${h-4}" rx="2.5" stroke="${c}" stroke-width="1.5" fill="${c}08"/>
+      <circle cx="${cx-5}" cy="${cy-3}" r="2.8" fill="${c}"/>
+      <circle cx="${cx+5}" cy="${cy-3}" r="2.8" fill="${c}"/>
+      <rect x="${cx-4}" y="${cy+2}" width="8" height="5" rx="1" stroke="${c}" stroke-width="1.2" fill="none"/>
+    `;
+    case 'cu': return `
+      <rect x="2" y="2" width="${w-4}" height="${h-4}" rx="2.5" stroke="${c}" stroke-width="1.5" fill="${c}06"/>
+      <rect x="2" y="2" width="${w-4}" height="11" fill="${c}15" rx="2.5"/>
+      <text x="${cx}" y="11" font-family="monospace" font-size="6.5" fill="${c}" text-anchor="middle" font-weight="700">MCB</text>
+      ${[16,25,34].map(y => `
+        <rect x="6" y="${y}" width="${cx-8}" height="5.5" rx="1.2" fill="${c}22" stroke="${c}" stroke-width=".9"/>
+        <rect x="${cx+2}" y="${y}" width="${cx-8}" height="5.5" rx="1.2" fill="${c}22" stroke="${c}" stroke-width=".9"/>
+      `).join('')}
+    `;
+    case 'ground': return `
+      <line x1="${cx}" y1="3" x2="${cx}" y2="16" stroke="${c}" stroke-width="2"/>
+      <line x1="${cx-12}" y1="16" x2="${cx+12}" y2="16" stroke="${c}" stroke-width="2"/>
+      <line x1="${cx-8}"  y1="21" x2="${cx+8}"  y2="21" stroke="${c}" stroke-width="2"/>
+      <line x1="${cx-4}"  y1="26" x2="${cx+4}"  y2="26" stroke="${c}" stroke-width="2"/>
+    `;
+    case 'junction': return `
+      <rect x="5" y="5" width="${w-10}" height="${h-10}" rx="2" stroke="${c}" stroke-width="1.5" fill="${c}08"/>
+      <line x1="5"    y1="${cy}" x2="0"    y2="${cy}" stroke="${c}" stroke-width="1.5"/>
+      <line x1="${w-5}" y1="${cy}" x2="${w}"   y2="${cy}" stroke="${c}" stroke-width="1.5"/>
+      <line x1="${cx}" y1="5"    x2="${cx}" y2="0"    stroke="${c}" stroke-width="1.5"/>
+      <line x1="${cx}" y1="${h-5}" x2="${cx}" y2="${h}"   stroke="${c}" stroke-width="1.5"/>
+      <circle cx="${cx}" cy="${cy}" r="3" fill="${c}"/>
+    `;
+    default: return `<circle cx="${cx}" cy="${cy}" r="${Math.min(cx,cy)-2}" stroke="${c}" stroke-width="1.5" fill="none"/>`;
+  }
+}
+
+// ─────────────────────────────────────────────
+//  ADD COMPONENT
+// ─────────────────────────────────────────────
+function addComp(type, x, y) {
+  const id = `c${S.nextId++}`;
+  const comp = { id, type, x, y };
+  S.comps.push(comp);
+  renderComp(comp);
+  selectId(id);
+  updateCounts();
+  document.getElementById('empty-hint').style.display = 'none';
+  return id;
+}
+
+function renderComp(comp) {
+  const def = DEFS[comp.type];
+  const g = svgEl('g', {
+    id: comp.id,
+    class: 'comp-g',
+    transform: `translate(${comp.x - def.w/2},${comp.y - def.h/2})`,
+    'data-type': comp.type,
+  });
+
+  // Hit area
+  const hit = svgEl('rect', { x:-6, y:-6, width: def.w+12, height: def.h+12, rx:4, class:'comp-hit' });
+  g.appendChild(hit);
+
+  // Selection ring
+  const ring = svgEl('rect', {
+    class: 'sel-ring',
+    x:-5, y:-5, width: def.w+10, height: def.h+10, rx:5,
+    fill:'none', stroke:'#3b82f6', 'stroke-width':'1.5', 'stroke-dasharray':'5 3',
+  });
+  g.appendChild(ring);
+
+  // Component SVG
+  const inner = svgEl('g');
+  inner.innerHTML = compSVG(comp.type, def);
+  g.appendChild(inner);
+
+  // Label
+  const lbl = svgEl('text', {
+    x: def.w/2, y: def.h+13,
+    'text-anchor':'middle', fill: def.color,
+    'font-size':'9', 'font-family':'IBM Plex Mono, monospace', opacity:'.75',
+  });
+  lbl.textContent = def.name;
+  g.appendChild(lbl);
+
+  // Click
+  g.onclick = e => {
+    e.stopPropagation();
+    if (S.tool === 'delete') { deleteComp(comp.id); return; }
+    if (S.tool === 'wire') { onCanvasClick(e); return; }
+    selectId(comp.id);
+  };
+
+  // Drag to move
+  let ds = null;
+  g.onmousedown = e => {
+    if (S.tool !== 'select') return;
+    e.stopPropagation();
+    selectId(comp.id);
+    const origX = comp.x, origY = comp.y;
+    ds = { startX: e.clientX, startY: e.clientY };
+
+    const mv = me => {
+      comp.x = origX + snap(me.clientX - ds.startX);
+      comp.y = origY + snap(me.clientY - ds.startY);
+      g.setAttribute('transform', `translate(${comp.x - def.w/2},${comp.y - def.h/2})`);
+      document.getElementById('pi-x').textContent = comp.x;
+      document.getElementById('pi-y').textContent = comp.y;
+    };
+    const up = () => { ds = null; document.removeEventListener('mousemove', mv); document.removeEventListener('mouseup', up); };
+    document.addEventListener('mousemove', mv);
+    document.addEventListener('mouseup', up);
+  };
+
+  // Right click
+  g.oncontextmenu = e => {
+    e.preventDefault(); e.stopPropagation();
+    selectId(comp.id);
+    showCtxMenu(e.clientX, e.clientY);
+  };
+
+  document.getElementById('comps-g').appendChild(g);
+}
+
+// ─────────────────────────────────────────────
+//  SELECT
+// ─────────────────────────────────────────────
+function selectId(id) {
+  // Remove all selections
+  document.querySelectorAll('.comp-g').forEach(g => g.classList.remove('sel'));
+  document.querySelectorAll('.wire-path').forEach(p => p.classList.remove('sel'));
+  document.querySelectorAll('.wire-dot').forEach(d => d.classList.remove('sel'));
+
+  S.selId = id;
+  if (!id) { showEmptyPanel(); return; }
+
+  const el = document.getElementById(id);
+  if (el) el.classList.add('sel');
+
+  // Wire selection
+  const wire = S.wires.find(w => w.id === id);
+  if (wire) {
+    document.querySelectorAll(`.wd-${id}`).forEach(d => d.classList.add('sel'));
+  }
+
+  const comp = S.comps.find(c => c.id === id);
+  if (comp) showCompPanel(comp);
+}
+
+// ─────────────────────────────────────────────
+//  SIDE PANEL
+// ─────────────────────────────────────────────
+function showEmptyPanel() {
+  document.getElementById('panel-empty').style.display = 'flex';
+  document.getElementById('panel-info').style.display = 'none';
+}
+
+function showCompPanel(comp) {
+  const def = DEFS[comp.type];
+  document.getElementById('panel-empty').style.display = 'none';
+  document.getElementById('panel-info').style.display = 'flex';
+
+  document.getElementById('pi-icon').innerHTML = `
+    <svg viewBox="0 0 ${def.w} ${def.h}" width="32" height="32" overflow="visible">${compSVG(comp.type, def)}</svg>
+  `;
+  document.getElementById('pi-name').textContent = def.name;
+  document.getElementById('pi-name-en').textContent = def.nameEn;
+  document.getElementById('pi-specs').innerHTML = def.specs.map(s =>
+    `<div class="spec-row"><span class="spec-key">${s.k}</span><span class="spec-val">${s.v}</span></div>`
+  ).join('');
+  document.getElementById('pi-install').textContent = def.install;
+  document.getElementById('pi-x').textContent = comp.x;
+  document.getElementById('pi-y').textContent = comp.y;
+}
+
+// ─────────────────────────────────────────────
+//  DELETE
+// ─────────────────────────────────────────────
+function deleteComp(id) {
+  S.comps = S.comps.filter(c => c.id !== id);
+  document.getElementById(id)?.remove();
+  if (S.selId === id) { S.selId = null; showEmptyPanel(); }
+  updateCounts();
+}
+
+function deleteSelected() {
+  if (!S.selId) return;
+  const isWire = S.wires.some(w => w.id === S.selId);
+  if (isWire) deleteWire(S.selId);
+  else deleteComp(S.selId);
+}
+
+// ─────────────────────────────────────────────
+//  WIRE
+// ─────────────────────────────────────────────
+function addWire(x1, y1, x2, y2) {
+  if (Math.hypot(x2-x1, y2-y1) < 15) return;
+  const id = `w${S.nextId++}`;
+  S.wires.push({ id, x1, y1, x2, y2 });
+  renderWire({ id, x1, y1, x2, y2 });
+  updateCounts();
+}
+
+function orthoPath(x1, y1, x2, y2) {
+  const mx = x1 + Math.round((x2-x1) / (2*GRID)) * GRID;
+  return `M${x1},${y1} L${mx},${y1} L${mx},${y2} L${x2},${y2}`;
+}
+
+function renderWire(wire) {
+  const { id, x1, y1, x2, y2 } = wire;
+  const wg = document.getElementById('wires-g');
+
+  const path = svgEl('path', {
+    id, class:'wire-path',
+    d: orthoPath(x1, y1, x2, y2),
+  });
+  path.onclick = e => {
+    e.stopPropagation();
+    if (S.tool === 'delete') { deleteWire(id); return; }
+    selectId(id);
+  };
+  path.oncontextmenu = e => {
+    e.preventDefault(); e.stopPropagation();
+    selectId(id); showCtxMenu(e.clientX, e.clientY);
+  };
+
+  const dot1 = svgEl('circle', { cx:x1, cy:y1, r:3.5, class:`wire-dot wd-${id}` });
+  const dot2 = svgEl('circle', { cx:x2, cy:y2, r:3.5, class:`wire-dot wd-${id}` });
+
+  wg.appendChild(path);
+  wg.appendChild(dot1);
+  wg.appendChild(dot2);
+}
+
+function deleteWire(id) {
+  S.wires = S.wires.filter(w => w.id !== id);
+  document.getElementById(id)?.remove();
+  document.querySelectorAll(`.wd-${id}`).forEach(d => d.remove());
+  if (S.selId === id) { S.selId = null; showEmptyPanel(); }
+  updateCounts();
+}
+
+function hideTempWire() {
+  document.getElementById('temp-wire').setAttribute('d', '');
+  document.getElementById('temp-wire').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────
+//  CANVAS EVENTS
+// ─────────────────────────────────────────────
+function onCanvasClick(e) {
+  hideCtxMenu();
+  const isCanvas = ['canvas-wrap','main-svg'].includes(e.target.id) ||
+                    e.target.tagName === 'svg' ||
+                    e.target.closest('#wires-g') ||
+                    !e.target.closest('.comp-g');
+
+  if (S.tool === 'wire') {
+    const pos = canvasPos(e);
+    if (!S.wireStart) {
+      S.wireStart = pos;
+      document.getElementById('temp-wire').style.display = 'block';
+      document.getElementById('temp-wire').setAttribute('d', `M${pos.x},${pos.y} L${pos.x},${pos.y}`);
+      updateStatus('เลือกจุดปลายสาย...');
+    } else {
+      addWire(S.wireStart.x, S.wireStart.y, pos.x, pos.y);
+      S.wireStart = null;
+      hideTempWire();
+      updateStatus();
+    }
+    return;
+  }
+
+  if (S.tool !== 'select' && S.tool !== 'delete') {
+    addComp(S.tool, canvasPos(e).x, canvasPos(e).y);
+    return;
+  }
+
+  if (S.tool === 'select' && isCanvas && !e.target.closest('.comp-g') && !e.target.closest('.wire-path')) {
+    selectId(null);
+  }
+}
+
+function onMouseMove(e) {
+  if (S.tool === 'wire' && S.wireStart) {
+    const pos = canvasPos(e);
+    document.getElementById('temp-wire').setAttribute('d', orthoPath(S.wireStart.x, S.wireStart.y, pos.x, pos.y));
+    document.getElementById('temp-wire').style.display = 'block';
+  }
+}
+
+function onContextMenu(e) {
+  e.preventDefault();
+  if (S.selId) showCtxMenu(e.clientX, e.clientY);
+}
+
+// ─────────────────────────────────────────────
+//  DRAG & DROP
+// ─────────────────────────────────────────────
+let _dragType = null;
+function onDragStart(e, type) {
+  _dragType = type;
+  e.dataTransfer.setData('text/plain', type);
+  e.dataTransfer.effectAllowed = 'copy';
+}
+function onDrop(e) {
+  e.preventDefault();
+  const type = e.dataTransfer.getData('text/plain') || _dragType;
+  if (!type || !DEFS[type]) return;
+  const r = document.getElementById('canvas-wrap').getBoundingClientRect();
+  addComp(type, snap(e.clientX - r.left), snap(e.clientY - r.top));
+  _dragType = null;
+}
+
+// ─────────────────────────────────────────────
+//  CONTEXT MENU
+// ─────────────────────────────────────────────
+function showCtxMenu(x, y) {
+  const m = document.getElementById('ctx-menu');
+  m.style.display = 'block';
+  m.style.left = `${Math.min(x, window.innerWidth - 160)}px`;
+  m.style.top  = `${Math.min(y, window.innerHeight - 100)}px`;
+}
+function hideCtxMenu() { document.getElementById('ctx-menu').style.display = 'none'; }
+function ctxAction(action) {
+  hideCtxMenu();
+  if (!S.selId) return;
+  if (action === 'delete') deleteSelected();
+  if (action === 'duplicate') {
+    const c = S.comps.find(x => x.id === S.selId);
+    if (c) addComp(c.type, c.x + GRID*3, c.y + GRID*3);
+  }
+}
+document.addEventListener('click', hideCtxMenu);
+
+// ─────────────────────────────────────────────
+//  KEYBOARD SHORTCUTS
+// ─────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  const map = { s:'select', w:'wire', b:'bulb', k:'switch', p:'outlet', c:'cu', g:'ground', j:'junction', d:'delete' };
+  if (map[e.key.toLowerCase()]) setTool(map[e.key.toLowerCase()]);
+  if (e.key === 'Escape') { setTool('select'); S.wireStart = null; hideTempWire(); }
+  if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
+});
+
+// ─────────────────────────────────────────────
+//  CLEAR CANVAS
+// ─────────────────────────────────────────────
+function clearCanvas() {
+  if (!S.comps.length && !S.wires.length) return;
+  if (!confirm('ล้างผังทั้งหมด? ไม่สามารถยกเลิกได้')) return;
+  S.comps = []; S.wires = []; S.selId = null; S.wireStart = null;
+  document.getElementById('comps-g').innerHTML = '';
+  document.getElementById('wires-g').innerHTML = '';
+  hideTempWire();
+  showEmptyPanel(); updateCounts();
+  document.getElementById('empty-hint').style.display = '';
+}
+
+// ─────────────────────────────────────────────
+//  EXPORT PNG
+// ─────────────────────────────────────────────
+function exportPNG() {
+  const cw = document.getElementById('canvas-wrap');
+  const W = cw.clientWidth, H = cw.clientHeight;
+  const svg = document.getElementById('main-svg');
+
+  const clone = svg.cloneNode(true);
+  clone.setAttribute('width', W); clone.setAttribute('height', H);
+  clone.setAttribute('xmlns', SVG_NS);
+
+  // Background + grid
+  const defs = document.createElementNS(SVG_NS, 'defs');
+  defs.innerHTML = `
+    <pattern id="gs" width="20" height="20" patternUnits="userSpaceOnUse">
+      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="rgba(255,255,255,.03)" stroke-width=".5"/>
+    </pattern>
+    <pattern id="gl" width="100" height="100" patternUnits="userSpaceOnUse">
+      <rect width="100" height="100" fill="url(#gs)"/>
+      <path d="M 100 0 L 0 0 0 100" fill="none" stroke="rgba(255,255,255,.07)" stroke-width=".5"/>
+    </pattern>
+  `;
+  clone.insertBefore(defs, clone.firstChild);
+
+  const bg = document.createElementNS(SVG_NS, 'rect');
+  bg.setAttribute('width', W); bg.setAttribute('height', H); bg.setAttribute('fill', '#090e14');
+  clone.insertBefore(bg, clone.children[1]);
+
+  const grid = document.createElementNS(SVG_NS, 'rect');
+  grid.setAttribute('width', W); grid.setAttribute('height', H); grid.setAttribute('fill', 'url(#gl)');
+  clone.insertBefore(grid, clone.children[2]);
+
+  // Watermark
+  const wm = document.createElementNS(SVG_NS, 'text');
+  Object.entries({ x: W-10, y: H-10, 'text-anchor':'end', 'font-family':'monospace',
+    'font-size':'11', fill:'rgba(255,255,255,.15)' }).forEach(([k,v]) => wm.setAttribute(k, v));
+  wm.textContent = 'ElectroPlan v1.0';
+  clone.appendChild(wm);
+
+  const svgStr = new XMLSerializer().serializeToString(clone);
+  const blob = new Blob([svgStr], { type:'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = W * 2; canvas.height = H * 2;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(2, 2);
+    ctx.drawImage(img, 0, 0);
+    canvas.toBlob(b2 => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b2);
+      a.download = `electroplan-${Date.now()}.png`;
+      a.click();
+    }, 'image/png');
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+// ─────────────────────────────────────────────
+//  STATUS & COUNTS
+// ─────────────────────────────────────────────
+function updateStatus(msg) {
+  const labels = {
+    select: 'พร้อมใช้งาน', wire: 'โหมดเดินสายไฟ', delete: 'โหมดลบ',
+    bulb:'วางหลอดไฟ', switch:'วางสวิตช์', outlet:'วางปลั๊กไฟ',
+    cu:'วาง Consumer Unit', ground:'วางสายดิน', junction:'วางกล่องต่อสาย',
+  };
+  document.getElementById('status-text').textContent = msg || labels[S.tool] || S.tool;
+}
+
+function updateCounts() {
+  document.getElementById('comp-count-pill').textContent = `${S.comps.length} องค์ประกอบ`;
+  document.getElementById('wire-count-pill').textContent = `${S.wires.length} สาย`;
+}
+
+// ─────────────────────────────────────────────
+//  TUTORIAL
+// ─────────────────────────────────────────────
+const TUT_STEPS = [
+  {
+    title: 'ภาพรวมของ ElectroPlan',
+    emoji: '🗂️',
+    render: () => `
+      <p style="color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:14px;">
+        ElectroPlan ช่วยให้คุณวางแผนระบบไฟฟ้าภายในอาคารได้เบื้องต้น ประกอบด้วย 3 ส่วนหลัก:
+      </p>
+      <div class="tut-card-grid">
+        ${[
+          ['🔧','แถบเครื่องมือ','ด้านซ้าย','เลือกอุปกรณ์และโหมด'],
+          ['📐','พื้นที่วาด','ตรงกลาง','Grid วางอุปกรณ์ ลากสาย'],
+          ['📋','แผงข้อมูล','ด้านขวา','สเปค & มาตรฐานติดตั้ง'],
+        ].map(([ic,n,p,d]) => `
+          <div class="tut-info-card">
+            <div class="icon">${ic}</div>
+            <div class="ttl">${n}</div>
+            <div class="pos">${p}</div>
+            <div class="desc">${d}</div>
+          </div>
+        `).join('')}
+      </div>
+    `
+  },
+  {
+    title: 'วางอุปกรณ์ไฟฟ้า',
+    emoji: '⚡',
+    render: () => `
+      <p style="color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:12px;">มี 2 วิธีวางอุปกรณ์บนผัง:</p>
+      ${[
+        ['1','คลิก → คลิกบนผัง','คลิกไอคอนในแถบซ้าย จากนั้นคลิกตำแหน่งบน Grid อุปกรณ์จะ Snap อัตโนมัติ'],
+        ['2','Drag & Drop','ลากไอคอนจากแถบซ้ายมาวางบนพื้นที่ Grid ได้โดยตรง'],
+      ].map(([n,t,d]) => `
+        <div class="tut-step-card">
+          <div class="tut-num">${n}</div>
+          <div>
+            <div class="tut-step-title">${t}</div>
+            <div class="tut-step-desc">${d}</div>
+          </div>
+        </div>
+      `).join('')}
+      <table class="tut-table" style="margin-top:10px;">
+        ${[['หลอดไฟ','หลอด LED','B'],['สวิตช์','ควบคุมวงจร','K'],['ปลั๊กไฟ','220V 3-ขา','P'],['Consumer Unit','ตู้ไฟหลัก','C']].map(([n,d,k]) =>
+          `<tr><td>${n}</td><td style="color:var(--text1)">${d}</td><td><kbd>${k}</kbd></td></tr>`
+        ).join('')}
+      </table>
+    `
+  },
+  {
+    title: 'ลากสายไฟเชื่อมต่อ',
+    emoji: '🔌',
+    render: () => `
+      <p style="color:var(--text2);font-size:13px;line-height:1.7;margin-bottom:12px;">
+        เลือกเครื่องมือ <strong style="color:#f59e0b;">สาย [W]</strong> แล้วคลิก 2 จุดเพื่อลากสาย:
+      </p>
+      ${[
+        ['เลือกเครื่องมือสาย','คลิกที่ไอคอนสาย (ซ้าย) หรือกดปุ่ม W บนคีย์บอร์ด'],
+        ['คลิกจุดเริ่มต้น','คลิกบนผัง — จะแสดงเส้นประนำทาง'],
+        ['คลิกจุดปลาย','คลิกอีกครั้งเพื่อวางสาย สีเหลืองหมายถึงสายไฟ'],
+        ['ยกเลิก','กด ESC เพื่อยกเลิกการลากสายที่ยังค้างอยู่'],
+      ].map(([t,d],i) => `
+        <div class="tut-step-card" style="margin-bottom:8px;">
+          <div class="tut-num">${i+1}</div>
+          <div>
+            <div class="tut-step-title">${t}</div>
+            <div class="tut-step-desc">${d}</div>
+          </div>
+        </div>
+      `).join('')}
+    `
+  },
+  {
+    title: 'Shortcut & เครื่องมือเพิ่มเติม',
+    emoji: '⌨️',
+    render: () => `
+      <div class="tut-kbd-grid">
+        ${[['S','เลือก/ย้าย'],['W','ลากสาย'],['B','หลอดไฟ'],['K','สวิตช์'],
+           ['P','ปลั๊กไฟ'],['C','CU Box'],['G','สายดิน'],['Del','ลบที่เลือก']].map(([k,d]) => `
+          <div class="kbd-row"><kbd>${k}</kbd><span class="kbd-desc">${d}</span></div>
+        `).join('')}
+      </div>
+      <div class="tut-tip">
+        <span style="font-size:18px;flex-shrink:0;">💡</span>
+        <span>คลิกขวาบนองค์ประกอบ → เมนู Copy / ลบ &nbsp;|&nbsp; ปุ่ม Export PNG บันทึกผังเป็นรูปภาพ &nbsp;|&nbsp; คลิกองค์ประกอบเพื่อดูสเปคและมาตรฐานติดตั้งในแผงขวา</span>
+      </div>
+    `
+  },
+];
+
+function renderTutStep() {
+  const s = TUT_STEPS[S.tutStep - 1];
+  document.getElementById('tut-content').innerHTML = `
+    <div style="margin-bottom:14px;">
+      <div style="font-size:26px;margin-bottom:6px;">${s.emoji}</div>
+      <div style="font-size:16px;font-weight:700;color:var(--text1);">${s.title}</div>
+    </div>
+    ${s.render()}
+  `;
+  document.getElementById('tut-counter').textContent = `ขั้นที่ ${S.tutStep} / 4`;
+  document.getElementById('btn-prev').disabled = S.tutStep === 1;
+
+  const nx = document.getElementById('btn-next');
+  if (S.tutStep === 4) { nx.textContent = 'เริ่มใช้งาน ✓'; nx.onclick = closeTutorial; }
+  else { nx.textContent = 'ถัดไป →'; nx.onclick = tutNext; }
+
+  for (let i = 1; i <= 4; i++) {
+    const d = document.getElementById(`sd-${i}`);
+    if (i < S.tutStep) { d.classList.add('done'); d.classList.remove('active'); }
+    else if (i === S.tutStep) { d.classList.add('active'); d.classList.remove('done'); }
+    else { d.classList.remove('active','done'); }
+  }
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById(`sl-${i}`).classList.toggle('done', i < S.tutStep);
+  }
+}
+
+function tutNext() { if (S.tutStep < 4) { S.tutStep++; renderTutStep(); } }
+function tutPrev() { if (S.tutStep > 1) { S.tutStep--; renderTutStep(); } }
+function closeTutorial() { document.getElementById('tut-overlay').style.display = 'none'; }
+function showTutorial() {
+  S.tutStep = 1; renderTutStep();
+  document.getElementById('tut-overlay').style.display = 'flex';
+}
+function tutBackdrop(e) { if (e.target.id === 'tut-overlay') closeTutorial(); }
+
+// ─────────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────────
+renderTutStep();
+updateStatus();
+showEmptyPanel();
+</script>
+
+</body>
+</html>
