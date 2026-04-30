@@ -1195,21 +1195,30 @@ function switchTab(t){
   else { rf.classList.remove('show'); document.querySelector('.submit-btn').textContent='✦ เข้าสู่ระบบ'; }
 }
 
-// แก้ช่วงบรรทัด 1198 - 1202 ให้เป็นแบบนี้เป๊ะๆ ครับ
 function handleSubmit(){
-    closeModal();
-    const msg = currentTab === 'register' ? 'สมัครสมาชิกสำเร็จ' : 'เข้าสู่ระบบสำเร็จ';
-    showToast('✅', msg);
+  closeModal();
+  const msg = currentTab === 'register' ? 'สมัครสมาชิกสำเร็จ' : 'เข้าสู่ระบบสำเร็จ';
+  showToast('✅', msg);
 
-    setTimeout(() => {
-        window.location.href = 'index2.html';
-    }, 1500);
+  // สั่งให้เด้งไปหน้า index2.html หลังจากผ่านไป 1.5 วินาที
+  setTimeout(() => {
+    window.location.href = 'index2.html';
+  }, 1500);
 }
 
 function showToast(icon, msg) {
-    const t = document.getElementById('toast');
-    // โค้ดเดิมของคุณด้านล่าง...
+  const t = document.getElementById('toast');
+  const tMsg = document.getElementById('toast-msg');
+  const tIcon = document.querySelector('#toast .toast-icon');
+  
+  if(t && tMsg && tIcon) {
+    tMsg.textContent = msg;
+    tIcon.textContent = icon;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4000);
+  }
 }
+
 
 /* FAQ */
 function toggleFaq(el){
