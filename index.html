@@ -1,1023 +1,1248 @@
 <!DOCTYPE html>
-<html lang="th" class="scroll-smooth">
+<html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TaxWise Pro — แพลตฟอร์มคำนวณภาษีอัจฉริยะ</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Globe Express — VIP Membership</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;600;700&family=Kanit:wght@200;300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --gold:#F5C843;
+  --gold2:#FFE082;
+  --golddark:#b8860b;
+  --bg:#07090d;
+  --card:#0e1117;
+  --glass:rgba(255,255,255,.04);
+  --border:rgba(255,255,255,.09);
+}
+html { scroll-behavior:smooth; }
+body {
+  font-family:'Kanit',sans-serif;
+  background:var(--bg);
+  color:#fff;
+  overflow-x:hidden;
+}
 
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Sarabun', 'sans-serif'],
-            display: ['"Playfair Display"', 'serif'],
-          },
-          colors: {
-            navy: { 950:'#03080f', 900:'#060f1e', 800:'#0b1a30', 700:'#102240', 600:'#162c55' },
-            blue: { 300:'#93c5fd', 400:'#60a5fa', 500:'#3b82f6', 600:'#2563eb', 700:'#1d4ed8', 800:'#1e40af' },
-          },
-          backgroundImage: {
-            'grid-pattern':"url(\"data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.025'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
-          }
-        }
-      }
-    }
-  </script>
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(245,200,67,.3); border-radius:99px; }
 
-  <style>
-    *{font-family:'Sarabun',sans-serif}
-    .font-display{font-family:'Playfair Display',serif}
-    .text-gradient{background:linear-gradient(135deg,#93c5fd 0%,#3b82f6 50%,#60a5fa 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .glass-card{background:rgba(11,26,48,0.7);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(59,130,246,0.18)}
-    .blue-glow{box-shadow:0 0 0 1px rgba(59,130,246,0.22),0 4px 32px rgba(37,99,235,0.12)}
-    .border-gradient{border:1px solid transparent;background-clip:padding-box;position:relative}
-    .border-gradient::before{content:'';position:absolute;inset:-1px;background:linear-gradient(135deg,rgba(59,130,246,0.45),rgba(147,197,253,0.08),rgba(37,99,235,0.35));border-radius:inherit;z-index:-1}
-    .noise::after{content:'';position:absolute;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;opacity:.4}
-    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
-    .fade-up{animation:fadeUp .7s ease forwards}
-    .d1{animation-delay:.1s}.d2{animation-delay:.2s}.d3{animation-delay:.3s}
-    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:#03080f}::-webkit-scrollbar-thumb{background:#102240;border-radius:3px}
-    .divider{height:1px;background:linear-gradient(90deg,transparent,rgba(59,130,246,0.3),transparent)}
-    input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
-    .btn-blue{background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;font-weight:600;border:none;cursor:pointer;transition:all .2s}
-    .btn-blue:hover{box-shadow:0 8px 24px rgba(29,78,216,.35);transform:translateY(-1px)}
-    .tab-on{background:rgba(59,130,246,.12)!important;border:1px solid rgba(59,130,246,.45)!important;color:#60a5fa!important}
-    /* deduction rows */
-    .ded-row{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;border:1px solid rgba(59,130,246,.1);transition:all .18s}
-    .ded-row:hover{background:rgba(59,130,246,.05)}
-    .ded-row.sel{background:rgba(59,130,246,.08);border-color:rgba(59,130,246,.3)}
-    .ded-chk{width:18px;height:18px;border-radius:5px;border:2px solid rgba(59,130,246,.4);appearance:none;-webkit-appearance:none;cursor:pointer;flex-shrink:0;margin-top:2px;transition:all .18s;position:relative}
-    .ded-chk:checked{background:#2563eb;border-color:#2563eb}
-    .ded-chk:checked::after{content:'\f00c';font-family:'Font Awesome 6 Free';font-weight:900;color:#fff;font-size:10px;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
-    .ded-num{background:rgba(3,8,15,.8);border:1px solid rgba(59,130,246,.22);border-radius:8px;padding:6px 10px;color:#fff;font-size:13px;width:110px;outline:none;transition:border .18s}
-    .ded-num:focus{border-color:#3b82f6}
-    .ded-cnt{background:rgba(3,8,15,.8);border:1px solid rgba(59,130,246,.22);border-radius:8px;padding:6px 8px;color:#fff;font-size:13px;width:60px;outline:none;text-align:center}
-    .ded-cnt:focus{border-color:#3b82f6}
-    .inp{background:rgba(3,8,15,.8);border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:12px 16px;color:#fff;font-size:14px;width:100%;outline:none;transition:border .18s}
-    .inp:focus{border-color:#3b82f6}
-    .sel-inp{background:rgba(3,8,15,.8);border:1px solid rgba(59,130,246,.2);border-radius:12px;padding:12px 16px;color:#fff;font-size:14px;width:100%;outline:none}
-    /* badge colours */
-    .b-admin{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3)}
-    .b-free{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)}
-    .b-quota{background:rgba(59,130,246,.15);color:#60a5fa;border:1px solid rgba(59,130,246,.3)}
-    .b-empty{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.3)}
-    .modal-body{max-height:calc(100vh - 200px);overflow-y:auto}
-    .pay-btn-on{border:1px solid rgba(59,130,246,.5)!important}
-    .pay-btn-off{border:1px solid rgba(15,31,56,.9)!important}
-  </style>
+/* ═══ HERO SECTION ═══ */
+#hero {
+  position:relative;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+  padding:80px 20px 60px;
+}
+
+/* WALLPAPER */
+#hero-bg {
+  position:absolute; inset:0; z-index:0;
+  background:
+    url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1800&q=85') center/cover no-repeat;
+}
+#hero-bg::after {
+  content:'';
+  position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(245,200,67,.06) 0%, transparent 70%),
+    linear-gradient(to bottom, rgba(7,9,13,.65) 0%, rgba(7,9,13,.45) 30%, rgba(7,9,13,.7) 70%, rgba(7,9,13,1) 100%);
+}
+
+/* Animated particles */
+.particles { position:absolute; inset:0; z-index:1; overflow:hidden; pointer-events:none; }
+.p { position:absolute; border-radius:50%; background:var(--gold); animation:float linear infinite; opacity:0; }
+@keyframes float {
+  0%   { transform:translateY(100vh) scale(0); opacity:0; }
+  10%  { opacity:.25; }
+  90%  { opacity:.08; }
+  100% { transform:translateY(-10vh) scale(1); opacity:0; }
+}
+
+/* Diagonal light streak */
+.streak {
+  position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden;
+}
+.streak::before {
+  content:'';
+  position:absolute;
+  width:1px; height:200%;
+  background:linear-gradient(to bottom, transparent, rgba(245,200,67,.18), transparent);
+  top:-50%; left:30%;
+  transform:rotate(25deg);
+  animation:streakMove 8s ease-in-out infinite;
+}
+.streak::after {
+  content:'';
+  position:absolute;
+  width:1px; height:200%;
+  background:linear-gradient(to bottom, transparent, rgba(245,200,67,.10), transparent);
+  top:-50%; left:65%;
+  transform:rotate(25deg);
+  animation:streakMove 12s ease-in-out infinite reverse;
+}
+@keyframes streakMove {
+  0%,100% { opacity:0; left:10%; }
+  50%      { opacity:1; left:90%; }
+}
+
+/* NAVBAR */
+#navbar {
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 44px;
+  background:linear-gradient(to bottom, rgba(0,0,0,.75) 0%, transparent 100%);
+  backdrop-filter:blur(6px);
+}
+.nav-logo {
+  font-family:'Oswald',sans-serif; font-size:15px; font-weight:700;
+  letter-spacing:5px; color:#fff; text-transform:uppercase; text-decoration:none;
+  display:flex; align-items:center; gap:8px;
+}
+.nav-logo span { color:var(--gold); }
+.nav-back {
+  display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,.08); border:1px solid var(--border);
+  color:rgba(255,255,255,.6); text-decoration:none;
+  font-size:11px; letter-spacing:2px; text-transform:uppercase;
+  padding:8px 18px; border-radius:6px; transition:all .25s;
+  font-family:'Inter',sans-serif;
+}
+.nav-back:hover { background:rgba(255,255,255,.15); color:#fff; }
+
+/* HERO CONTENT */
+.hero-content { position:relative; z-index:10; text-align:center; max-width:700px; }
+
+.crown-wrap {
+  width:70px; height:70px; margin:0 auto 20px;
+  background:linear-gradient(135deg, #b8860b 0%, var(--gold) 50%, #ffe082 100%);
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-size:32px; box-shadow:0 0 40px rgba(245,200,67,.4), 0 0 80px rgba(245,200,67,.15);
+  animation:crownPulse 3s ease-in-out infinite;
+}
+@keyframes crownPulse {
+  0%,100% { box-shadow:0 0 40px rgba(245,200,67,.4), 0 0 80px rgba(245,200,67,.15); }
+  50%      { box-shadow:0 0 60px rgba(245,200,67,.6), 0 0 120px rgba(245,200,67,.25); }
+}
+
+.hero-eyebrow {
+  font-size:11px; letter-spacing:5px; color:var(--gold);
+  text-transform:uppercase; font-weight:400; margin-bottom:14px;
+  font-family:'Inter',sans-serif;
+}
+.hero-title {
+  font-family:'Oswald',sans-serif; font-weight:700;
+  font-size:clamp(42px,7vw,88px); line-height:.9;
+  text-transform:uppercase; letter-spacing:-1px;
+  margin-bottom:18px;
+}
+.hero-title .line1 { display:block; color:#fff; }
+.hero-title .line2 {
+  display:block;
+  background:linear-gradient(90deg, #b8860b 0%, var(--gold) 40%, var(--gold2) 70%, #b8860b 100%);
+  background-size:200% auto;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:goldShimmer 3s linear infinite;
+}
+@keyframes goldShimmer {
+  0%   { background-position:0% center; }
+  100% { background-position:200% center; }
+}
+.hero-sub {
+  font-size:15px; font-weight:300; color:rgba(255,255,255,.55);
+  line-height:1.8; margin-bottom:36px; max-width:500px; margin-inline:auto;
+}
+.hero-stats {
+  display:flex; gap:36px; justify-content:center; margin-bottom:48px; flex-wrap:wrap;
+}
+.stat-item { text-align:center; }
+.stat-num {
+  font-family:'Oswald',sans-serif; font-size:28px; font-weight:700;
+  color:var(--gold); line-height:1;
+}
+.stat-lbl { font-size:10px; letter-spacing:2px; color:rgba(255,255,255,.38); text-transform:uppercase; margin-top:4px; }
+
+/* VIP PLANS */
+#plans {
+  position:relative; z-index:10;
+  padding:80px 20px;
+  background:linear-gradient(to bottom, transparent 0%, rgba(14,17,24,.6) 20%, var(--bg) 60%);
+}
+.section-header { text-align:center; margin-bottom:56px; }
+.section-eyebrow {
+  font-size:10px; letter-spacing:5px; color:var(--gold);
+  text-transform:uppercase; font-family:'Inter',sans-serif;
+  display:flex; align-items:center; justify-content:center; gap:14px;
+  margin-bottom:14px;
+}
+.section-eyebrow::before, .section-eyebrow::after {
+  content:''; width:40px; height:1px; background:rgba(245,200,67,.35);
+}
+.section-title {
+  font-family:'Oswald',sans-serif; font-size:clamp(28px,4vw,48px);
+  font-weight:700; text-transform:uppercase; letter-spacing:-1px;
+}
+
+/* PLAN CARDS */
+.plans-grid {
+  display:flex; gap:20px; justify-content:center; flex-wrap:wrap;
+  max-width:1100px; margin:0 auto;
+}
+.plan-card {
+  flex:1; min-width:280px; max-width:340px;
+  border-radius:20px; overflow:hidden; position:relative;
+  border:1px solid var(--border);
+  background:var(--glass);
+  backdrop-filter:blur(14px);
+  transition:transform .35s, box-shadow .35s;
+  cursor:pointer;
+}
+.plan-card:hover { transform:translateY(-8px); }
+.plan-card.popular {
+  border-color:rgba(245,200,67,.45);
+  background:linear-gradient(160deg, rgba(245,200,67,.06) 0%, rgba(14,17,24,.8) 50%);
+  box-shadow:0 0 40px rgba(245,200,67,.12), 0 20px 60px rgba(0,0,0,.5);
+}
+.plan-card.popular:hover {
+  box-shadow:0 0 60px rgba(245,200,67,.22), 0 28px 80px rgba(0,0,0,.6);
+}
+.plan-popular-badge {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  background:linear-gradient(90deg, var(--golddark), var(--gold));
+  color:#1a1200; font-size:9px; font-weight:700; letter-spacing:3px;
+  padding:5px 20px; border-radius:0 0 10px 10px; text-transform:uppercase;
+  font-family:'Inter',sans-serif;
+}
+.plan-inner { padding:36px 28px 28px; }
+.plan-icon {
+  width:52px; height:52px; border-radius:14px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:24px; margin-bottom:18px;
+}
+.plan-card.free   .plan-icon { background:rgba(255,255,255,.07); }
+.plan-card.gold   .plan-icon { background:linear-gradient(135deg,rgba(245,200,67,.2),rgba(245,200,67,.08)); border:1px solid rgba(245,200,67,.3); }
+.plan-card.diamond .plan-icon { background:linear-gradient(135deg,rgba(147,210,255,.2),rgba(147,210,255,.05)); border:1px solid rgba(147,210,255,.25); }
+.plan-name {
+  font-family:'Oswald',sans-serif; font-size:13px; letter-spacing:3px;
+  text-transform:uppercase; margin-bottom:6px;
+  color:rgba(255,255,255,.45);
+}
+.plan-price-wrap { margin-bottom:6px; }
+.plan-price {
+  font-family:'Oswald',sans-serif; font-size:44px; font-weight:700;
+  line-height:1;
+}
+.plan-card.free .plan-price   { color:#fff; }
+.plan-card.gold .plan-price   { background:linear-gradient(90deg,var(--golddark),var(--gold)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.plan-card.diamond .plan-price{ background:linear-gradient(90deg,#93d2ff,#c8eaff); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+.plan-period { font-size:11px; color:rgba(255,255,255,.35); letter-spacing:1px; font-family:'Inter',sans-serif; }
+.plan-desc { font-size:12px; color:rgba(255,255,255,.4); line-height:1.7; margin:14px 0 22px; font-weight:300; }
+.plan-features { list-style:none; margin-bottom:26px; display:flex; flex-direction:column; gap:9px; }
+.plan-features li {
+  display:flex; align-items:center; gap:10px;
+  font-size:12px; color:rgba(255,255,255,.65); font-weight:300;
+}
+.plan-features li .fi {
+  width:20px; height:20px; border-radius:5px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:11px; flex-shrink:0;
+}
+.plan-card.free    .fi { background:rgba(255,255,255,.07); }
+.plan-card.gold    .fi { background:rgba(245,200,67,.15); }
+.plan-card.diamond .fi { background:rgba(147,210,255,.12); }
+.plan-features li.disabled { opacity:.35; }
+.plan-features li.disabled .fi { filter:grayscale(1); }
+.plan-btn {
+  width:100%; padding:13px; border-radius:10px; border:none;
+  font-family:'Kanit',sans-serif; font-size:13px; font-weight:600;
+  letter-spacing:1px; cursor:pointer; transition:all .25s; text-transform:uppercase;
+}
+.plan-card.free    .plan-btn { background:rgba(255,255,255,.08); border:1px solid var(--border); color:#fff; }
+.plan-card.free    .plan-btn:hover { background:rgba(255,255,255,.15); }
+.plan-card.gold    .plan-btn { background:linear-gradient(90deg,var(--golddark),var(--gold)); color:#1a1200; box-shadow:0 6px 20px rgba(245,200,67,.3); }
+.plan-card.gold    .plan-btn:hover { box-shadow:0 10px 30px rgba(245,200,67,.45); transform:translateY(-2px); }
+.plan-card.diamond .plan-btn { background:linear-gradient(90deg,#2a7aab,#93d2ff); color:#051824; box-shadow:0 6px 20px rgba(147,210,255,.2); }
+.plan-card.diamond .plan-btn:hover { box-shadow:0 10px 30px rgba(147,210,255,.35); transform:translateY(-2px); }
+
+/* COMPARE DIVIDER */
+.compare-note {
+  text-align:center; margin-top:30px;
+  font-size:11px; color:rgba(255,255,255,.28); letter-spacing:1px;
+  font-family:'Inter',sans-serif;
+}
+.compare-note a { color:var(--gold); text-decoration:none; }
+
+/* ═══ VIP DESTINATIONS SECTION ═══ */
+#vip-dests {
+  padding:80px 20px;
+  background:var(--bg);
+  position:relative; overflow:hidden;
+}
+#vip-dests::before {
+  content:'VIP'; position:absolute;
+  font-family:'Oswald',sans-serif; font-size:220px; font-weight:700;
+  color:rgba(245,200,67,.03); right:-20px; top:50%; transform:translateY(-50%);
+  letter-spacing:-5px; pointer-events:none; user-select:none;
+}
+.vip-cats-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(220px,1fr));
+  gap:16px; max-width:1100px; margin:0 auto;
+}
+.vip-cat {
+  position:relative; border-radius:14px; overflow:hidden;
+  height:200px; cursor:pointer;
+  border:1px solid var(--border);
+  transition:all .35s;
+}
+.vip-cat:hover { transform:scale(1.03); border-color:rgba(245,200,67,.4); }
+.vip-cat-img {
+  position:absolute; inset:0;
+  background-size:cover; background-position:center;
+  filter:brightness(.5); transition:filter .4s, transform .6s;
+}
+.vip-cat:hover .vip-cat-img { filter:brightness(.75); transform:scale(1.08); }
+.vip-cat-over {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.85) 0%, transparent 55%);
+  z-index:2;
+}
+.vip-cat-lock {
+  position:absolute; top:12px; right:12px; z-index:4;
+  width:28px; height:28px; border-radius:8px;
+  background:rgba(0,0,0,.6); backdrop-filter:blur(8px);
+  border:1px solid rgba(245,200,67,.4);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px;
+  transition:all .3s;
+}
+.vip-cat:hover .vip-cat-lock {
+  background:var(--gold); border-color:var(--gold);
+}
+.vip-cat-badge {
+  position:absolute; top:12px; left:12px; z-index:4;
+  background:linear-gradient(90deg,var(--golddark),var(--gold));
+  color:#1a1200; font-size:8px; font-weight:700; letter-spacing:2px;
+  padding:3px 8px; border-radius:5px; text-transform:uppercase;
+  font-family:'Inter',sans-serif;
+}
+.vip-cat-info { position:absolute; bottom:0; left:0; right:0; padding:16px; z-index:3; }
+.vip-cat-region { font-size:9px; letter-spacing:3px; color:rgba(255,255,255,.45); text-transform:uppercase; margin-bottom:4px; }
+.vip-cat-name {
+  font-family:'Oswald',sans-serif; font-size:17px; font-weight:700;
+  color:#fff; text-transform:uppercase; line-height:1.1;
+}
+.vip-cat-count {
+  font-size:10px; color:var(--gold); margin-top:3px;
+  font-family:'Inter',sans-serif;
+}
+.vip-blur-overlay {
+  position:absolute; inset:0; z-index:5;
+  backdrop-filter:blur(4px);
+  background:rgba(0,0,0,.25);
+  display:flex; align-items:center; justify-content:center;
+  transition:opacity .3s;
+}
+.vip-cat:hover .vip-blur-overlay { opacity:0; }
+.unlock-btn {
+  background:linear-gradient(90deg, var(--golddark), var(--gold));
+  color:#1a1200; font-size:10px; font-weight:700; letter-spacing:2px;
+  padding:7px 16px; border-radius:6px; text-transform:uppercase;
+  font-family:'Inter',sans-serif; transition:transform .2s;
+}
+
+/* UNLOCK BANNER */
+.vip-unlock-banner {
+  max-width:1100px; margin:0 auto 40px;
+  background:linear-gradient(90deg, rgba(245,200,67,.07) 0%, rgba(245,200,67,.12) 50%, rgba(245,200,67,.07) 100%);
+  border:1px solid rgba(245,200,67,.25); border-radius:14px;
+  padding:22px 32px;
+  display:flex; align-items:center; gap:20px; flex-wrap:wrap;
+}
+.ub-icon { font-size:36px; flex-shrink:0; }
+.ub-text { flex:1; }
+.ub-title { font-family:'Oswald',sans-serif; font-size:18px; font-weight:700; color:#fff; letter-spacing:.5px; }
+.ub-sub { font-size:12px; color:rgba(255,255,255,.5); margin-top:3px; font-weight:300; }
+.ub-cta {
+  background:linear-gradient(90deg,var(--golddark),var(--gold));
+  color:#1a1200; font-family:'Kanit',sans-serif; font-size:12px; font-weight:700;
+  letter-spacing:2px; padding:11px 24px; border-radius:8px; border:none;
+  cursor:pointer; text-transform:uppercase; white-space:nowrap;
+  transition:all .25s; text-decoration:none; display:inline-block;
+}
+.ub-cta:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(245,200,67,.4); }
+
+/* ═══ FEATURES SECTION ═══ */
+#features {
+  padding:80px 20px;
+  background:linear-gradient(to bottom, var(--bg) 0%, #0a0c12 100%);
+}
+.features-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
+  gap:16px; max-width:1100px; margin:0 auto;
+}
+.feat-card {
+  background:var(--glass); border:1px solid var(--border);
+  border-radius:16px; padding:28px 24px;
+  transition:all .3s; position:relative; overflow:hidden;
+}
+.feat-card::before {
+  content:''; position:absolute; inset:0; border-radius:16px;
+  background:radial-gradient(circle at 80% 20%, rgba(245,200,67,.06) 0%, transparent 60%);
+  opacity:0; transition:opacity .3s;
+}
+.feat-card:hover::before { opacity:1; }
+.feat-card:hover { border-color:rgba(245,200,67,.2); transform:translateY(-4px); }
+.feat-icon-wrap {
+  width:48px; height:48px; border-radius:12px;
+  background:rgba(245,200,67,.1); border:1px solid rgba(245,200,67,.2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; margin-bottom:16px;
+}
+.feat-title {
+  font-family:'Oswald',sans-serif; font-size:16px; font-weight:600;
+  text-transform:uppercase; letter-spacing:.5px; margin-bottom:8px;
+  color:#fff;
+}
+.feat-desc { font-size:12px; color:rgba(255,255,255,.42); line-height:1.75; font-weight:300; }
+.feat-tag {
+  display:inline-block; margin-top:12px;
+  font-size:9px; letter-spacing:2px; text-transform:uppercase;
+  padding:3px 10px; border-radius:4px;
+  background:rgba(245,200,67,.1); border:1px solid rgba(245,200,67,.2);
+  color:var(--gold); font-family:'Inter',sans-serif;
+}
+
+/* ═══ TESTIMONIALS ═══ */
+#testimonials { padding:80px 20px; background:var(--bg); }
+.testi-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:16px; max-width:1100px; margin:0 auto;
+}
+.testi-card {
+  background:var(--glass); border:1px solid var(--border);
+  border-radius:16px; padding:26px 24px;
+  position:relative;
+}
+.testi-quote {
+  font-size:36px; line-height:1; color:rgba(245,200,67,.2);
+  font-family:'Georgia',serif; margin-bottom:10px;
+}
+.testi-text {
+  font-size:13px; color:rgba(255,255,255,.6); line-height:1.75; font-weight:300;
+  margin-bottom:18px;
+}
+.testi-user { display:flex; align-items:center; gap:12px; }
+.testi-avatar {
+  width:40px; height:40px; border-radius:50%;
+  background-size:cover; background-position:center;
+  border:2px solid rgba(245,200,67,.3); flex-shrink:0;
+}
+.testi-name { font-weight:600; font-size:13px; color:#fff; }
+.testi-plan {
+  font-size:9px; letter-spacing:2px; color:var(--gold);
+  text-transform:uppercase; font-family:'Inter',sans-serif;
+}
+.testi-stars { position:absolute; top:20px; right:20px; color:var(--gold); font-size:12px; letter-spacing:2px; }
+
+/* ═══ FAQ ═══ */
+#faq {
+  padding:80px 20px;
+  background:linear-gradient(to bottom, #0a0c12 0%, var(--bg) 100%);
+}
+.faq-list { max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
+.faq-item {
+  background:var(--glass); border:1px solid var(--border);
+  border-radius:12px; overflow:hidden; transition:border-color .3s;
+}
+.faq-item.open { border-color:rgba(245,200,67,.3); }
+.faq-q {
+  padding:18px 22px; display:flex; align-items:center; justify-content:space-between;
+  cursor:pointer; gap:12px;
+}
+.faq-q-text { font-size:14px; font-weight:500; color:rgba(255,255,255,.85); }
+.faq-arrow {
+  width:28px; height:28px; border-radius:50%; border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--gold); font-size:14px; transition:transform .3s, background .3s; flex-shrink:0;
+}
+.faq-item.open .faq-arrow { transform:rotate(45deg); background:rgba(245,200,67,.12); }
+.faq-a {
+  padding:0 22px; max-height:0; overflow:hidden;
+  font-size:13px; color:rgba(255,255,255,.45); line-height:1.8; font-weight:300;
+  transition:max-height .4s cubic-bezier(.77,0,.18,1), padding .3s;
+}
+.faq-item.open .faq-a { max-height:200px; padding:0 22px 18px; }
+
+/* ═══ CONTACT / FOOTER ═══ */
+#contact {
+  padding:80px 20px 0;
+  background:var(--bg);
+  position:relative; overflow:hidden;
+}
+#contact::before {
+  content:''; position:absolute; inset:0;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%, rgba(245,200,67,.05) 0%, transparent 70%);
+  pointer-events:none;
+}
+.contact-inner {
+  max-width:1100px; margin:0 auto;
+  display:grid; grid-template-columns:1.4fr 1fr 1fr; gap:60px;
+  padding-bottom:60px; border-bottom:1px solid var(--border);
+}
+.contact-brand .brand-logo {
+  font-family:'Oswald',sans-serif; font-size:20px; font-weight:700;
+  letter-spacing:4px; color:#fff; text-transform:uppercase; margin-bottom:14px;
+  display:flex; align-items:center; gap:8px;
+}
+.contact-brand .brand-logo span { color:var(--gold); }
+.contact-brand p {
+  font-size:12px; color:rgba(255,255,255,.38); line-height:1.9; font-weight:300;
+  max-width:260px; margin-bottom:24px;
+}
+.social-row { display:flex; gap:10px; }
+.social-btn {
+  width:36px; height:36px; border-radius:9px;
+  background:rgba(255,255,255,.06); border:1px solid var(--border);
+  display:flex; align-items:center; justify-content:center;
+  font-size:16px; cursor:pointer; transition:all .25s; text-decoration:none;
+}
+.social-btn:hover { background:rgba(245,200,67,.15); border-color:rgba(245,200,67,.35); }
+
+.contact-col h4 {
+  font-family:'Oswald',sans-serif; font-size:12px; letter-spacing:3px;
+  text-transform:uppercase; color:rgba(255,255,255,.4); margin-bottom:18px;
+}
+.contact-link {
+  display:flex; align-items:flex-start; gap:10px;
+  font-size:12px; color:rgba(255,255,255,.55); margin-bottom:14px;
+  font-weight:300; text-decoration:none; transition:color .2s;
+  line-height:1.5;
+}
+.contact-link:hover { color:#fff; }
+.cl-icon {
+  width:28px; height:28px; border-radius:7px; flex-shrink:0;
+  background:rgba(245,200,67,.08); border:1px solid rgba(245,200,67,.15);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; margin-top:1px;
+}
+.contact-hours {
+  background:rgba(245,200,67,.05); border:1px solid rgba(245,200,67,.15);
+  border-radius:10px; padding:14px 16px; margin-top:8px;
+}
+.contact-hours .h-title { font-size:10px; letter-spacing:2px; color:var(--gold); text-transform:uppercase; margin-bottom:8px; font-family:'Inter',sans-serif; }
+.contact-hours .h-row { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,.45); margin-bottom:4px; font-weight:300; }
+.contact-hours .h-row span { color:rgba(255,255,255,.7); }
+
+.footer-bottom {
+  max-width:1100px; margin:0 auto;
+  padding:22px 0; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+}
+.footer-copy { font-size:11px; color:rgba(255,255,255,.22); font-family:'Inter',sans-serif; }
+.footer-links { display:flex; gap:20px; }
+.footer-link { font-size:11px; color:rgba(255,255,255,.28); text-decoration:none; letter-spacing:.5px; transition:color .2s; font-family:'Inter',sans-serif; }
+.footer-link:hover { color:var(--gold); }
+
+/* ═══ SIGN-IN MODAL ═══ */
+#modal-overlay {
+  position:fixed; inset:0; z-index:200;
+  background:rgba(0,0,0,.7); backdrop-filter:blur(8px);
+  display:flex; align-items:center; justify-content:center;
+  padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+#modal-overlay.show { opacity:1; pointer-events:all; }
+.modal-box {
+  background:linear-gradient(160deg, #111520 0%, #0a0c12 100%);
+  border:1px solid rgba(245,200,67,.25); border-radius:20px;
+  padding:40px 36px; max-width:420px; width:100%;
+  transform:scale(.94) translateY(20px); transition:transform .35s cubic-bezier(.34,1.3,.64,1);
+  position:relative;
+}
+#modal-overlay.show .modal-box { transform:scale(1) translateY(0); }
+.modal-close {
+  position:absolute; top:18px; right:18px;
+  width:32px; height:32px; border-radius:50%;
+  background:rgba(255,255,255,.07); border:1px solid var(--border);
+  color:rgba(255,255,255,.5); cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .2s;
+}
+.modal-close:hover { background:rgba(255,255,255,.15); color:#fff; }
+.modal-crown { font-size:40px; text-align:center; margin-bottom:16px; }
+.modal-title {
+  font-family:'Oswald',sans-serif; font-size:26px; font-weight:700;
+  text-align:center; text-transform:uppercase; margin-bottom:6px;
+  background:linear-gradient(90deg,var(--golddark),var(--gold));
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.modal-sub { text-align:center; font-size:12px; color:rgba(255,255,255,.38); margin-bottom:28px; font-weight:300; }
+.modal-tabs {
+  display:flex; background:rgba(255,255,255,.05); border-radius:10px; padding:3px;
+  margin-bottom:24px;
+}
+.modal-tab {
+  flex:1; padding:9px; border-radius:8px; text-align:center;
+  font-size:12px; letter-spacing:1px; text-transform:uppercase;
+  cursor:pointer; transition:all .25s; color:rgba(255,255,255,.4);
+  font-weight:500;
+}
+.modal-tab.active { background:rgba(245,200,67,.15); color:var(--gold); }
+.field-wrap { margin-bottom:14px; }
+.field-label { font-size:10px; letter-spacing:2px; color:rgba(255,255,255,.35); text-transform:uppercase; margin-bottom:7px; display:block; font-family:'Inter',sans-serif; }
+.field-input {
+  width:100%; background:rgba(255,255,255,.04); border:1px solid var(--border);
+  border-radius:10px; padding:12px 16px; color:#fff; font-size:13px;
+  font-family:'Kanit',sans-serif; outline:none;
+  transition:border-color .25s, background .25s;
+}
+.field-input:focus { border-color:rgba(245,200,67,.45); background:rgba(245,200,67,.04); }
+.field-input::placeholder { color:rgba(255,255,255,.2); }
+.submit-btn {
+  width:100%; padding:14px; border-radius:10px; border:none;
+  background:linear-gradient(90deg,var(--golddark),var(--gold));
+  color:#1a1200; font-family:'Kanit',sans-serif; font-size:14px; font-weight:700;
+  letter-spacing:2px; text-transform:uppercase; cursor:pointer;
+  transition:all .25s; margin-top:6px;
+  box-shadow:0 6px 20px rgba(245,200,67,.3);
+}
+.submit-btn:hover { transform:translateY(-2px); box-shadow:0 10px 30px rgba(245,200,67,.45); }
+.modal-divider {
+  text-align:center; font-size:11px; color:rgba(255,255,255,.22);
+  margin:16px 0; position:relative;
+  font-family:'Inter',sans-serif;
+}
+.modal-divider::before, .modal-divider::after {
+  content:''; position:absolute; top:50%; width:calc(50% - 30px); height:1px;
+  background:var(--border);
+}
+.modal-divider::before { left:0; }
+.modal-divider::after  { right:0; }
+.social-logins { display:flex; gap:10px; }
+.social-login-btn {
+  flex:1; padding:11px; border-radius:10px;
+  background:rgba(255,255,255,.05); border:1px solid var(--border);
+  color:rgba(255,255,255,.65); font-size:13px; cursor:pointer;
+  transition:all .25s; display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.social-login-btn:hover { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.25); color:#fff; }
+#register-fields { display:none; }
+#register-fields.show { display:block; }
+
+/* TOAST */
+#toast {
+  position:fixed; bottom:28px; right:28px; z-index:300;
+  background:linear-gradient(135deg,rgba(245,200,67,.15),rgba(245,200,67,.06));
+  border:1px solid rgba(245,200,67,.35); border-radius:12px;
+  padding:14px 20px; display:flex; align-items:center; gap:12px;
+  font-size:13px; color:#fff; max-width:320px;
+  transform:translateX(120%); opacity:0; transition:all .4s cubic-bezier(.34,1.3,.64,1);
+}
+#toast.show { transform:translateX(0); opacity:1; }
+.toast-icon { font-size:20px; flex-shrink:0; }
+
+/* RESPONSIVE */
+@media(max-width:900px) {
+  .contact-inner { grid-template-columns:1fr 1fr; }
+  .contact-inner > div:first-child { grid-column:1/-1; }
+}
+@media(max-width:600px) {
+  #navbar { padding:14px 18px; }
+  .plans-grid { flex-direction:column; }
+  .plan-card { max-width:100%; }
+  .contact-inner { grid-template-columns:1fr; gap:32px; }
+  .footer-bottom { flex-direction:column; text-align:center; }
+  .hero-stats { gap:20px; }
+}
+</style>
 </head>
+<body>
 
-<body class="bg-navy-950 text-slate-200 overflow-x-hidden">
-
-<!-- ═══════════════════════════ NAVBAR ═══════════════════════════ -->
-<nav class="fixed top-0 inset-x-0 z-50" style="background:rgba(3,8,15,.9);backdrop-filter:blur(20px);border-bottom:1px solid rgba(59,130,246,.1)">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
-    <a href="#hero" class="flex items-center gap-3">
-      <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
-        <i class="fas fa-calculator text-white text-sm"></i>
-      </div>
-      <span class="font-display text-xl font-bold text-white">TaxWise <span class="text-gradient">Pro</span></span>
-    </a>
-
-    <div class="hidden md:flex items-center gap-6">
-      <a href="#calculators" class="text-sm text-slate-400 hover:text-blue-400 transition-colors">คำนวณภาษี</a>
-      <a href="#knowledge"   class="text-sm text-slate-400 hover:text-blue-400 transition-colors">กฎหมายและข้อมูล</a>
-      <a href="#pricing"     class="text-sm text-slate-400 hover:text-blue-400 transition-colors">ราคา</a>
-      <a href="#contact"     class="text-sm text-slate-400 hover:text-blue-400 transition-colors">ติดต่อ</a>
+<!-- SIGN-IN MODAL -->
+<div id="modal-overlay">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-crown">👑</div>
+    <div class="modal-title">Globe Express</div>
+    <div class="modal-sub">เริ่มต้นการเดินทางสู่โลกที่ไม่มีขีดจำกัด</div>
+    <div class="modal-tabs">
+      <div class="modal-tab active" onclick="switchTab('login')">เข้าสู่ระบบ</div>
+      <div class="modal-tab" onclick="switchTab('register')">สมัครสมาชิก</div>
     </div>
-
-    <div class="flex items-center gap-3">
-      <button onclick="toggleLang()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-400 border border-blue-800 hover:border-blue-600 hover:bg-navy-800 transition-all">
-        <i class="fas fa-globe text-xs"></i><span id="langLabel">TH</span>
-      </button>
-      <div id="authButtons" class="flex items-center gap-2">
-        <button onclick="openM('loginModal')" class="text-sm text-slate-300 hover:text-white px-3 py-1.5 transition-colors" data-th="เข้าสู่ระบบ" data-en="Sign In">เข้าสู่ระบบ</button>
-        <button onclick="openM('registerModal')" class="text-sm font-semibold px-4 py-1.5 rounded-lg text-white btn-blue" data-th="สมัครฟรี" data-en="Register Free">สมัครฟรี</button>
-      </div>
-      <div id="userInfo" class="hidden items-center gap-2">
-        <div class="flex items-center gap-2 px-3 py-1.5 glass-card rounded-lg">
-          <div class="w-7 h-7 rounded-full flex items-center justify-center" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)">
-            <i class="fas fa-user text-white text-xs"></i>
-          </div>
-          <span id="dName" class="text-sm max-w-[110px] truncate"></span>
-          <span id="uBadge" class="text-xs px-2 py-0.5 rounded-full font-semibold"></span>
-        </div>
-        <button onclick="doSignOut()" class="text-xs text-slate-500 hover:text-slate-300 transition-colors">ออกจากระบบ</button>
-      </div>
-      <button onclick="toggleNav()" class="md:hidden text-slate-400 hover:text-white ml-1"><i class="fas fa-bars"></i></button>
+    <div class="field-wrap">
+      <label class="field-label">อีเมล</label>
+      <input class="field-input" type="email" placeholder="your@email.com">
     </div>
-  </div>
-  <div id="mNav" class="hidden md:hidden border-t border-navy-700 px-4 py-4 flex flex-col gap-3" style="background:rgba(3,8,15,.97)">
-    <a href="#calculators" onclick="toggleNav()" class="text-sm text-slate-400 hover:text-blue-400 py-2 border-b border-navy-800">คำนวณภาษี</a>
-    <a href="#knowledge"   onclick="toggleNav()" class="text-sm text-slate-400 hover:text-blue-400 py-2 border-b border-navy-800">กฎหมายและข้อมูล</a>
-    <a href="#pricing"     onclick="toggleNav()" class="text-sm text-slate-400 hover:text-blue-400 py-2 border-b border-navy-800">ราคา</a>
-    <a href="#contact"     onclick="toggleNav()" class="text-sm text-slate-400 hover:text-blue-400 py-2">ติดต่อ</a>
-  </div>
-</nav>
-
-
-<!-- ═══════════════════════════ HERO ═══════════════════════════ -->
-<!-- eyebrow badge (#1 ที่กระพริบสีเหลือง) ถูกลบออกแล้วตาม requirement #2 -->
-<section id="hero" class="relative min-h-screen flex items-center pt-16 overflow-hidden noise">
-  <div class="absolute inset-0 bg-grid-pattern"></div>
-  <div class="absolute inset-0" style="background:radial-gradient(ellipse 80% 60% at 50% 28%,rgba(29,78,216,.2) 0%,transparent 70%)"></div>
-  <div class="absolute top-0 right-0 w-96 h-96 rounded-full opacity-10" style="background:radial-gradient(circle,#3b82f6,transparent);filter:blur(80px)"></div>
-  <div class="absolute bottom-24 left-0 w-72 h-72 rounded-full opacity-8" style="background:radial-gradient(circle,#102240,transparent);filter:blur(60px)"></div>
-  <div class="absolute left-0 top-1/3 w-1/3 h-px opacity-20" style="background:linear-gradient(90deg,transparent,#3b82f6)"></div>
-  <div class="absolute right-0 bottom-1/3 w-1/3 h-px opacity-20" style="background:linear-gradient(-90deg,transparent,#3b82f6)"></div>
-
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6 py-24">
-    <div class="grid lg:grid-cols-2 gap-16 items-center">
-
-      <div>
-        <h1 data-aos="zoom-in-up" class="font-display text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight mb-6 fade-up">
-          <span class="text-white">ภาษีไม่ใช่</span><br>
-          <span class="text-gradient">เรื่องยุ่งยาก</span><br>
-          <span class="text-white">อีกต่อไป</span>
-        </h1>
-        <p data-aos="zoom-in-up" class='late-400 text-lg leading-relaxed mb-10 max-w-lg fade-up d1" data-th="คำนวณภาษีได้ถูกต้องแม่นยำ ครอบคลุมทุกประเภท ทั้งบุคคลธรรมดา นิติบุคคล VAT และกำไรจากการลงทุน ด้วยระบบที่เชื่อถือได้มาตรฐานสากล" data-en="Accurate tax calculation covering all types — personal income, corporate, VAT, and investment gains — with internationally trusted precision.">
-          คำนวณภาษีได้ถูกต้องแม่นยำ ครอบคลุมทุกประเภท ทั้งบุคคลธรรมดา นิติบุคคล VAT และกำไรจากการลงทุน ด้วยระบบที่เชื่อถือได้มาตรฐานสากล
-        </p>
-        <div data-aos="zoom-in-right" divdata-aosta-aos="flex flex-wrap gap-4 fade-up d2">
-          <button onclick="openM('registerModal')" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-semibold text-white text-base btn-blue" data-th="เริ่มต้นฟรีทันที" data-en="Start Free Now">
-            <i class="fas fa-arrow-right text-sm"></i>เริ่มต้นฟรีทันที
-          </button>
-          <a href="#calculators" data-aos="zoom-in-right" class="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-medium text-slate-300 text-base border border-navy-600 hover:border-blue-700 hover:text-blue-400 transition-all" data-th="ดูตัวอย่างการคำนวณ" data-en="See Demo">
-            <i class="fas fa-play-circle text-sm"></i>ดูตัวอย่างการคำนวณ
-          </a>
-        </div>
-        <div class="flex items-center gap-6 mt-10 fade-up d3">
-          <div class="flex items-center gap-2 text-xs text-slate-500"><i class="fas fa-shield-halved text-blue-700"></i><span>เข้ารหัสระดับ 256-bit</span></div>
-          <div class="w-px h-4 bg-navy-700"></div>
-          <div class="flex items-center gap-2 text-xs text-slate-500"><i class="fas fa-check-circle text-blue-700"></i><span>อ้างอิงกรมสรรพากร</span></div>
-          <div class="w-px h-4 bg-navy-700"></div>
-          <div class="flex items-center gap-2 text-xs text-slate-500"><i class="fas fa-users text-blue-700"></i><span>ผู้ใช้งาน 50,000+</span></div>
-        </div>
-      </div>
-
-      <div class="hidden lg:block relative">
-        <div class="glass-card rounded-2xl p-6 blue-glow fade-up d2">
-          <div class="flex items-center justify-between mb-6">
-            <div>
-              <p class="text-xs text-slate-500 uppercase tracking-wider mb-1">ภาษีเงินได้บุคคลธรรมดา ปี 2567</p>
-              <p class="text-2xl font-bold text-white">฿ 48,500</p>
-              <p class="text-xs text-emerald-400 mt-1"><i class="fas fa-arrow-down mr-1"></i>ประหยัดได้ ฿12,000 จากการวางแผน</p>
-            </div>
-            <div class="w-14 h-14 rounded-xl flex items-center justify-center" style="background:rgba(37,99,235,.15);border:1px solid rgba(59,130,246,.3)">
-              <i class="fas fa-chart-pie text-blue-400 text-xl"></i>
-            </div>
-          </div>
-          <div class="space-y-3">
-            <div><div class="flex justify-between text-xs text-slate-500 mb-1"><span>รายได้สุทธิ</span><span>฿ 485,000</span></div><div class="h-1.5 bg-navy-800 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:75%;background:linear-gradient(90deg,#2563eb,#60a5fa)"></div></div></div>
-            <div><div class="flex justify-between text-xs text-slate-500 mb-1"><span>ค่าลดหย่อนรวม</span><span>฿ 215,000</span></div><div class="h-1.5 bg-navy-800 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:44%;background:linear-gradient(90deg,#7c3aed,#a78bfa)"></div></div></div>
-            <div><div class="flex justify-between text-xs text-slate-500 mb-1"><span>ภาษีที่ต้องชำระ</span><span>฿ 48,500</span></div><div class="h-1.5 bg-navy-800 rounded-full overflow-hidden"><div class="h-full rounded-full" style="width:28%;background:linear-gradient(90deg,#10b981,#34d399)"></div></div></div>
-          </div>
-        </div>
-        <div class="absolute -bottom-6 -left-8 glass-card rounded-xl px-4 py-3 fade-up d3" style="border:1px solid rgba(16,185,129,.3)">
-          <p class="text-xs text-slate-500 mb-1">อัตรา VAT</p>
-          <p class="text-lg font-bold text-white">7%</p>
-          <p class="text-xs text-emerald-400"><i class="fas fa-check-circle mr-1"></i>คำนวณอัตโนมัติ</p>
-        </div>
-        <div class="absolute -top-4 -right-4 glass-card rounded-xl px-4 py-3 fade-up d3" style="border:1px solid rgba(59,130,246,.35)">
-          <div class="flex items-center gap-2">
-            <i class="fas fa-lock text-blue-400 text-sm"></i>
-            <div><p class="text-xs font-semibold text-slate-200">ปลอดภัย 100%</p><p class="text-xs text-slate-500">SSL / TLS 1.3</p></div>
-          </div>
-        </div>
-      </div>
-
+    <div class="field-wrap">
+      <label class="field-label">รหัสผ่าน</label>
+      <input class="field-input" type="password" placeholder="••••••••">
     </div>
-  </div>
-  <div class="absolute bottom-0 inset-x-0 h-32" style="background:linear-gradient(transparent,#03080f)"></div>
-</section>
-
-
-<!-- ═══════════════════ STATS BANNER ═══════════════════ -->
-<section class="py-8 border-y border-navy-800" style="background:rgba(6,15,30,.85)">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-    <div><p class="text-3xl font-bold text-gradient font-display">50K+</p><p class="text-xs text-slate-500 mt-1">ผู้ใช้งานทั่วประเทศ</p></div>
-    <div><p class="text-3xl font-bold text-gradient font-display">8+</p><p class="text-xs text-slate-500 mt-1">ประเภทภาษีที่รองรับ</p></div>
-    <div><p class="text-3xl font-bold text-gradient font-display">99.9%</p><p class="text-xs text-slate-500 mt-1">ความแม่นยำ</p></div>
-    <div><p class="text-3xl font-bold text-gradient font-display">24/7</p><p class="text-xs text-slate-500 mt-1">ใช้งานได้ตลอดเวลา</p></div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════ CALCULATOR SECTION ═══════════════════ -->
-<section id="calculators" class="py-24 relative">
-  <div class="absolute inset-0 bg-grid-pattern opacity-50"></div>
-  <div class="relative max-w-7xl mx-auto px-4 sm:px-6">
-
-    <div class="text-center mb-14">
-      <p data-aos="zoom-in-up" class="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-3">เครื่องมือคำนวณ</p>
-      <h2 data-aos="zoom-in-up" class="font-display text-4xl sm:text-5xl font-bold text-white mb-4">ระบบคำนวณภาษีครบวงจร</h2>
-      <p data-aos="zoom-in-up" class="text-slate-400 max-w-xl mx-auto">เลือกประเภทภาษีที่ต้องการคำนวณ รองรับทุกกรณีตามกฎหมายกรมสรรพากรล่าสุด</p>
+    <div class="field-wrap" id="register-fields">
+      <label class="field-label">ชื่อผู้ใช้</label>
+      <input class="field-input" type="text" placeholder="ชื่อ-นามสกุล">
     </div>
-
-    <!-- Tabs -->
-    <div class="flex flex-wrap justify-center gap-2 mb-10">
-      <button onclick="switchCalc('pit')" id="tab-pit"  data-aos="zoom-in" class="tab-btn tab-on px-5 py-2.5 rounded-lg text-sm font-medium transition-all"><i class="fas fa-user mr-2"></i>ภาษีเงินได้ บุคคลธรรมดา</button>
-      <button onclick="switchCalc('cit')" id="tab-cit" data-aos="fade-right" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-building mr-2"></i>ภาษีนิติบุคคล</button>
-      <button onclick="switchCalc('vat')" id="tab-vat" data-aos="fade-left" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-receipt mr-2"></i>ภาษีมูลค่าเพิ่ม (VAT)</button>
-      <button onclick="switchCalc('wht')" id="tab-wht" data-aos="fade-right" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-hand-holding-dollar mr-2"></i>ภาษีหัก ณ ที่จ่าย</button>
-      <button onclick="switchCalc('cryp')" id="tab-cryp" data-aos="fade-left" class="tab-btn px-5 py-2.5 rounded-lg text-sm font-medium text-slate-400 border border-navy-700 hover:border-blue-700 hover:text-blue-400 transition-all"><i class="fas fa-chart-line mr-2"></i>กำไรคริปโต / หุ้น</button>
+    <button class="submit-btn" onclick="handleSubmit()">✦ เข้าสู่ระบบ</button>
+    <div class="modal-divider">หรือ</div>
+    <div class="social-logins">
+      <button class="social-login-btn">🌐 Google</button>
+      <button class="social-login-btn">📘 Facebook</button>
+      <button class="social-login-btn">🍎 Apple</button>
     </div>
-
-    <div class="grid lg:grid-cols-5 gap-8">
-
-      <!-- ── Input Panel ── -->
-      <div class="lg:col-span-3 glass-card rounded-2xl p-8 blue-glow">
-
-        <!-- PIT -->
-        <div id="calc-pit" class="calc-panel">
-          <div class="flex items-center gap-3 mb-7">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(37,99,235,.15);border:1px solid rgba(59,130,246,.35)"><i class="fas fa-user text-blue-400"></i></div>
-            <div><h3 class="text-lg font-semibold text-white">ภาษีเงินได้บุคคลธรรมดา</h3><p class="text-xs text-slate-500">มาตรา 40 แห่งประมวลรัษฎากร</p></div>
-          </div>
-          <div class="grid sm:grid-cols-2 gap-5">
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">รายได้ทั้งปี (บาท)</label>
-              <div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono">฿</span><input type="number" id="pit-income" placeholder="0" class="inp pl-8"></div>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ประเภทรายได้</label>
-              <select id="pit-type" class="sel-inp"><option value="40_1">มาตรา 40(1) — เงินเดือน</option><option value="40_2">มาตรา 40(2) — รับจ้างทำงาน</option><option value="40_8">มาตรา 40(8) — ธุรกิจทั่วไป</option></select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">สถานภาพ</label>
-              <select id="pit-status" class="sel-inp"><option value="single">โสด</option><option value="married">สมรส (คู่สมรสไม่มีรายได้)</option></select>
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ค่าลดหย่อนเพิ่มเติม</label>
-              <div class="flex gap-2">
-                <div class="relative flex-1"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono">฿</span>
-                  <input type="number" id="ded-display-pit" placeholder="0" readonly onclick="openM('dedModal')" class="inp pl-8 cursor-pointer" style="color:#60a5fa;background:rgba(37,99,235,.07)"></div>
-                <button onclick="openM('dedModal')" class="px-3 py-2 rounded-xl text-white text-xs font-semibold btn-blue whitespace-nowrap"><i class="fas fa-list-check mr-1"></i>เลือก</button>
-              </div>
-              <p class="text-xs text-slate-600 mt-1"><i class="fas fa-circle-info mr-1"></i><span id="ded-hint">คลิกเพื่อเลือกค่าลดหย่อนทุกประเภท</span></p>
-            </div>
-          </div>
-          <button onclick="calculate('pit')" class="mt-8 w-full py-3.5 rounded-xl font-semibold text-white btn-blue"><i class="fas fa-calculator mr-2"></i><span data-th="คำนวณภาษีทันที" data-en="Calculate Now">คำนวณภาษีทันที</span></button>
-        </div>
-
-        <!-- CIT -->
-        <div id="calc-cit" class="calc-panel hidden">
-          <div class="flex items-center gap-3 mb-7">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3)"><i class="fas fa-building text-blue-400"></i></div>
-            <div><h3 class="text-lg font-semibold text-white">ภาษีเงินได้นิติบุคคล</h3><p class="text-xs text-slate-500">มาตรา 65–76 แห่งประมวลรัษฎากร</p></div>
-          </div>
-          <div class="grid sm:grid-cols-2 gap-5">
-            <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">กำไรสุทธิ (บาท)</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono">฿</span><input type="number" id="cit-profit" placeholder="0" class="inp pl-8"></div></div>
-            <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ขนาดบริษัท</label><select id="cit-size" class="sel-inp"><option value="sme">SME (ทุนไม่เกิน 5 ล้านบาท)</option><option value="large">บริษัทใหญ่ (ทุนเกิน 5 ล้านบาท)</option></select></div>
-          </div>
-          <button onclick="calculate('cit')" class="mt-8 w-full py-3.5 rounded-xl font-semibold text-white btn-blue"><i class="fas fa-calculator mr-2"></i>คำนวณภาษีทันที</button>
-        </div>
-
-        <!-- VAT -->
-        <div id="calc-vat" class="calc-panel hidden">
-          <div class="flex items-center gap-3 mb-7">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3)"><i class="fas fa-receipt text-emerald-400"></i></div>
-            <div><h3 class="text-lg font-semibold text-white">ภาษีมูลค่าเพิ่ม (VAT)</h3><p class="text-xs text-slate-500">อัตราปัจจุบัน 7%</p></div>
-          </div>
-          <div class="grid sm:grid-cols-2 gap-5">
-            <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ราคาสินค้า/บริการ (บาท)</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono">฿</span><input type="number" id="vat-price" placeholder="0" class="inp pl-8"></div></div>
-            <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ประเภทการคำนวณ</label><select id="vat-mode" class="sel-inp"><option value="excl">บวก VAT เพิ่มจากราคา</option><option value="incl">ถอน VAT ออกจากราคา</option></select></div>
-          </div>
-          <button onclick="calculate('vat')" class="mt-8 w-full py-3.5 rounded-xl font-semibold text-white btn-blue"><i class="fas fa-calculator mr-2"></i>คำนวณภาษีทันที</button>
-        </div>
-
-        <!-- WHT -->
-        <div id="calc-wht" class="calc-panel hidden">
-          <div class="flex items-center gap-3 mb-7">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3)"><i class="fas fa-hand-holding-dollar text-red-400"></i></div>
-            <div><h3 class="text-lg font-semibold text-white">ภาษีหัก ณ ที่จ่าย</h3><p class="text-xs text-slate-500">มาตรา 50–52 แห่งประมวลรัษฎากร</p></div>
-          </div>
-          <div class="grid sm:grid-cols-2 gap-5">
-            <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ยอดจ่าย (บาท)</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono">฿</span><input type="number" id="wht-amount" placeholder="0" class="inp pl-8"></div></div>
-            <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">อัตราภาษี</label><select id="wht-rate" class="sel-inp"><option value="1">1% — บริการโฆษณา, รถขนส่ง</option><option value="2">2% — ค่าบริการ, ค่าเช่า</option><option value="3" selected>3% — ค่าจ้าง, วิชาชีพ</option><option value="5">5% — ค่าเช่าทรัพย์สิน</option><option value="10">10% — ดอกเบี้ย, เงินปันผล</option><option value="15">15% — รางวัล, ชนะเลิศ</option></select></div>
-          </div>
-          <button onclick="calculate('wht')" class="mt-8 w-full py-3.5 rounded-xl font-semibold text-white btn-blue"><i class="fas fa-calculator mr-2"></i>คำนวณภาษีทันที</button>
-        </div>
-
-        <!-- Crypto -->
-        <div id="calc-cryp" class="calc-panel hidden">
-          <div class="flex items-center gap-3 mb-7">
-            <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.3)"><i class="fas fa-chart-line text-violet-400"></i></div>
-            <div><h3 class="text-lg font-semibold text-white">ภาษีกำไรจากคริปโต / หุ้น</h3><p class="text-xs text-slate-500">กำไรจากสินทรัพย์ดิจิทัลและหลักทรัพย์</p></div>
-          </div>
-          <div class="grid sm:grid-cols-2 gap-5">
-            <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">กำไรสุทธิในปีนี้ (บาท)</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono">฿</span><input type="number" id="cry-profit" placeholder="0" class="inp pl-8"></div></div>
-            <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ประเภทสินทรัพย์</label><select id="cry-type" class="sel-inp"><option value="crypto">คริปโตเคอร์เรนซี / โทเคนดิจิทัล</option><option value="stock">หุ้นไทย (SET/MAI)</option><option value="fund">กองทุนรวม</option></select></div>
-            <div class="sm:col-span-2"><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">รายได้รวมอื่นในปีนี้ (บาท)</label><div class="relative"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono">฿</span><input type="number" id="cry-other" placeholder="0" class="inp pl-8"></div></div>
-            <div class="sm:col-span-2">
-              <label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ค่าลดหย่อนเพิ่มเติม</label>
-              <div class="flex gap-2">
-                <div class="relative flex-1"><span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm font-mono">฿</span><input type="number" id="ded-display-cry" placeholder="0" readonly onclick="openM('dedModal')" class="inp pl-8 cursor-pointer" style="color:#60a5fa;background:rgba(37,99,235,.07)"></div>
-                <button onclick="openM('dedModal')" class="px-3 py-2 rounded-xl text-white text-xs font-semibold btn-blue"><i class="fas fa-list-check mr-1"></i>เลือก</button>
-              </div>
-            </div>
-          </div>
-          <button onclick="calculate('cryp')" class="mt-8 w-full py-3.5 rounded-xl font-semibold text-white btn-blue"><i class="fas fa-calculator mr-2"></i>คำนวณภาษีทันที</button>
-        </div>
-
-      </div>
-
-      <!-- ── Result Panel ── -->
-      <div class="lg:col-span-2">
-        <div class="glass-card rounded-2xl p-6 h-full flex flex-col justify-center blue-glow">
-          <div id="resEmpty" class="text-center py-8">
-            <div class="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center" style="background:rgba(37,99,235,.08);border:1px solid rgba(59,130,246,.2)"><i class="fas fa-chart-bar text-blue-700 text-2xl"></i></div>
-            <p class="text-slate-400 text-sm">กรอกข้อมูลและกดคำนวณ เพื่อดูผลลัพธ์ที่นี่</p>
-            <p class="text-xs text-slate-600 mt-2" id="quotaHint">สมาชิกใหม่ได้รับสิทธิ์ฟรี 1 ครั้ง</p>
-          </div>
-          <div id="resContent" class="hidden">
-            <div class="flex items-center justify-between mb-5">
-              <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">ผลการคำนวณ</p>
-              <span class="text-xs px-2.5 py-1 rounded-full font-medium b-free"><i class="fas fa-check-circle mr-1"></i>สำเร็จ</span>
-            </div>
-            <div class="text-center py-6 rounded-xl mb-5" style="background:rgba(3,8,15,.6);border:1px solid rgba(59,130,246,.15)">
-              <p class="text-xs text-slate-500 mb-2" id="resLabel">ภาษีที่ต้องชำระ</p>
-              <p class="text-4xl font-bold text-gradient font-display" id="resMain">฿ 0</p>
-              <p class="text-xs text-slate-500 mt-2" id="resSub"></p>
-            </div>
-            <div id="resBreakdown" class="space-y-2.5 mb-5"></div>
-            <div class="flex gap-3">
-              <button onclick="printResult()" class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-300 border border-navy-700 hover:border-slate-500 transition-all"><i class="fas fa-print mr-1.5"></i>พิมพ์</button>
-              <button onclick="copyResult()"  class="flex-1 py-2.5 rounded-xl text-xs font-semibold text-slate-300 border border-navy-700 hover:border-slate-500 transition-all"><i class="fas fa-copy mr-1.5"></i>คัดลอก</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════ KNOWLEDGE SECTION ═══════════════════ -->
-<section id="knowledge" class="py-24 relative" style="background:linear-gradient(180deg,#03080f 0%,#060f1e 50%,#03080f 100%)">
-  <div class="divider mb-0"></div>
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-16">
-    <div class="text-center mb-16">
-      <p data-aos="zoom-in-up" class="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-3">กฎหมายและความรู้ภาษี</p>
-      <h2 data-aos="zoom-in-up" class="font-display text-4xl sm:text-5xl font-bold text-white mb-4" data-th="รู้ก่อน เสียน้อย ปลอดภัยกว่า" data-en="Know First. Pay Less. Stay Safe.">รู้ก่อน เสียน้อย ปลอดภัยกว่า</h2>
-      <p data-aos="zoom-in-up" class="text-slate-400 max-w-xl mx-auto">ข้อมูลกฎหมายภาษีที่ควรรู้ เขียนให้อ่านง่าย เข้าใจได้ทันที</p>
-    </div>
-    <div class="grid md:grid-cols-3 gap-6">
-
-      <div data-aos="fade-up-right" class="glass-card rounded-2xl p-7 border-gradient hover:blue-glow transition-all">
-        <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3)"><i class="fas fa-gavel text-red-400 text-lg"></i></div>
-        <h3 class="text-lg font-bold text-white mb-3">โทษการหลีกเลี่ยงและยื่นภาษีไม่ครบ</h3>
-        <div class="space-y-3 text-sm text-slate-400">
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15)"><i class="fas fa-circle-exclamation text-red-500 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">ยื่นเกินกำหนด — เบี้ยปรับ 1.5% ต่อเดือน</p><p class="text-xs">นับจากวันครบกำหนดยื่นจนถึงวันชำระจริง</p></div></div>
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15)"><i class="fas fa-circle-exclamation text-red-500 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">ยื่นไม่ครบ / แจ้งเท็จ — ค่าปรับ 100%–200%</p><p class="text-xs">ของภาษีที่ขาดไป รวมเงินเพิ่ม 1.5% ต่อเดือน</p></div></div>
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(239,68,68,.05);border:1px solid rgba(239,68,68,.15)"><i class="fas fa-triangle-exclamation text-red-600 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">เจตนาหลีกเลี่ยง — โทษอาญา</p><p class="text-xs">จำคุกไม่เกิน 7 ปี และ/หรือปรับไม่เกิน 200,000 บาท</p></div></div>
-        </div>
-      </div>
-
-      <div data-aos="zoom-in-up" class="glass-card rounded-2xl p-7 border-gradient hover:blue-glow transition-all">
-        <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3)"><i class="fas fa-ticket text-blue-400 text-lg"></i></div>
-        <h3 class="text-lg font-bold text-white mb-3">ภาษีจากการถูกหวย / สลากกินแบ่ง</h3>
-        <div class="space-y-3 text-sm text-slate-400">
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15)"><i class="fas fa-info-circle text-blue-500 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">สลากกินแบ่งรัฐบาล — ภาษีหัก ณ ที่จ่าย 0.5%</p><p class="text-xs">หักก่อนจ่ายเงินรางวัล ผู้ถูกรางวัลรับเงินสุทธิ</p></div></div>
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15)"><i class="fas fa-info-circle text-blue-500 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">รางวัลอื่น / แข่งขัน — ภาษีหัก ณ ที่จ่าย 5%</p><p class="text-xs">ตามมาตรา 40(8) และมาตรา 50(4)</p></div></div>
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.15)"><i class="fas fa-lightbulb text-blue-400 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">ต้องนำรายได้รวมในการยื่นภาษีประจำปี</p><p class="text-xs">เว้นแต่เลือกใช้อัตราสุดท้ายเป็นภาษีหัก ณ ที่จ่าย</p></div></div>
-        </div>
-      </div>
-
-      <div data-aos="fade-up-left" class="glass-card rounded-2xl p-7 border-gradient hover:blue-glow transition-all">
-        <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3)"><i class="fas fa-coins text-violet-400 text-lg"></i></div>
-        <h3 class="text-lg font-bold text-white mb-3">ภาษีกำไรจากหุ้นและคริปโต</h3>
-        <div class="space-y-3 text-sm text-slate-400">
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.15)"><i class="fas fa-chart-line text-violet-500 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">คริปโต — กำไรถือเป็นรายได้มาตรา 40(4)</p><p class="text-xs">ต้องนำรวมยื่นภาษีเงินได้บุคคลธรรมดาทุกปี</p></div></div>
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.15)"><i class="fas fa-chart-line text-violet-500 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">หุ้น SET/MAI — กำไรได้รับการยกเว้นภาษี</p><p class="text-xs">ยกเว้นตราสาร OTC และหุ้นนอกตลาด</p></div></div>
-          <div class="flex gap-3 p-3 rounded-lg" style="background:rgba(139,92,246,.05);border:1px solid rgba(139,92,246,.15)"><i class="fas fa-triangle-exclamation text-violet-400 mt-0.5 flex-shrink-0"></i><div><p class="font-semibold text-slate-300 mb-1">ภาษี 15% สำหรับดอกเบี้ยและเงินปันผล</p><p class="text-xs">หักอัตโนมัติโดยสถาบันการเงินก่อนจ่าย</p></div></div>
-        </div>
-      </div>
-
-    </div>
-    <div data-aos="zoom-in-up" class="mt-8 flex items-start gap-3 p-4 rounded-xl" style="background:rgba(37,99,235,.05);border:1px solid rgba(59,130,246,.2)">
-      <i class="fas fa-circle-info text-blue-700 mt-0.5 flex-shrink-0"></i>
-      <p class="text-xs text-slate-500 leading-relaxed">ข้อมูลกฎหมายข้างต้นจัดทำเพื่อการศึกษาเบื้องต้นเท่านั้น อ้างอิงจากประมวลรัษฎากรและประกาศกรมสรรพากรที่มีผลบังคับใช้ล่าสุด ทั้งนี้กฎหมายอาจมีการปรับปรุงเปลี่ยนแปลง กรุณาปรึกษานักบัญชีหรือที่ปรึกษาภาษีสำหรับการตัดสินใจจริง</p>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════ PRICING SECTION ═══════════════════ -->
-<section id="pricing" class="py-24 relative">
-  <div class="divider mb-0"></div>
-  <div class="relative max-w-5xl mx-auto px-4 sm:px-6 pt-16 text-center">
-    <p data-aos="zoom-in-up" class="text-xs font-semibold text-blue-500 uppercase tracking-widest mb-3">แผนการใช้งาน</p>
-    <h2 data-aos="zoom-in-up" class="font-display text-4xl sm:text-5xl font-bold text-white mb-4">เริ่มต้นฟรี ขยายตามต้องการ</h2>
-    <p data-aos="zoom-in-up" class="text-slate-400 mb-12 max-w-md mx-auto">สมาชิกใหม่ทุกท่านได้รับสิทธิ์คำนวณฟรี 1 ครั้ง ไม่ต้องใส่บัตรเครดิต</p>
-    <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto text-left">
-
-      <!-- Free -->
-      <div data-aos="fade-up-right" divglass-card rounded-2xl p-8 border border-navy-700">
-        <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">สมาชิกทั่วไป</p>
-        <h3 class="text-2xl font-bold text-white mb-1">ฟรี</h3>
-        <p class="text-xs text-slate-500 mb-6">1 ครั้งแรก ไม่มีเงื่อนไข</p>
-        <ul class="space-y-3 mb-8 text-sm text-slate-300">
-          <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400 text-xs w-4"></i>คำนวณภาษีฟรี 1 ครั้ง ทุกประเภท</li>
-          <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400 text-xs w-4"></i>เข้าถึงข้อมูลกฎหมายภาษีทั้งหมด</li>
-          <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400 text-xs w-4"></i>ระบบเลือกค่าลดหย่อนครบวงจร</li>
-        </ul>
-        <button onclick="openM('registerModal')" class="w-full py-3 rounded-xl font-semibold text-slate-200 border border-navy-600 hover:border-blue-700 hover:text-blue-400 transition-all text-sm"><i class="fas fa-user-plus mr-2"></i>สมัครสมาชิกฟรี</button>
-      </div>
-
-      <!-- VIP -->
-      <div data-aos="zoom-in-up" class="rounded-2xl p-8 relative overflow-hidden" style="background:linear-gradient(135deg,#0b1a30,#102240);border:1px solid rgba(59,130,246,.45)">
-        <div class="absolute -top-10 -right-10 w-40 h-40 rounded-full opacity-15" style="background:radial-gradient(circle,#3b82f6,transparent);filter:blur(40px)"></div>
-        <div class="relative">
-          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-2" style="background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3)"><i class="fas fa-bolt text-blue-400 text-xs"></i><span class="text-xs font-semibold text-blue-400">แนะนำ</span></div>
-          <p class="text-xs text-slate-400 uppercase tracking-widest mb-1">สมาชิก VIP</p>
-          <div class="flex items-end gap-1 mb-1"><span class="text-3xl font-bold text-white">฿5</span><span class="text-slate-400 text-sm mb-0.5">/ ครั้ง</span></div>
-          <p class="text-xs text-slate-500 mb-6">ซื้อสิทธิ์เพิ่ม ไม่มีวันหมดอายุ</p>
-          <ul class="space-y-3 mb-8 text-sm text-slate-300">
-            <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400 text-xs w-4"></i>ซื้อสิทธิ์เพิ่มได้ไม่จำกัด</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400 text-xs w-4"></i>สิทธิ์ไม่มีวันหมดอายุ เก็บได้เสมอ</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400 text-xs w-4"></i>ทุกประเภทภาษี รวมคริปโตและหุ้น</li>
-            <li class="flex items-center gap-3"><i class="fas fa-check text-blue-400 text-xs w-4"></i>ระบบค่าลดหย่อนครบวงจร</li>
-          </ul>
-          <button onclick="openM('payModal')" class="w-full py-3 rounded-xl font-semibold text-white text-sm btn-blue"><i class="fas fa-crown mr-2"></i>เติมเครดิต / ซื้อสิทธิ์</button>
-        </div>
-      </div>
-
-      <!-- Admin -->
-      <div data-aos="fade-up-left" div cl"glass-card rounded-2xl p-8 border" style="border-color:rgba(139,92,246,.35)">
-        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full mb-2" style="background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3)"><i class="fas fa-crown text-violet-400 text-xs"></i><span class="text-xs font-semibold text-violet-400">ระดับสูงสุด</span></div>
-        <p class="text-xs text-slate-500 uppercase tracking-widest mb-1">VIP</p>
-        <div class="flex items-end gap-1 mb-1"><span class="text-3xl font-bold text-white">&#8734;</span><span class="text-slate-400 text-sm mb-0.5"> ครั้ง</span></div>
-        <p class="text-xs text-slate-500 mb-6">บัญชีพิเศษ — ไม่จำกัดการใช้งาน</p>
-        <ul class="space-y-3 mb-8 texttext-smt-slate-300">
-          <li class="flex items-center gap-3"><i class="fas fa-check text-violet-400 text-xs w-4"></i>คำนวณได้ไม่จำกัดจำนวนครั้ง</li>
-          <li class="flex items-center gap-3"><i class="fas fa-check text-violet-400 text-xs w-4"></i>ไม่มีค่าใช้จ่ายใดๆ</li>
-          <li class="flex items-center gap-3"><i class="fas fa-check text-violet-400 text-xs w-4"></i>สิทธิ์พิเศษ Role: ไก่โต้ง</li>
-        </ul>
-        <div class="w-full py-3 rounded-xl text-center text-xs font-semibold text-violet-400" style="background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.25)"><i class="fas fa-shield-halved mr-2"></i>สิทธิ์ระดับ Admin เท่านั้น</div>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════ FOOTER ═══════════════════ -->
-<section id="contact" class="py-20" style="background:#060f1e;border-top:1px solid rgba(59,130,246,.1)">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6">
-    <div class="grid md:grid-cols-3 gap-12 mb-16">
-      <div>
-        <div class="flex items-center gap-3 mb-4">
-          <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8)"><i class="fas fa-calculator text-white text-sm"></i></div>
-          <span class="font-display text-xl font-bold text-white">TaxWise <span class="text-gradient">Pro</span></span>
-        </div>
-        <p class="text-sm text-slate-500 leading-relaxed">แพลตฟอร์มคำนวณภาษีอัจฉริยะ ออกแบบมาเพื่อคนไทยทุกคน ใช้งานง่าย ได้ผลลัพธ์ที่แม่นยำ เชื่อถือได้</p>
-      </div>
-      <div>
-        <h4 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">เมนูด่วน</h4>
-        <ul class="space-y-2.5">
-          <li><a href="#calculators" class="text-sm text-slate-500 hover:text-blue-400 transition-colors">ระบบคำนวณภาษี</a></li>
-          <li><a href="#knowledge"   class="text-sm text-slate-500 hover:text-blue-400 transition-colors">กฎหมายและข้อมูลภาษี</a></li>
-          <li><a href="#pricing"     class="text-sm text-slate-500 hover:text-blue-400 transition-colors">แผนการใช้งาน</a></li>
-          <li><a href="#" onclick="openM('loginModal');return false" class="text-sm text-slate-500 hover:text-blue-400 transition-colors">เข้าสู่ระบบ</a></li>
-        </ul>
-      </div>
-      <div>
-        <h4 class="text-sm font-semibold text-slate-300 mb-4 uppercase tracking-wider">ติดต่อทีมงาน</h4>
-        <p class="text-sm text-slate-500 mb-5">มีข้อสงสัย ต้องการให้ช่วยวิเคราะห์ภาษีเชิงลึก หรือพบปัญหาการใช้งาน ติดต่อเราได้เลย</p>
-        <a href="https://line.me/ti/p/~@taxwisepro" target="_blank" rel="noopener noreferrer"
-           class="inline-flex items-center gap-3 px-5 py-3 rounded-xl font-semibold text-sm text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
-           style="background:linear-gradient(135deg,#00c300,#00a000)">
-          <i class="fab fa-line text-lg"></i>Add LINE ปรึกษาผู้เชี่ยวชาญ
-        </a>
-        <p class="text-xs text-slate-600 mt-3">ตอบกลับภายใน 1 วันทำการ</p>
-      </div>
-    </div>
-    <div class="divider mb-6"></div>
-    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
-      <p class="text-xs text-slate-600">© 2567 TaxWise Pro. สงวนลิขสิทธิ์ทุกประการ</p>
-      <div class="flex items-center gap-4">
-        <a href="#" class="text-xs text-slate-600 hover:text-slate-400 transition-colors">นโยบายความเป็นส่วนตัว</a>
-        <a href="#" class="text-xs text-slate-600 hover:text-slate-400 transition-colors">ข้อกำหนดการใช้งาน</a>
-        <div class="flex items-center gap-1 text-xs text-slate-600"><i class="fas fa-shield-halved text-blue-900 text-xs"></i><span>SSL Secured</span></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-
-<!-- ═══════════════════════════ MODALS BACKDROP ═══════════════════════════ -->
-<div id="backdrop" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background:rgba(0,0,0,.78);backdrop-filter:blur(5px)">
-
-  <!-- LOGIN -->
-  <div id="loginModal" class="modal hidden w-full max-w-md glass-card rounded-2xl p-8 blue-glow relative">
-    <button onclick="closeM()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300"><i class="fas fa-xmark text-lg"></i></button>
-    <div class="text-center mb-8">
-      <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style="background:rgba(37,99,235,.2);border:1px solid rgba(59,130,246,.4)"><i class="fas fa-lock text-blue-400"></i></div>
-      <h2 class="text-2xl font-bold text-white">เข้าสู่ระบบ</h2>
-      <p class="text-sm text-slate-500 mt-1">ยินดีต้อนรับกลับ</p>
-    </div>
-    <div class="space-y-4">
-      <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">อีเมล</label><div class="relative"><i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input id="loginEmail" type="email" placeholder="your@email.com" class="inp pl-11"></div></div>
-      <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">รหัสผ่าน</label><div class="relative"><i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input id="loginPw" type="password" placeholder="••••••••" class="inp pl-11"></div></div>
-      <div id="loginErr" class="hidden text-sm text-red-400 text-center py-2 px-3 rounded-lg" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)"></div>
-      <button onclick="doLogin()" class="w-full py-3.5 rounded-xl font-semibold text-white btn-blue mt-2"><i class="fas fa-arrow-right mr-2"></i>เข้าสู่ระบบ</button>
-      <p class="text-center text-sm text-slate-500 pt-2">ยังไม่มีบัญชี? <button onclick="swM('loginModal','registerModal')" class="text-blue-400 hover:text-blue-300 ml-1 font-medium">สมัครฟรีที่นี่</button></p>
-    </div>
-  </div>
-
-  <!-- REGISTER -->
-  <div id="registerModal" class="modal hidden w-full max-w-md glass-card rounded-2xl p-8 blue-glow relative">
-    <button onclick="closeM()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300"><i class="fas fa-xmark text-lg"></i></button>
-    <div class="text-center mb-8">
-      <div class="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style="background:rgba(37,99,235,.2);border:1px solid rgba(59,130,246,.4)"><i class="fas fa-user-plus text-blue-400"></i></div>
-      <h2 class="text-2xl font-bold text-white">สมัครสมาชิก</h2>
-      <p class="text-sm text-slate-500 mt-1">รับสิทธิ์คำนวณฟรี 1 ครั้งทันที</p>
-    </div>
-    <div class="space-y-4">
-      <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">ชื่อที่แสดง</label><div class="relative"><i class="fas fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input id="regName" type="text" placeholder="ชื่อ-นามสกุล" class="inp pl-11"></div></div>
-      <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">อีเมล</label><div class="relative"><i class="fas fa-envelope absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input id="regEmail" type="email" placeholder="your@email.com" class="inp pl-11"></div></div>
-      <div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">รหัสผ่าน</label><div class="relative"><i class="fas fa-key absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input id="regPw" type="password" placeholder="อย่างน้อย 6 ตัวอักษร" class="inp pl-11"></div></div>
-      <div id="regErr" class="hidden text-sm text-red-400 text-center py-2 px-3 rounded-lg" style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2)"></div>
-      <button onclick="doRegister()" class="w-full py-3.5 rounded-xl font-semibold text-white btn-blue mt-2"><i class="fas fa-user-plus mr-2"></i>สมัครสมาชิกฟรี</button>
-      <p class="text-center text-sm text-slate-500 pt-2">มีบัญชีอยู่แล้ว? <button onclick="swM('registerModal','loginModal')" class="text-blue-400 hover:text-blue-300 ml-1 font-medium">เข้าสู่ระบบ</button></p>
-    </div>
-  </div>
-
-  <!-- PAYMENT -->
-  <div id="payModal" class="modal hidden w-full max-w-lg glass-card rounded-2xl overflow-hidden relative">
-    <button onclick="closeM()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 z-10"><i class="fas fa-xmark text-lg"></i></button>
-    <div class="p-6" style="background:linear-gradient(135deg,#0b1a30,#102240);border-bottom:1px solid rgba(59,130,246,.2)">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(37,99,235,.15);border:1px solid rgba(59,130,246,.3)"><i class="fas fa-credit-card text-blue-400"></i></div>
-        <div><h2 class="text-lg font-bold text-white">ซื้อสิทธิ์คำนวณ VIP</h2><p class="text-xs text-slate-400">ปลอดภัยด้วยการเข้ารหัส SSL 256-bit</p></div>
-        <div class="ml-auto flex items-center gap-2"><i class="fas fa-lock text-emerald-400 text-xs"></i><span class="text-xs text-emerald-400">Secure</span></div>
-      </div>
-    </div>
-    <div class="p-6">
-      <div class="rounded-xl p-4 mb-5" style="background:rgba(3,8,15,.6);border:1px solid rgba(59,130,246,.15)">
-        <p class="text-xs text-slate-500 uppercase tracking-wide mb-3">รายการ</p>
-        <div class="flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-9 h-9 rounded-lg flex items-center justify-center" style="background:rgba(37,99,235,.12)"><i class="fas fa-calculator text-blue-400 text-sm"></i></div>
-            <div><p class="text-sm font-medium text-slate-200">สิทธิ์คำนวณภาษี VIP 1 ครั้ง</p><p class="text-xs text-slate-500">ใช้ได้ทันที ไม่มีวันหมดอายุ</p></div>
-          </div>
-          <p class="text-lg font-bold text-white">฿ 5.00</p>
-        </div>
-        <div class="mt-3 pt-3 border-t border-navy-700 flex justify-between text-sm"><span class="text-slate-400">รวมทั้งสิ้น</span><span class="font-bold text-blue-400">฿ 5.00</span></div>
-      </div>
-      <div class="flex items-center gap-3 p-3 rounded-xl mb-5" style="background:rgba(37,99,235,.07);border:1px solid rgba(59,130,246,.22)">
-        <i class="fas fa-info-circle text-blue-500 text-sm flex-shrink-0"></i>
-        <p class="text-xs text-slate-400">สิทธิ์จะถูกเพิ่มเข้าบัญชีทันที และ <strong class="text-slate-200">ไม่มีวันหมดอายุ</strong> ใช้ได้ทุกเมื่อที่ต้องการ</p>
-      </div>
-      <p class="text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">เลือกช่องทางชำระเงิน</p>
-      <div class="grid grid-cols-3 gap-3 mb-5">
-        <button id="pbtn-pp" onclick="selPay(this,'pp')" class="pay-btn p-3 rounded-xl flex flex-col items-center gap-1.5 pay-btn-on transition-all" style="background:rgba(3,8,15,.8)"><i class="fas fa-qrcode text-blue-400 text-lg"></i><span class="text-xs font-medium text-slate-300">PromptPay</span></button>
-        <button id="pbtn-card" onclick="selPay(this,'card')" class="pay-btn p-3 rounded-xl flex flex-col items-center gap-1.5 pay-btn-off transition-all" style="background:rgba(3,8,15,.8)"><i class="fas fa-credit-card text-slate-400 text-lg"></i><span class="text-xs font-medium text-slate-400">บัตรเครดิต</span></button>
-        <button id="pbtn-tw" onclick="selPay(this,'tw')" class="pay-btn p-3 rounded-xl flex flex-col items-center gap-1.5 pay-btn-off transition-all" style="background:rgba(3,8,15,.8)"><i class="fas fa-wallet text-slate-400 text-lg"></i><span class="text-xs font-medium text-slate-400">TrueMoney</span></button>
-      </div>
-      <div id="ppanel-pp"><div class="text-center py-4"><div class="inline-block p-4 rounded-xl mb-3 bg-white"><div class="w-32 h-32 flex items-center justify-center bg-gray-100"><i class="fas fa-qrcode text-6xl text-gray-800"></i></div></div><p class="text-sm font-semibold text-slate-200 mb-1">สแกน QR PromptPay</p><p class="text-xs text-slate-500">ยอดชำระ ฿5.00 — หมดอายุใน 15 นาที</p></div></div>
-      <div id="ppanel-card" class="hidden"><div class="space-y-3"><div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">หมายเลขบัตร</label><div class="relative"><i class="fas fa-credit-card absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input type="text" placeholder="0000 0000 0000 0000" maxlength="19" oninput="fmtCard(this)" class="inp pl-11 font-mono"></div></div><div class="grid grid-cols-2 gap-3"><div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">วันหมดอายุ</label><input type="text" placeholder="MM / YY" maxlength="7" class="inp font-mono"></div><div><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">CVV</label><input type="text" placeholder="•••" maxlength="4" class="inp font-mono"></div></div></div></div>
-      <div id="ppanel-tw" class="hidden"><div class="py-3"><label class="block text-xs font-semibold text-slate-400 mb-2 uppercase tracking-wide">หมายเลขโทรศัพท์ที่ผูก TrueMoney</label><div class="relative"><i class="fas fa-mobile-screen-button absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm"></i><input type="tel" placeholder="0XX-XXX-XXXX" class="inp pl-11"></div></div></div>
-      <button onclick="doPayment()" class="w-full mt-5 py-3.5 rounded-xl font-semibold text-white btn-blue"><i class="fas fa-lock mr-2"></i>ยืนยันการชำระเงิน ฿5.00 — รับ 1 สิทธิ์</button>
-      <div class="flex items-center justify-center gap-4 mt-4">
-        <span class="text-xs text-slate-600 flex items-center gap-1"><i class="fas fa-shield-halved"></i>256-bit SSL</span>
-        <span class="text-xs text-slate-600 flex items-center gap-1"><i class="fas fa-check-circle"></i>PCI DSS</span>
-        <span class="text-xs text-slate-600 flex items-center gap-1"><i class="fas fa-lock"></i>3D Secure</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- SUCCESS -->
-  <div id="successModal" class="modal hidden w-full max-w-sm glass-card rounded-2xl p-8 blue-glow text-center">
-    <div class="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-5" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3)"><i class="fas fa-check text-emerald-400 text-2xl"></i></div>
-    <h2 class="text-xl font-bold text-white mb-2">ชำระเงินสำเร็จ</h2>
-    <p class="text-sm text-slate-400 mb-2">ได้รับสิทธิ์คำนวณ VIP 1 ครั้งแล้ว</p>
-    <p class="text-xs text-slate-500 mb-6">สิทธิ์แสดงที่แถบด้านบน ไม่มีวันหมดอายุ</p>
-    <button onclick="closeM();document.getElementById('calculators').scrollIntoView({behavior:'smooth'})" class="w-full py-3 rounded-xl font-semibold text-white btn-blue"><i class="fas fa-calculator mr-2"></i>ไปที่หน้าคำนวณ</button>
-  </div>
-
-  <!-- ═══════ DEDUCTIONS MODAL ═══════ -->
-  <div id="dedModal" class="modal hidden w-full max-w-2xl glass-card rounded-2xl overflow-hidden relative">
-    <button onclick="closeM()" class="absolute top-4 right-4 text-slate-500 hover:text-slate-300 z-10"><i class="fas fa-xmark text-lg"></i></button>
-    <!-- header -->
-    <div class="p-6 pb-4" style="background:linear-gradient(135deg,#0b1a30,#102240);border-bottom:1px solid rgba(59,130,246,.2)">
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center" style="background:rgba(37,99,235,.15);border:1px solid rgba(59,130,246,.35)"><i class="fas fa-list-check text-blue-400"></i></div>
-        <div><h2 class="text-lg font-bold text-white">เลือกค่าลดหย่อนภาษีทุกประเภท</h2><p class="text-xs text-slate-400">ตามมาตรา 47 แห่งประมวลรัษฎากร</p></div>
-      </div>
-      <div class="mt-4 flex items-start gap-2 px-3 py-2 rounded-lg" style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.22)">
-        <i class="fas fa-circle-info text-blue-500 text-xs mt-0.5 flex-shrink-0"></i>
-        <p class="text-xs text-slate-400"><strong class="text-slate-300">หมายเหตุ:</strong> ค่าลดหย่อนส่วนตัว 60,000 บาท และค่าใช้จ่ายตามประเภทรายได้ถูกคำนวณอัตโนมัติแล้ว รายการด้านล่างคือค่าลดหย่อน<strong class="text-slate-300">เพิ่มเติม</strong></p>
-      </div>
-    </div>
-    <!-- scrollable body -->
-    <div class="modal-body p-6 space-y-6">
-
-      <!-- Family -->
-      <div>
-        <div class="flex items-center gap-2 mb-3"><div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(59,130,246,.15)"><i class="fas fa-users text-blue-400 text-xs"></i></div><h3 class="text-sm font-bold text-slate-200">ครอบครัวและผู้อุปการะ</h3></div>
-        <div class="space-y-2">
-          <div class="ded-row" id="r-spouse"><input type="checkbox" class="ded-chk" id="d-spouse" onchange="togRow('spouse');calcDed()"><div class="flex-1"><div class="flex items-center justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">คู่สมรสไม่มีรายได้</p><p class="text-xs text-slate-500">ลดหย่อนได้ 60,000 บาท (ตายตัว)</p></div><span class="text-sm font-bold text-blue-400" id="v-spouse">฿ 60,000</span></div></div></div>
-          <div class="ded-row" id="r-children"><input type="checkbox" class="ded-chk" id="d-children" onchange="togRow('children');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">บุตร</p><p class="text-xs text-slate-500">30,000 บาท/คน (คนที่ 2+ เกิดหลัง 2561: 60,000 บาท)</p></div><div class="flex items-center gap-2"><label class="text-xs text-slate-500">จำนวน</label><input type="number" class="ded-cnt" id="c-children" value="1" min="0" max="10" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-children">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-parents"><input type="checkbox" class="ded-chk" id="d-parents" onchange="togRow('parents');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">เลี้ยงดูบิดามารดา (ของตนเอง)</p><p class="text-xs text-slate-500">30,000 บาท/คน สูงสุด 2 คน</p></div><div class="flex items-center gap-2"><label class="text-xs text-slate-500">จำนวน</label><input type="number" class="ded-cnt" id="c-parents" value="1" min="0" max="2" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-parents">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-pspouse"><input type="checkbox" class="ded-chk" id="d-pspouse" onchange="togRow('pspouse');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">เลี้ยงดูบิดามารดา (ของคู่สมรส)</p><p class="text-xs text-slate-500">30,000 บาท/คน สูงสุด 2 คน</p></div><div class="flex items-center gap-2"><label class="text-xs text-slate-500">จำนวน</label><input type="number" class="ded-cnt" id="c-pspouse" value="1" min="0" max="2" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-pspouse">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-disabled"><input type="checkbox" class="ded-chk" id="d-disabled" onchange="togRow('disabled');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">อุปการะผู้พิการหรือทุพพลภาพ</p><p class="text-xs text-slate-500">60,000 บาท/คน</p></div><div class="flex items-center gap-2"><label class="text-xs text-slate-500">จำนวน</label><input type="number" class="ded-cnt" id="c-disabled" value="1" min="0" max="10" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-disabled">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-pregn"><input type="checkbox" class="ded-chk" id="d-pregn" onchange="togRow('pregn');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">ฝากครรภ์และคลอดบุตร</p><p class="text-xs text-slate-500">สูงสุด 60,000 บาท ตามที่จ่ายจริง</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-pregn" placeholder="0" min="0" max="60000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-pregn">฿ 0</span></div></div></div></div>
-        </div>
-      </div>
-
-      <!-- Insurance -->
-      <div>
-        <div class="flex items-center gap-2 mb-3"><div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(16,185,129,.15)"><i class="fas fa-shield-halved text-emerald-400 text-xs"></i></div><h3 class="text-sm font-bold text-slate-200">ประกันภัย</h3></div>
-        <div class="space-y-2">
-          <div class="ded-row" id="r-lifein"><input type="checkbox" class="ded-chk" id="d-lifein" onchange="togRow('lifein');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">เบี้ยประกันชีวิต</p><p class="text-xs text-slate-500">สูงสุด 100,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-lifein" placeholder="0" min="0" max="100000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-lifein">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-healthin"><input type="checkbox" class="ded-chk" id="d-healthin" onchange="togRow('healthin');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">เบี้ยประกันสุขภาพ (ตนเอง)</p><p class="text-xs text-slate-500">สูงสุด 25,000 บาท (รวมประกันชีวิตไม่เกิน 100,000)</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-healthin" placeholder="0" min="0" max="25000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-healthin">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-parentin"><input type="checkbox" class="ded-chk" id="d-parentin" onchange="togRow('parentin');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">เบี้ยประกันสุขภาพบิดามารดา</p><p class="text-xs text-slate-500">สูงสุด 15,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-parentin" placeholder="0" min="0" max="15000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-parentin">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-annuity"><input type="checkbox" class="ded-chk" id="d-annuity" onchange="togRow('annuity');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">ประกันชีวิตแบบบำนาญ</p><p class="text-xs text-slate-500">สูงสุด 15% ของรายได้ หรือ 200,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-annuity" placeholder="0" min="0" max="200000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-annuity">฿ 0</span></div></div></div></div>
-        </div>
-      </div>
-
-      <!-- Funds -->
-      <div>
-        <div class="flex items-center gap-2 mb-3"><div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(139,92,246,.15)"><i class="fas fa-piggy-bank text-violet-400 text-xs"></i></div><h3 class="text-sm font-bold text-slate-200">กองทุนและเงินออมเพื่อการลงทุน</h3></div>
-        <div class="space-y-2">
-          <div class="ded-row" id="r-ssec"><input type="checkbox" class="ded-chk" id="d-ssec" onchange="togRow('ssec');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">เงินสมทบประกันสังคม</p><p class="text-xs text-slate-500">ตามที่จ่ายจริง สูงสุด 9,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-ssec" placeholder="0" min="0" max="9000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-ssec">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-pvd"><input type="checkbox" class="ded-chk" id="d-pvd" onchange="togRow('pvd');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">กองทุนสำรองเลี้ยงชีพ (PVD)</p><p class="text-xs text-slate-500">สูงสุด 500,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-pvd" placeholder="0" min="0" max="500000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-pvd">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-ssf"><input type="checkbox" class="ded-chk" id="d-ssf" onchange="togRow('ssf');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">กองทุน SSF</p><p class="text-xs text-slate-500">สูงสุด 30% ของรายได้ หรือ 200,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-ssf" placeholder="0" min="0" max="200000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-ssf">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-rmf"><input type="checkbox" class="ded-chk" id="d-rmf" onchange="togRow('rmf');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">กองทุน RMF</p><p class="text-xs text-slate-500">สูงสุด 30% ของรายได้ หรือ 500,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-rmf" placeholder="0" min="0" max="500000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-rmf">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-esg"><input type="checkbox" class="ded-chk" id="d-esg" onchange="togRow('esg');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">กองทุน Thai ESG</p><p class="text-xs text-slate-500">สูงสุด 30% ของรายได้ หรือ 300,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-esg" placeholder="0" min="0" max="300000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-esg">฿ 0</span></div></div></div></div>
-        </div>
-      </div>
-
-      <!-- Others -->
-      <div>
-        <div class="flex items-center gap-2 mb-3"><div class="w-7 h-7 rounded-lg flex items-center justify-center" style="background:rgba(251,146,60,.15)"><i class="fas fa-house text-orange-400 text-xs"></i></div><h3 class="text-sm font-bold text-slate-200">อสังหาริมทรัพย์ การบริจาค และอื่นๆ</h3></div>
-        <div class="space-y-2">
-          <div class="ded-row" id="r-home"><input type="checkbox" class="ded-chk" id="d-home" onchange="togRow('home');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">ดอกเบี้ยกู้ยืมเพื่อที่อยู่อาศัย</p><p class="text-xs text-slate-500">สูงสุด 100,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-home" placeholder="0" min="0" max="100000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-home">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-receipt"><input type="checkbox" class="ded-chk" id="d-receipt" onchange="togRow('receipt');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">Easy e-Receipt (ช้อปดีมีคืน)</p><p class="text-xs text-slate-500">สูงสุด 50,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-receipt" placeholder="0" min="0" max="50000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-receipt">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-donedu"><input type="checkbox" class="ded-chk" id="d-donedu" onchange="togRow('donedu');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">บริจาคเพื่อการศึกษา / กีฬา (ลด 2 เท่า)</p><p class="text-xs text-slate-500">ระบบคำนวณ 2× อัตโนมัติ ไม่เกิน 10% ของรายได้</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-donedu" placeholder="0" min="0" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-donedu">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-dongen"><input type="checkbox" class="ded-chk" id="d-dongen" onchange="togRow('dongen');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">บริจาคทั่วไป</p><p class="text-xs text-slate-500">ไม่เกิน 10% ของรายได้หลังหักค่าใช้จ่าย</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-dongen" placeholder="0" min="0" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-dongen">฿ 0</span></div></div></div></div>
-          <div class="ded-row" id="r-donpol"><input type="checkbox" class="ded-chk" id="d-donpol" onchange="togRow('donpol');calcDed()"><div class="flex-1"><div class="flex items-start justify-between flex-wrap gap-2"><div><p class="text-sm text-slate-200 font-medium">บริจาคพรรคการเมือง</p><p class="text-xs text-slate-500">สูงสุด 10,000 บาท</p></div><div class="flex items-center gap-2"><input type="number" class="ded-num" id="a-donpol" placeholder="0" min="0" max="10000" oninput="calcDed()" disabled><span class="text-sm font-bold text-blue-400 w-20 text-right" id="v-donpol">฿ 0</span></div></div></div></div>
-        </div>
-      </div>
-
-    </div><!-- end scrollable -->
-
-    <!-- footer -->
-    <div class="p-5 border-t border-navy-700" style="background:rgba(6,15,30,.85)">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <p class="text-xs text-slate-500">รวมค่าลดหย่อนเพิ่มเติมทั้งหมด</p>
-          <p class="text-2xl font-bold text-gradient font-display" id="dedTotal">฿ 0</p>
-        </div>
-        <div class="text-right">
-          <p class="text-xs text-slate-600 mb-1" id="dedCount">0 รายการที่เลือก</p>
-          <button onclick="clearDed()" class="text-xs text-slate-500 hover:text-red-400 transition-colors"><i class="fas fa-rotate-left mr-1"></i>รีเซ็ตทั้งหมด</button>
-        </div>
-      </div>
-      <button onclick="confirmDed()" class="w-full py-3.5 rounded-xl font-semibold text-white btn-blue"><i class="fas fa-check mr-2"></i>ยืนยันและนำค่าลดหย่อนไปคำนวณ</button>
-    </div>
-  </div>
-
-</div><!-- end backdrop -->
-
-
-<!-- TOAST -->
-<div id="toast" class="fixed bottom-6 right-6 z-[60] hidden">
-  <div class="flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl" style="background:#0b1a30;border:1px solid rgba(59,130,246,.28)">
-    <i id="toastIco" class="fas fa-info-circle text-blue-400"></i>
-    <p id="toastTxt" class="text-sm text-slate-200 max-w-xs"></p>
   </div>
 </div>
 
+<!-- TOAST -->
+<div id="toast"><div class="toast-icon">✅</div><span id="toast-msg">ยินดีต้อนรับสู่ Globe Express!</span></div>
 
-<!-- ═══════════════════════════ JAVASCRIPT ═══════════════════════════ -->
+<!-- NAVBAR -->
+<nav id="navbar">
+  <a href="index.html" class="nav-logo">Globe <span>Express</span></a>
+  <a href="index.html" class="nav-back">← กลับหน้าหลัก</a>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section id="hero">
+  <div id="hero-bg"></div>
+  <div class="streak"></div>
+  <div class="particles" id="particles"></div>
+  <div class="hero-content" style="position:relative;z-index:10;">
+    <div class="crown-wrap">👑</div>
+    <div class="hero-eyebrow">Globe Express Membership 2025</div>
+    <h1 class="hero-title">
+      <span class="line1">สมัครสมาชิก</span>
+      <span class="line2">VIP Access</span>
+    </h1>
+    <p class="hero-sub">ปลดล็อคปลายทางพิเศษกว่า 500+ สถานที่ทั่วโลก รีวิวเชิงลึก แผนเดินทางสุดเอกซ์คลูซีฟ และสิทธิพิเศษที่หาไม่ได้จากที่ไหน</p>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num">500+</div><div class="stat-lbl">สถานที่ VIP</div></div>
+      <div class="stat-item"><div class="stat-num">48</div><div class="stat-lbl">ประเทศ</div></div>
+      <div class="stat-item"><div class="stat-num">120K+</div><div class="stat-lbl">สมาชิก</div></div>
+      <div class="stat-item"><div class="stat-num">4.9★</div><div class="stat-lbl">คะแนนรีวิว</div></div>
+    </div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <button onclick="openModal()" style="display:inline-flex;align-items:center;gap:10px;background:linear-gradient(90deg,var(--golddark),var(--gold));color:#1a1200;font-family:'Kanit',sans-serif;font-size:13px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:15px 32px;border:none;border-radius:8px;cursor:pointer;transition:all .25s;box-shadow:0 8px 24px rgba(245,200,67,.35);">
+        👑 สมัครสมาชิก VIP
+      </button>
+      <a href="#plans" style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);color:#fff;font-family:'Kanit',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;padding:15px 28px;border-radius:8px;text-decoration:none;transition:all .25s;">
+        ดูแพ็กเกจ ↓
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ PLANS ═══ -->
+<section id="plans">
+  <div class="section-header">
+    <div class="section-eyebrow">เลือกแพ็กเกจของคุณ</div>
+    <h2 class="section-title">Membership Plans</h2>
+  </div>
+  <div class="plans-grid">
+
+    <!-- FREE -->
+    <div class="plan-card free">
+      <div class="plan-inner">
+        <div class="plan-icon">🌍</div>
+        <div class="plan-name">Explorer</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price">ฟรี</div>
+        </div>
+        <div class="plan-period">ตลอดชีพ · ไม่มีค่าใช้จ่าย</div>
+        <div class="plan-desc">เริ่มต้นการเดินทางกับปลายทางพื้นฐานทั่วโลก</div>
+        <ul class="plan-features">
+          <li><div class="fi">🗺️</div>ปลายทางพื้นฐาน 30 ประเทศ</li>
+          <li><div class="fi">📸</div>รูปภาพ HD สำหรับแต่ละสถานที่</li>
+          <li><div class="fi">⭐</div>รีวิวจากนักท่องเที่ยว</li>
+          <li class="disabled"><div class="fi">🔒</div>ปลายทาง VIP พิเศษ</li>
+          <li class="disabled"><div class="fi">🔒</div>แผนเดินทางเชิงลึก</li>
+          <li class="disabled"><div class="fi">🔒</div>ส่วนลดพันธมิตรโรงแรม</li>
+        </ul>
+        <button class="plan-btn" onclick="openModal()">เริ่มใช้งานฟรี</button>
+      </div>
+    </div>
+
+    <!-- GOLD VIP -->
+    <div class="plan-card gold popular">
+      <div class="plan-popular-badge">⭐ ยอดนิยม</div>
+      <div class="plan-inner" style="padding-top:50px;">
+        <div class="plan-icon">👑</div>
+        <div class="plan-name">Gold VIP</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price">299<span style="font-size:18px;font-weight:400">฿</span></div>
+        </div>
+        <div class="plan-period">ต่อเดือน · หรือ 2,490฿/ปี</div>
+        <div class="plan-desc">สำหรับนักเดินทางที่ต้องการประสบการณ์ที่ดีที่สุด</div>
+        <ul class="plan-features">
+          <li><div class="fi">🌏</div>ปลายทาง VIP 200+ สถานที่</li>
+          <li><div class="fi">📋</div>แผนเดินทางเชิงลึกครบครัน</li>
+          <li><div class="fi">💎</div>ส่วนลดโรงแรมสูงสุด 35%</li>
+          <li><div class="fi">🎯</div>รีวิวเชิงลึกจากผู้เชี่ยวชาญ</li>
+          <li><div class="fi">💬</div>Chat กับ Travel Expert 24/7</li>
+          <li class="disabled"><div class="fi">🔒</div>เส้นทาง Secret Destinations</li>
+        </ul>
+        <button class="plan-btn" onclick="openModal()">👑 สมัคร Gold VIP</button>
+      </div>
+    </div>
+
+    <!-- DIAMOND -->
+    <div class="plan-card diamond">
+      <div class="plan-inner">
+        <div class="plan-icon">💎</div>
+        <div class="plan-name">Diamond VIP</div>
+        <div class="plan-price-wrap">
+          <div class="plan-price">699<span style="font-size:18px;font-weight:400">฿</span></div>
+        </div>
+        <div class="plan-period">ต่อเดือน · หรือ 5,990฿/ปี</div>
+        <div class="plan-desc">สิทธิพิเศษระดับสูงสุด ไม่มีขีดจำกัด</div>
+        <ul class="plan-features">
+          <li><div class="fi">🌐</div>ปลายทาง VIP ทั้งหมด 500+ แห่ง</li>
+          <li><div class="fi">🗝️</div>Secret Destinations เฉพาะสมาชิก</li>
+          <li><div class="fi">✈️</div>บริการจองที่นั่งธุรกิจพิเศษ</li>
+          <li><div class="fi">🏨</div>ส่วนลดโรงแรม 5 ดาวสูงสุด 55%</li>
+          <li><div class="fi">🎪</div>Concierge Service ส่วนตัว</li>
+          <li><div class="fi">🎁</div>ของขวัญต้อนรับมูลค่า 1,500฿</li>
+        </ul>
+        <button class="plan-btn" onclick="openModal()">💎 สมัคร Diamond VIP</button>
+      </div>
+    </div>
+  </div>
+  <div class="compare-note">ต้องการแพ็กเกจองค์กร? <a href="#contact">ติดต่อทีมงาน →</a></div>
+</section>
+
+<!-- ═══ VIP DESTINATIONS ═══ -->
+<section id="vip-dests">
+  <div class="section-header">
+    <div class="section-eyebrow">เฉพาะสมาชิก VIP เท่านั้น</div>
+    <h2 class="section-title">Exclusive Destinations</h2>
+  </div>
+
+  <div class="vip-unlock-banner">
+    <div class="ub-icon">🔑</div>
+    <div class="ub-text">
+      <div class="ub-title">ปลดล็อคปลายทางสุดเอกซ์คลูซีฟ 200+ แห่ง</div>
+      <div class="ub-sub">Secret Islands · Hidden Gems · Luxury Resorts · Off-the-beaten-path ที่หาไม่ได้จากที่ไหน</div>
+    </div>
+    <a href="#plans" class="ub-cta">👑 สมัครเลย</a>
+  </div>
+
+  <div class="vip-cats-grid">
+    <div class="vip-cat" onclick="openModal()">
+      <div class="vip-cat-img" style="background-image:url('https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=600&q=80')"></div>
+      <div class="vip-cat-over"></div>
+      <div class="vip-cat-badge">VIP</div>
+      <div class="vip-cat-lock">🔒</div>
+      <div class="vip-blur-overlay"><div class="unlock-btn">ปลดล็อค</div></div>
+      <div class="vip-cat-info">
+        <div class="vip-cat-region">Maldives · Asia</div>
+        <div class="vip-cat-name">Secret<br>Islands</div>
+        <div class="vip-cat-count">32 สถานที่</div>
+      </div>
+    </div>
+    <div class="vip-cat" onclick="openModal()">
+      <div class="vip-cat-img" style="background-image:url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&q=80')"></div>
+      <div class="vip-cat-over"></div>
+      <div class="vip-cat-badge">VIP</div>
+      <div class="vip-cat-lock">🔒</div>
+      <div class="vip-blur-overlay"><div class="unlock-btn">ปลดล็อค</div></div>
+      <div class="vip-cat-info">
+        <div class="vip-cat-region">Europe · Luxury</div>
+        <div class="vip-cat-name">Luxury<br>Resorts</div>
+        <div class="vip-cat-count">58 สถานที่</div>
+      </div>
+    </div>
+    <div class="vip-cat" onclick="openModal()">
+      <div class="vip-cat-img" style="background-image:url('https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?w=600&q=80')"></div>
+      <div class="vip-cat-over"></div>
+      <div class="vip-cat-badge">VIP</div>
+      <div class="vip-cat-lock">🔒</div>
+      <div class="vip-blur-overlay"><div class="unlock-btn">ปลดล็อค</div></div>
+      <div class="vip-cat-info">
+        <div class="vip-cat-region">Global · Hidden</div>
+        <div class="vip-cat-name">Hidden<br>Gems</div>
+        <div class="vip-cat-count">76 สถานที่</div>
+      </div>
+    </div>
+    <div class="vip-cat" onclick="openModal()">
+      <div class="vip-cat-img" style="background-image:url('https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80')"></div>
+      <div class="vip-cat-over"></div>
+      <div class="vip-cat-badge">DIAMOND</div>
+      <div class="vip-cat-lock">💎</div>
+      <div class="vip-blur-overlay"><div class="unlock-btn" style="background:linear-gradient(90deg,#2a7aab,#93d2ff);color:#051824;">Diamond Only</div></div>
+      <div class="vip-cat-info">
+        <div class="vip-cat-region">Arctic · Extreme</div>
+        <div class="vip-cat-name">Northern<br>Lights</div>
+        <div class="vip-cat-count">14 เส้นทาง</div>
+      </div>
+    </div>
+    <div class="vip-cat" onclick="openModal()">
+      <div class="vip-cat-img" style="background-image:url('https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=600&q=80')"></div>
+      <div class="vip-cat-over"></div>
+      <div class="vip-cat-badge">VIP</div>
+      <div class="vip-cat-lock">🔒</div>
+      <div class="vip-blur-overlay"><div class="unlock-btn">ปลดล็อค</div></div>
+      <div class="vip-cat-info">
+        <div class="vip-cat-region">Southeast Asia</div>
+        <div class="vip-cat-name">Private<br>Villas</div>
+        <div class="vip-cat-count">44 วิลล่า</div>
+      </div>
+    </div>
+    <div class="vip-cat" onclick="openModal()">
+      <div class="vip-cat-img" style="background-image:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80')"></div>
+      <div class="vip-cat-over"></div>
+      <div class="vip-cat-badge">DIAMOND</div>
+      <div class="vip-cat-lock">💎</div>
+      <div class="vip-blur-overlay"><div class="unlock-btn" style="background:linear-gradient(90deg,#2a7aab,#93d2ff);color:#051824;">Diamond Only</div></div>
+      <div class="vip-cat-info">
+        <div class="vip-cat-region">Alps · Patagonia</div>
+        <div class="vip-cat-name">Adventure<br>Expeditions</div>
+        <div class="vip-cat-count">22 การผจญภัย</div>
+      </div>
+    </div>
+    <div class="vip-cat" onclick="openModal()">
+      <div class="vip-cat-img" style="background-image:url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&q=80')"></div>
+      <div class="vip-cat-over"></div>
+      <div class="vip-cat-badge">VIP</div>
+      <div class="vip-cat-lock">🔒</div>
+      <div class="vip-blur-overlay"><div class="unlock-btn">ปลดล็อค</div></div>
+      <div class="vip-cat-info">
+        <div class="vip-cat-region">Pacific · Ocean</div>
+        <div class="vip-cat-name">Underwater<br>Wonders</div>
+        <div class="vip-cat-count">38 จุดดำน้ำ</div>
+      </div>
+    </div>
+    <div class="vip-cat" onclick="openModal()">
+      <div class="vip-cat-img" style="background-image:url('https://images.unsplash.com/photo-1598887141928-2bc6e9d20b3e?w=600&q=80')"></div>
+      <div class="vip-cat-over"></div>
+      <div class="vip-cat-badge">VIP</div>
+      <div class="vip-cat-lock">🔒</div>
+      <div class="vip-blur-overlay"><div class="unlock-btn">ปลดล็อค</div></div>
+      <div class="vip-cat-info">
+        <div class="vip-cat-region">Global · Culture</div>
+        <div class="vip-cat-name">Food & Wine<br>Journeys</div>
+        <div class="vip-cat-count">65 เส้นทาง</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FEATURES ═══ -->
+<section id="features">
+  <div class="section-header">
+    <div class="section-eyebrow">ทำไมต้อง Globe Express VIP</div>
+    <h2 class="section-title">สิทธิประโยชน์</h2>
+  </div>
+  <div class="features-grid" style="max-width:1100px;margin:0 auto;">
+    <div class="feat-card">
+      <div class="feat-icon-wrap">🗺️</div>
+      <div class="feat-title">Interactive Travel Maps</div>
+      <div class="feat-desc">แผนที่โต้ตอบพร้อม Pinpoints ปลายทาง 500+ แห่ง ดูเส้นทาง วางแผนทริปได้ในคลิกเดียว</div>
+      <span class="feat-tag">ทุกแพ็กเกจ VIP</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">✈️</div>
+      <div class="feat-title">Flight Price Alerts</div>
+      <div class="feat-desc">แจ้งเตือนราคาตั๋วเครื่องบินถูกสุด เปรียบเทียบทุกสายการบิน บันทึกปลายทางและรับแจ้งเตือนทันที</div>
+      <span class="feat-tag">Gold & Diamond</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">👨‍✈️</div>
+      <div class="feat-title">Personal Travel Expert</div>
+      <div class="feat-desc">ที่ปรึกษาการท่องเที่ยวส่วนตัว ตอบคำถาม วางแผนทริป และแนะนำเส้นทางพิเศษเฉพาะคุณ</div>
+      <span class="feat-tag">Diamond Only</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">🏨</div>
+      <div class="feat-title">Hotel Deal Access</div>
+      <div class="feat-desc">ส่วนลดโรงแรมพาร์ทเนอร์กว่า 3,000 แห่งทั่วโลก อัปเกรดห้องฟรี และ Early Check-in/Late Check-out</div>
+      <span class="feat-tag">สูงสุด 55% ออฟ</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">📱</div>
+      <div class="feat-title">Offline Travel Guide</div>
+      <div class="feat-desc">ดาวน์โหลดคู่มือท่องเที่ยวแบบ Offline ใช้งานได้ไม่ต้องใช้อินเทอร์เน็ต สะดวกทุกที่ทุกเวลา</div>
+      <span class="feat-tag">Gold & Diamond</span>
+    </div>
+    <div class="feat-card">
+      <div class="feat-icon-wrap">🎪</div>
+      <div class="feat-title">VIP Events Access</div>
+      <div class="feat-desc">สิทธิ์เข้าร่วมงาน Travel Meetup, Exclusive Tours และกิจกรรมพิเศษที่จัดขึ้นทั่วโลกทุกปี</div>
+      <span class="feat-tag">Diamond Exclusive</span>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TESTIMONIALS ═══ -->
+<section id="testimonials">
+  <div class="section-header">
+    <div class="section-eyebrow">สมาชิกพูดถึงเรา</div>
+    <h2 class="section-title">รีวิวจากสมาชิก</h2>
+  </div>
+  <div class="testi-grid" style="max-width:1100px;margin:0 auto;">
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-text">สมัคร Gold VIP แล้วไม่ผิดหวังเลย ได้ไปสถานที่ที่หากูเกิ้ลไม่เจอเลย ทีมงานแนะนำ Hidden Beach ที่ Palawan ที่นักท่องเที่ยวทั่วไปยังไม่รู้จัก ประทับใจมากๆ</div>
+      <div class="testi-user">
+        <div class="testi-avatar" style="background-image:url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80')"></div>
+        <div>
+          <div class="testi-name">พิมพ์ชนก วงศ์สุวรรณ</div>
+          <div class="testi-plan">👑 Gold VIP Member</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-text">Diamond VIP คุ้มค่ามากครับ Concierge ช่วยจองทุกอย่างให้ตั้งแต่ตั๋วจนถึงโรงแรม ไม่ต้องกังวลอะไรเลย เที่ยว Iceland ได้ Northern Lights ด้วยความช่วยเหลือจากทีมงาน</div>
+      <div class="testi-user">
+        <div class="testi-avatar" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80')"></div>
+        <div>
+          <div class="testi-name">ธนพล จันทร์ทอง</div>
+          <div class="testi-plan">💎 Diamond VIP Member</div>
+        </div>
+      </div>
+    </div>
+    <div class="testi-card">
+      <div class="testi-stars">★★★★★</div>
+      <div class="testi-quote">"</div>
+      <div class="testi-text">ชอบฟีเจอร์ Flight Alert มากเลยค่ะ ซื้อตั๋ว Tokyo ได้ราคาถูกกว่าปกติเกือบ 40% เพราะระบบแจ้งเตือนทันทีที่ราคาลง ประหยัดไปได้เยอะมาก</div>
+      <div class="testi-user">
+        <div class="testi-avatar" style="background-image:url('https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80')"></div>
+        <div>
+          <div class="testi-name">อรอนงค์ ศรีสมบัติ</div>
+          <div class="testi-plan">👑 Gold VIP Member</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FAQ ═══ -->
+<section id="faq" style="padding:80px 20px;">
+  <div class="section-header">
+    <div class="section-eyebrow">คำถามที่พบบ่อย</div>
+    <h2 class="section-title">FAQ</h2>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item open">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">สมัครสมาชิก VIP แล้วได้สิทธิ์ทันทีไหม?</span>
+        <div class="faq-arrow">+</div>
+      </div>
+      <div class="faq-a">ได้ทันทีเลยครับ หลังชำระเงินเสร็จ ระบบจะอัปเดตสถานะ VIP ของคุณภายใน 5 นาที และคุณจะสามารถเข้าถึงปลายทางพิเศษทั้งหมดได้ทันที</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">สามารถยกเลิกได้ตลอดเวลาไหม?</span>
+        <div class="faq-arrow">+</div>
+      </div>
+      <div class="faq-a">ได้เลย ไม่มีสัญญาผูกมัด คุณสามารถยกเลิกได้ตลอดเวลาผ่านหน้า Account Settings และสมาชิกภาพจะหมดสิ้นเมื่อครบรอบชำระเงินถัดไป</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">ชำระเงินผ่านช่องทางไหนได้บ้าง?</span>
+        <div class="faq-arrow">+</div>
+      </div>
+      <div class="faq-a">รองรับทุกช่องทาง: บัตรเครดิต/เดบิต (Visa, Mastercard, Amex), PromptPay QR, TrueMoney Wallet, Rabbit LINE Pay และ Bank Transfer ทุกธนาคาร</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">Gold VIP กับ Diamond VIP ต่างกันอย่างไร?</span>
+        <div class="faq-arrow">+</div>
+      </div>
+      <div class="faq-a">Gold VIP จะเข้าถึงปลายทาง 200+ แห่ง, แผนเดินทาง และส่วนลดโรงแรม 35% ส่วน Diamond VIP ได้ทุกอย่างของ Gold + Secret Destinations, Personal Concierge, ส่วนลดสูงสุด 55% และ VIP Events Access พิเศษ</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">มีแพ็กเกจสำหรับองค์กรหรือกลุ่มไหม?</span>
+        <div class="faq-arrow">+</div>
+      </div>
+      <div class="faq-a">มีครับ สำหรับกลุ่ม 5 คนขึ้นไปมีราคาพิเศษ ติดต่อทีม Corporate Sales ได้โดยตรงที่ corporate@globeexpress.co หรือ LINE Official @GlobeExpressVIP</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ CONTACT / FOOTER ═══ -->
+<footer id="contact">
+  <div style="position:relative;z-index:10;">
+    <div class="section-header" style="padding:0 20px 56px;">
+      <div class="section-eyebrow">ติดต่อเรา</div>
+      <h2 class="section-title">Contact Admin</h2>
+    </div>
+    <div class="contact-inner" style="padding:0 20px 60px;">
+
+      <!-- BRAND -->
+      <div class="contact-brand">
+        <div class="brand-logo">Globe <span>Express</span> 🌍</div>
+        <p>แพลตฟอร์มสำรวจปลายทางท่องเที่ยวระดับโลก คัดสรรสถานที่พิเศษกว่า 500 แห่งใน 48 ประเทศ พร้อมสิทธิพิเศษ VIP สำหรับนักเดินทางตัวจริง</p>
+        <div class="social-row">
+          <a class="social-btn" href="#" title="Facebook">📘</a>
+          <a class="social-btn" href="#" title="Instagram">📸</a>
+          <a class="social-btn" href="#" title="LINE">💬</a>
+          <a class="social-btn" href="#" title="YouTube">▶️</a>
+          <a class="social-btn" href="#" title="TikTok">🎵</a>
+          <a class="social-btn" href="#" title="Twitter/X">🐦</a>
+        </div>
+      </div>
+
+      <!-- CONTACT INFO -->
+      <div class="contact-col">
+        <h4>ติดต่อแอดมิน</h4>
+        <a class="contact-link" href="mailto:admin@globeexpress.co">
+          <div class="cl-icon">📧</div>
+          <div><div style="color:rgba(255,255,255,.7);margin-bottom:2px;">อีเมล</div>admin@globeexpress.co</div>
+        </a>
+        <a class="contact-link" href="tel:+66800000000">
+          <div class="cl-icon">📞</div>
+          <div><div style="color:rgba(255,255,255,.7);margin-bottom:2px;">โทรศัพท์</div>080-000-0000</div>
+        </a>
+        <a class="contact-link" href="#">
+          <div class="cl-icon">💬</div>
+          <div><div style="color:rgba(255,255,255,.7);margin-bottom:2px;">LINE Official</div>@GlobeExpressVIP</div>
+        </a>
+        <a class="contact-link" href="#">
+          <div class="cl-icon">💎</div>
+          <div><div style="color:rgba(255,255,255,.7);margin-bottom:2px;">VIP Hotline</div>090-000-0000</div>
+        </a>
+        <div class="contact-hours" style="margin-top:16px;">
+          <div class="h-title">⏰ เวลาทำการ</div>
+          <div class="h-row">จันทร์ – ศุกร์<span>09:00 – 20:00</span></div>
+          <div class="h-row">เสาร์ – อาทิตย์<span>10:00 – 18:00</span></div>
+          <div class="h-row" style="color:var(--gold);margin-top:4px;">VIP Diamond 24/7<span style="color:var(--gold);">ตลอดเวลา</span></div>
+        </div>
+      </div>
+
+      <!-- LINKS -->
+      <div class="contact-col">
+        <h4>ข้อมูลทั่วไป</h4>
+        <a class="contact-link" href="#">
+          <div class="cl-icon">📋</div>
+          <div>เกี่ยวกับ Globe Express</div>
+        </a>
+        <a class="contact-link" href="#">
+          <div class="cl-icon">🛡️</div>
+          <div>นโยบายความเป็นส่วนตัว</div>
+        </a>
+        <a class="contact-link" href="#">
+          <div class="cl-icon">📜</div>
+          <div>ข้อกำหนดการใช้งาน</div>
+        </a>
+        <a class="contact-link" href="#">
+          <div class="cl-icon">💳</div>
+          <div>นโยบายการคืนเงิน</div>
+        </a>
+        <a class="contact-link" href="#">
+          <div class="cl-icon">🤝</div>
+          <div>พาร์ทเนอร์กับเรา</div>
+        </a>
+        <a class="contact-link" href="#">
+          <div class="cl-icon">👥</div>
+          <div>ร่วมงานกับเรา</div>
+        </a>
+        <a class="contact-link" href="#faq">
+          <div class="cl-icon">❓</div>
+          <div>คำถามที่พบบ่อย</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- FOOTER BOTTOM -->
+    <div class="footer-bottom" style="padding-inline:20px;">
+      <div class="footer-copy">© 2025 Globe Express Co., Ltd. · ลิขสิทธิ์ทุกประการ · เลขที่ภาษี 0105565000000</div>
+      <div class="footer-links">
+        <a class="footer-link" href="#">Privacy</a>
+        <a class="footer-link" href="#">Terms</a>
+        <a class="footer-link" href="#">Cookies</a>
+        <a class="footer-link" href="#">Sitemap</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
 <script>
-/* ── FIREBASE ── */
-const firebaseConfig={apiKey:"AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",authDomain:"greencat-c40c6.firebaseapp.com",databaseURL:"https://greencat-c40c6-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"greencat-c40c6",storageBucket:"greencat-c40c6.firebasestorage.app",messagingSenderId:"574032692697",appId:"1:574032692697:web:2778aaf8d0c5a07c15c5c8",measurementId:"G-N4LFVEEMJW"};
-firebase.initializeApp(firebaseConfig);
-const auth=firebase.auth(), db=firebase.database();
-
-/* ── STATE ── */
-let CU=null, FREE=false, QUOTA=0, ADMIN=false, LANG='th', extraDed=0, lastRes=null;
-
-/* ── AUTH OBSERVER ── */
-auth.onAuthStateChanged(async u=>{
-  if(u){
-    CU=u;
-    const snap=await db.ref('users/'+u.uid).get(); const d=snap.val()||{};
-    FREE=d.freeUsed||false; QUOTA=d.calcQuota||0;
-    ADMIN=d.role==='admin'||d.name==='เฌอเมิน';
-    document.getElementById('authButtons').classList.add('hidden');
-    const ui=document.getElementById('userInfo'); ui.classList.remove('hidden'); ui.classList.add('flex');
-    document.getElementById('dName').textContent=d.name||u.email.split('@')[0];
-    updBadge();
-  } else {
-    CU=null; FREE=false; QUOTA=0; ADMIN=false;
-    document.getElementById('authButtons').classList.remove('hidden');
-    const ui=document.getElementById('userInfo'); ui.classList.add('hidden'); ui.classList.remove('flex');
+/* PARTICLES */
+(function(){
+  const c=document.getElementById('particles');
+  for(let i=0;i<18;i++){
+    const p=document.createElement('div'); p.className='p';
+    const s=Math.random()*4+2;
+    p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+8}s;animation-delay:${Math.random()*8}s;`;
+    c.appendChild(p);
   }
+})();
+
+/* MODAL */
+function openModal(){ document.getElementById('modal-overlay').classList.add('show'); }
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('show'); }
+document.getElementById('modal-overlay').addEventListener('click',function(e){ if(e.target===this) closeModal(); });
+
+let currentTab='login';
+function switchTab(t){
+  currentTab=t;
+  document.querySelectorAll('.modal-tab').forEach((el,i)=>{
+    el.classList.toggle('active', (t==='login'&&i===0)||(t==='register'&&i===1));
+  });
+  const rf=document.getElementById('register-fields');
+  if(t==='register'){ rf.classList.add('show'); document.querySelector('.submit-btn').textContent='✦ สมัครสมาชิก'; }
+  else { rf.classList.remove('show'); document.querySelector('.submit-btn').textContent='✦ เข้าสู่ระบบ'; }
+}
+
+function handleSubmit(){
+  closeModal();
+  const msg=currentTab==='register'?'สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Globe Express 🎉':'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับกลับมา 👋';
+  showToast('✅',msg);
+}
+
+function showToast(icon,msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.querySelector('#toast .toast-icon').textContent=icon;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
+}
+
+/* FAQ */
+function toggleFaq(el){
+  const item=el.parentElement;
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(f=>f.classList.remove('open'));
+  if(!isOpen) item.classList.add('open');
+}
+
+/* PLAN HOVER GLOW */
+document.querySelectorAll('.plan-card').forEach(c=>{
+  c.addEventListener('mousemove',e=>{
+    const r=c.getBoundingClientRect();
+    const x=((e.clientX-r.left)/r.width*100).toFixed(1);
+    const y=((e.clientY-r.top)/r.height*100).toFixed(1);
+    c.style.background=`radial-gradient(circle at ${x}% ${y}%, rgba(245,200,67,.07) 0%, transparent 70%), var(--glass)`;
+  });
+  c.addEventListener('mouseleave',()=>{ c.style.background=''; });
 });
 
-function updBadge(){
-  const b=document.getElementById('uBadge'), h=document.getElementById('quotaHint');
-  if(ADMIN){b.textContent='ADMIN ∞'; b.className='text-xs px-2 py-0.5 rounded-full font-semibold b-admin'; if(h)h.textContent='สิทธิ์ Admin — คำนวณได้ไม่จำกัด';}
-  else if(!FREE){b.textContent='ฟรี 1 ครั้ง'; b.className='text-xs px-2 py-0.5 rounded-full font-semibold b-free'; if(h)h.textContent='สมาชิกใหม่ได้รับสิทธิ์ฟรี 1 ครั้ง';}
-  else if(QUOTA>0){b.textContent='VIP '+QUOTA+' ครั้ง'; b.className='text-xs px-2 py-0.5 rounded-full font-semibold b-quota'; if(h)h.textContent='สิทธิ์ VIP คงเหลือ '+QUOTA+' ครั้ง';}
-  else{b.textContent='เติมเครดิต'; b.className='text-xs px-2 py-0.5 rounded-full font-semibold b-empty'; if(h)h.textContent='สิทธิ์ฟรีใช้ไปแล้ว — เติมเครดิต 5 บาท/ครั้ง';}
-}
-
-/* ── AUTH HANDLERS ── */
-async function doLogin(){
-  const e=document.getElementById('loginEmail').value.trim(), p=document.getElementById('loginPw').value, el=document.getElementById('loginErr');
-  el.classList.add('hidden');
-  if(!e||!p){showErr(el,'กรุณากรอกอีเมลและรหัสผ่าน');return;}
-  try{await auth.signInWithEmailAndPassword(e,p);closeM();toast('fa-check-circle','เข้าสู่ระบบสำเร็จ','emerald');}
-  catch(err){showErr(el,authMsg(err.code));}
-}
-async function doRegister(){
-  const n=document.getElementById('regName').value.trim(),e=document.getElementById('regEmail').value.trim(),p=document.getElementById('regPw').value,el=document.getElementById('regErr');
-  el.classList.add('hidden');
-  if(!n||!e||!p){showErr(el,'กรุณากรอกข้อมูลให้ครบถ้วน');return;}
-  if(p.length<6){showErr(el,'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร');return;}
-  try{
-    const c=await auth.createUserWithEmailAndPassword(e,p);
-    const role=n==='เฌอเมิน'?'admin':'user';
-    await db.ref('users/'+c.user.uid).set({name:n,email:e,freeUsed:false,calcQuota:0,role,createdAt:Date.now()});
-    await c.user.updateProfile({displayName:n});
-    closeM();
-    toast('fa-user-plus',role==='admin'?'สมัครสำเร็จ สิทธิ์ Admin ไม่จำกัด!':'สมัครสำเร็จ รับสิทธิ์ฟรี 1 ครั้ง!','blue');
-  }catch(err){showErr(el,authMsg(err.code));}
-}
-function doSignOut(){auth.signOut().then(()=>toast('fa-arrow-right-from-bracket','ออกจากระบบแล้ว','slate'));}
-function authMsg(c){const m={'auth/email-already-in-use':'อีเมลนี้ถูกใช้งานแล้ว','auth/invalid-email':'รูปแบบอีเมลไม่ถูกต้อง','auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร','auth/user-not-found':'ไม่พบบัญชีนี้ในระบบ','auth/wrong-password':'รหัสผ่านไม่ถูกต้อง','auth/invalid-credential':'อีเมลหรือรหัสผ่านไม่ถูกต้อง','auth/too-many-requests':'พยายามเข้าสู่ระบบมากเกินไป กรุณารอสักครู่'};return m[c]||'เกิดข้อผิดพลาด กรุณาลองใหม่';}
-
-/* ── QUOTA ── */
-function checkPerm(){
-  if(!CU) return{ok:false,r:'noauth'};
-  if(ADMIN) return{ok:true,r:'admin'};
-  if(!FREE) return{ok:true,r:'free'};
-  if(QUOTA>0) return{ok:true,r:'quota'};
-  return{ok:false,r:'pay'};
-}
-async function consume(r){
-  if(r==='free'){FREE=true;await db.ref('users/'+CU.uid).update({freeUsed:true});}
-  else if(r==='quota'){QUOTA=Math.max(0,QUOTA-1);await db.ref('users/'+CU.uid).update({calcQuota:QUOTA});}
-  updBadge();
-}
-
-/* ── CALCULATE DISPATCHER ── */
-async function calculate(type){
-  const p=checkPerm();
-  if(!p.ok){
-    if(p.r==='noauth'){toast('fa-lock','กรุณาเข้าสู่ระบบก่อนคำนวณ','blue');openM('loginModal');}
-    else{toast('fa-crown','สิทธิ์หมดแล้ว — กรุณาเติมเครดิต 5 บาท เพื่อคำนวณต่อ','blue');openM('payModal');}
-    return;
-  }
-  let res=null;
-  if(type==='pit') res=calcPIT();
-  else if(type==='cit') res=calcCIT();
-  else if(type==='vat') res=calcVAT();
-  else if(type==='wht') res=calcWHT();
-  else if(type==='cryp') res=calcCryp();
-  if(!res) return;
-  await consume(p.r);
-  showRes(res);
-  if(!ADMIN){
-    const rem=!FREE?'สิทธิ์ฟรีใช้ไปแล้ว':QUOTA>0?'สิทธิ์ VIP เหลือ '+QUOTA+' ครั้ง':'สิทธิ์หมดแล้ว';
-    toast(QUOTA===0&&FREE?'fa-info-circle':'fa-check-circle','คำนวณเสร็จสิ้น | '+rem,QUOTA===0&&FREE?'blue':'emerald');
-  } else toast('fa-check-circle','คำนวณเสร็จสิ้น (Admin)','emerald');
-}
-
-/* ── TAX LOGIC ── */
-function pitBrackets(n){
-  const br=[[150000,0],[300000,.05],[500000,.1],[750000,.15],[1000000,.2],[2000000,.25],[Infinity,.35]];
-  let t=0,p=0;
-  for(const[c,r]of br){if(n<=p)break;t+=Math.min(n-p,c-p)*r;p=c;}
-  return Math.round(t);
-}
-function calcPIT(){
-  const inc=parseFloat(document.getElementById('pit-income').value)||0;
-  if(!inc){toast('fa-circle-info','กรุณากรอกรายได้','blue');return null;}
-  const type=document.getElementById('pit-type').value;
-  const married=document.getElementById('pit-status').value==='married';
-  const expR={'40_1':.5,'40_2':.5,'40_8':.6}, expM={'40_1':100000,'40_2':100000,'40_8':999999};
-  const exp=Math.min(inc*(expR[type]||.5),expM[type]||100000);
-  const per=60000+(married?60000:0), net=Math.max(0,inc-exp-per-extraDed), tax=pitBrackets(net);
-  return{label:'ภาษีที่ต้องชำระ',main:'฿ '+fmt(tax),sub:'เงินได้สุทธิ ฿'+fmt(net),
-    bd:[{l:'รายได้ทั้งปี',v:'฿ '+fmt(inc)},{l:'หักค่าใช้จ่าย',v:'- ฿ '+fmt(exp)},
-        {l:'หักลดหย่อนส่วนตัว'+(married?'+คู่สมรส':''),v:'- ฿ '+fmt(per)},
-        {l:'หักลดหย่อนเพิ่มเติม',v:'- ฿ '+fmt(extraDed)},
-        {l:'เงินได้สุทธิ',v:'฿ '+fmt(net)},{l:'ภาษีสุทธิ (อัตราก้าวหน้า)',v:'฿ '+fmt(tax),hi:true}]};
-}
-function calcCIT(){
-  const pr=parseFloat(document.getElementById('cit-profit').value)||0;
-  if(!pr){toast('fa-circle-info','กรุณากรอกกำไรสุทธิ','blue');return null;}
-  const sz=document.getElementById('cit-size').value;
-  let t=sz==='sme'?(pr<=300000?0:pr<=3000000?(pr-300000)*.15:(3000000-300000)*.15+(pr-3000000)*.2):pr*.2;
-  const eff=((t/pr)*100).toFixed(2);
-  return{label:'ภาษีนิติบุคคลที่ต้องชำระ',main:'฿ '+fmt(Math.round(t)),sub:'อัตราภาษีที่แท้จริง '+eff+'%',
-    bd:[{l:'กำไรสุทธิ',v:'฿ '+fmt(pr)},{l:'ประเภทบริษัท',v:sz==='sme'?'SME':'บริษัทใหญ่'},
-        {l:'ภาษีนิติบุคคล',v:'฿ '+fmt(Math.round(t)),hi:true},{l:'อัตราที่แท้จริง',v:eff+'%'}]};
-}
-function calcVAT(){
-  const p=parseFloat(document.getElementById('vat-price').value)||0;
-  if(!p){toast('fa-circle-info','กรุณากรอกราคา','blue');return null;}
-  const m=document.getElementById('vat-mode').value;
-  let va,ba,to;
-  if(m==='excl'){va=p*.07;ba=p;to=p+va;}else{ba=p/1.07;va=p-ba;to=p;}
-  return{label:'จำนวน VAT',main:'฿ '+fmt(Math.round(va)),sub:'อัตรา 7%',
-    bd:[{l:'ราคาก่อน VAT',v:'฿ '+fmt(Math.round(ba))},{l:'VAT 7%',v:'฿ '+fmt(Math.round(va)),hi:true},{l:'ราคารวม VAT',v:'฿ '+fmt(Math.round(to))}]};
-}
-function calcWHT(){
-  const a=parseFloat(document.getElementById('wht-amount').value)||0;
-  if(!a){toast('fa-circle-info','กรุณากรอกยอดจ่าย','blue');return null;}
-  const r=parseFloat(document.getElementById('wht-rate').value)/100, t=a*r, n=a-t;
-  return{label:'ภาษีหัก ณ ที่จ่าย',main:'฿ '+fmt(Math.round(t)),sub:'อัตรา '+(r*100).toFixed(0)+'%',
-    bd:[{l:'ยอดจ่ายก่อนหัก',v:'฿ '+fmt(a)},{l:'ภาษีหัก ณ ที่จ่าย',v:'฿ '+fmt(Math.round(t)),hi:true},{l:'ยอดจ่ายสุทธิ',v:'฿ '+fmt(Math.round(n))}]};
-}
-function calcCryp(){
-  const pr=parseFloat(document.getElementById('cry-profit').value)||0;
-  if(!pr){toast('fa-circle-info','กรุณากรอกกำไร','blue');return null;}
-  const at=document.getElementById('cry-type').value, ot=parseFloat(document.getElementById('cry-other').value)||0;
-  if(at==='stock')return{label:'ภาษีกำไรหุ้น SET/MAI',main:'฿ 0',sub:'กำไรจากหุ้น SET/MAI ได้รับยกเว้นภาษี',bd:[{l:'กำไรจากหุ้น SET/MAI',v:'฿ '+fmt(pr)},{l:'ยกเว้นภาษี',v:'ได้รับการยกเว้น',hi:true}]};
-  const tot=pr+ot, exp=Math.min(tot*.5,100000), net=Math.max(0,tot-exp-60000-extraDed), tt=pitBrackets(net);
-  const on=Math.max(0,ot-Math.min(ot*.5,100000)-60000), ott=pitBrackets(on), ct=Math.max(0,tt-ott);
-  return{label:'ภาษีจากกำไรคริปโต (ประมาณ)',main:'฿ '+fmt(ct),sub:'คำนวณตามอัตราภาษีเงินได้บุคคลธรรมดา',
-    bd:[{l:'กำไรจากคริปโต',v:'฿ '+fmt(pr)},{l:'รายได้อื่น',v:'฿ '+fmt(ot)},{l:'หักค่าลดหย่อนเพิ่มเติม',v:'- ฿ '+fmt(extraDed)},{l:'รายได้สุทธิรวม',v:'฿ '+fmt(net)},{l:'ภาษีส่วนของคริปโต (ประมาณ)',v:'฿ '+fmt(ct),hi:true}]};
-}
-
-function showRes(d){
-  lastRes=d;
-  document.getElementById('resEmpty').classList.add('hidden');
-  document.getElementById('resContent').classList.remove('hidden');
-  document.getElementById('resLabel').textContent=d.label;
-  document.getElementById('resMain').textContent=d.main;
-  document.getElementById('resSub').textContent=d.sub||'';
-  const bd=document.getElementById('resBreakdown'); bd.innerHTML='';
-  d.bd.forEach(i=>{
-    const r=document.createElement('div'); r.className='flex items-center justify-between py-2 border-b border-navy-800';
-    r.innerHTML=`<span class="text-xs text-slate-500">${i.l}</span><span class="text-sm font-semibold ${i.hi?'text-blue-400':'text-slate-300'}">${i.v}</span>`;
-    bd.appendChild(r);
+/* SCROLL ANIMATION */
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.transition='opacity .6s ease, transform .6s ease';
+      e.target.style.opacity='1';
+      e.target.style.transform='translateY(0)';
+    }
   });
-}
-
-/* ── TABS ── */
-function switchCalc(t){
-  document.querySelectorAll('.calc-panel').forEach(p=>p.classList.add('hidden'));
-  document.getElementById('calc-'+t).classList.remove('hidden');
-  document.querySelectorAll('.tab-btn').forEach(b=>{b.classList.remove('tab-on');b.classList.add('text-slate-400');b.style.cssText='border:1px solid rgba(27,49,96,.9)';});
-  const a=document.getElementById('tab-'+t); a.classList.add('tab-on'); a.classList.remove('text-slate-400'); a.style.cssText='';
-}
-
-/* ── DEDUCTIONS ── */
-// rows with single fixed value
-const fixedRows={spouse:60000};
-// rows with count × unit
-const cntRows={children:30000,parents:30000,pspouse:30000,disabled:60000};
-// rows with amount + max
-const amtRows=[
-  {id:'pregn',max:60000},{id:'lifein',max:100000},{id:'healthin',max:25000},{id:'parentin',max:15000},
-  {id:'annuity',max:200000},{id:'ssec',max:9000},{id:'pvd',max:500000},{id:'ssf',max:200000},
-  {id:'rmf',max:500000},{id:'esg',max:300000},{id:'home',max:100000},{id:'receipt',max:50000},
-  {id:'donedu',max:null,x2:true},{id:'dongen',max:null},{id:'donpol',max:10000}
-];
-
-function togRow(id){
-  const chk=document.getElementById('d-'+id), on=chk.checked;
-  document.getElementById('r-'+id).classList.toggle('sel',on);
-  const ai=document.getElementById('a-'+id), ci=document.getElementById('c-'+id);
-  if(ai) ai.disabled=!on;
-  if(ci) ci.disabled=!on;
-}
-
-function calcDed(){
-  let tot=0, cnt=0;
-  // fixed
-  for(const[id,val]of Object.entries(fixedRows)){
-    const cb=document.getElementById('d-'+id); if(!cb||!cb.checked) continue;
-    const vel=document.getElementById('v-'+id); if(vel) vel.textContent='฿ '+fmt(val);
-    tot+=val; cnt++;
-  }
-  // count
-  for(const[id,unit]of Object.entries(cntRows)){
-    const cb=document.getElementById('d-'+id); const vel=document.getElementById('v-'+id);
-    if(!cb||!cb.checked){if(vel)vel.textContent='฿ 0'; continue;}
-    const n=parseInt(document.getElementById('c-'+id)?.value)||0;
-    const v=n*unit; if(vel) vel.textContent='฿ '+fmt(v);
-    tot+=v; cnt++;
-  }
-  // amount
-  for(const item of amtRows){
-    const cb=document.getElementById('d-'+item.id); const vel=document.getElementById('v-'+item.id);
-    if(!cb||!cb.checked){if(vel)vel.textContent='฿ 0'; continue;}
-    let a=parseFloat(document.getElementById('a-'+item.id)?.value)||0;
-    if(item.x2) a*=2;
-    if(item.max!==null) a=Math.min(a,item.max);
-    if(vel) vel.textContent='฿ '+fmt(Math.round(a));
-    tot+=a; cnt++;
-  }
-  document.getElementById('dedTotal').textContent='฿ '+fmt(Math.round(tot));
-  document.getElementById('dedCount').textContent=cnt+' รายการที่เลือก';
-  return Math.round(tot);
-}
-
-function confirmDed(){
-  extraDed=calcDed();
-  const dp=document.getElementById('ded-display-pit'), dc=document.getElementById('ded-display-cry');
-  if(dp) dp.value=extraDed; if(dc) dc.value=extraDed;
-  const h=document.getElementById('ded-hint');
-  if(h) h.textContent=extraDed>0?'ค่าลดหย่อนที่เลือก: ฿'+fmt(extraDed)+' (คลิกเพื่อแก้ไข)':'คลิกเพื่อเลือกค่าลดหย่อนทุกประเภท';
-  closeM();
-  toast('fa-list-check','บันทึกค่าลดหย่อน ฿'+fmt(extraDed)+' แล้ว','blue');
-}
-
-function clearDed(){
-  document.querySelectorAll('.ded-chk').forEach(c=>c.checked=false);
-  document.querySelectorAll('.ded-num').forEach(i=>{i.value='';i.disabled=true;});
-  document.querySelectorAll('.ded-cnt').forEach(i=>{i.value='1';i.disabled=true;});
-  document.querySelectorAll('[id^="v-"]').forEach(e=>e.textContent='฿ 0');
-  document.querySelectorAll('.ded-row').forEach(r=>r.classList.remove('sel'));
-  document.getElementById('dedTotal').textContent='฿ 0';
-  document.getElementById('dedCount').textContent='0 รายการที่เลือก';
-}
-
-/* ── PAYMENT ── */
-function selPay(btn,id){
-  document.querySelectorAll('.pay-btn').forEach(b=>{b.classList.remove('pay-btn-on');b.classList.add('pay-btn-off');b.querySelectorAll('i').forEach(i=>i.className=i.className.replace('text-blue-400','text-slate-400'));b.querySelectorAll('span').forEach(s=>{s.classList.remove('text-slate-300');s.classList.add('text-slate-400');});});
-  btn.classList.add('pay-btn-on'); btn.classList.remove('pay-btn-off');
-  btn.querySelectorAll('i').forEach(i=>i.className=i.className.replace('text-slate-400','text-blue-400'));
-  btn.querySelectorAll('span').forEach(s=>{s.classList.add('text-slate-300');s.classList.remove('text-slate-400');});
-  ['pp','card','tw'].forEach(p=>document.getElementById('ppanel-'+p)?.classList.add('hidden'));
-  document.getElementById('ppanel-'+id)?.classList.remove('hidden');
-}
-async function doPayment(){
-  if(!CU){openM('loginModal');return;}
-  QUOTA++;
-  await db.ref('users/'+CU.uid).update({calcQuota:QUOTA});
-  await db.ref('payments').push({uid:CU.uid,amount:5,quotaAdded:1,timestamp:Date.now(),status:'completed'});
-  updBadge();
-  swM('payModal','successModal');
-}
-
-/* ── MODAL HELPERS ── */
-function openM(id){
-  const bd=document.getElementById('backdrop'); bd.classList.remove('hidden'); bd.classList.add('flex');
-  document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
-  document.getElementById(id).classList.remove('hidden');
-}
-function closeM(){
-  document.getElementById('backdrop').classList.add('hidden');
-  document.getElementById('backdrop').classList.remove('flex');
-  document.querySelectorAll('.modal').forEach(m=>m.classList.add('hidden'));
-}
-function swM(a,b){document.getElementById(a).classList.add('hidden');document.getElementById(b).classList.remove('hidden');}
-document.getElementById('backdrop').addEventListener('click',e=>{if(e.target===e.currentTarget)closeM();});
-
-/* ── LANGUAGE ── */
-function toggleLang(){
-  LANG=LANG==='th'?'en':'th';
-  document.getElementById('langLabel').textContent=LANG.toUpperCase();
-  document.documentElement.lang=LANG;
-  document.querySelectorAll('[data-'+LANG+']').forEach(el=>el.textContent=el.getAttribute('data-'+LANG));
-}
-
-/* ── UTILS ── */
-function fmt(n){return Number(n).toLocaleString('th-TH',{minimumFractionDigits:0,maximumFractionDigits:0});}
-function showErr(el,m){el.textContent=m;el.classList.remove('hidden');}
-let tT;
-function toast(ico,msg,col){
-  clearTimeout(tT);
-  const cm={blue:'#60a5fa',emerald:'#34d399',red:'#f87171',slate:'#94a3b8'};
-  document.getElementById('toastIco').className='fas '+ico;
-  document.getElementById('toastIco').style.color=cm[col]||cm.blue;
-  document.getElementById('toastTxt').textContent=msg;
-  const t=document.getElementById('toast'); t.classList.remove('hidden');
-  tT=setTimeout(()=>t.classList.add('hidden'),4200);
-}
-function fmtCard(i){let v=i.value.replace(/\D/g,'').substring(0,16);i.value=v.replace(/(.{4})/g,'$1 ').trim();}
-function printResult(){if(lastRes)window.print();}
-function copyResult(){if(!lastRes)return;navigator.clipboard.writeText(lastRes.bd.map(r=>r.l+': '+r.v).join('\n')).then(()=>toast('fa-copy','คัดลอกแล้ว','blue'));}
-function toggleNav(){document.getElementById('mNav').classList.toggle('hidden');}
-
-/* ── INIT ── */
-switchCalc('pit');
-selPay(document.getElementById('pbtn-pp'),'pp');
+},{threshold:.12});
+document.querySelectorAll('.plan-card,.feat-card,.vip-cat,.testi-card,.faq-item').forEach((el,i)=>{
+  el.style.opacity='0'; el.style.transform='translateY(28px)';
+  el.style.transitionDelay=`${(i%4)*0.07}s`;
+  obs.observe(el);
+});
 </script>
-   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-   <script>
-  AOS.init();
-   </script>
 </body>
 </html>
