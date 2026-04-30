@@ -1195,14 +1195,19 @@ function switchTab(t){
   else { rf.classList.remove('show'); document.querySelector('.submit-btn').textContent='✦ เข้าสู่ระบบ'; }
 }
 
+// แก้ช่วงบรรทัด 1198 - 1202 ให้เป็นแบบนี้เป๊ะๆ ครับ
 function handleSubmit(){
-  closeModal();
-  const msg=currentTab==='register'?'สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Globe Express 🎉':'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับกลับมา 👋';
-  showToast('✅',msg);
+    closeModal();
+    const msg = currentTab === 'register' ? 'สมัครสมาชิกสำเร็จ' : 'เข้าสู่ระบบสำเร็จ';
+    showToast('✅', msg);
+
+    // ใส่ตรงนี้เพื่อให้รอแสดงข้อความก่อนค่อยเด้ง
+    setTimeout(() => {
+        window.location.href = 'index2.html'; 
+    }, 1500);
 }
 
 function showToast(icon,msg)
-window.location.href = 'index2.html';
   const t=document.getElementById('toast');
   document.getElementById('toast-msg').textContent=msg;
   document.querySelector('#toast .toast-icon').textContent=icon;
