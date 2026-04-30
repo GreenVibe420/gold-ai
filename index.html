@@ -1198,17 +1198,28 @@ function switchTab(t){
 
 function handleSubmit(){
   closeModal();
-  const msg=currentTab==='register'?'สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Globe Express 🎉':'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับกลับมา 👋';
-  showToast('✅',msg);
+  const msg = currentTab === 'register' ? 'สมัครสมาชิกสำเร็จ' : 'เข้าสู่ระบบสำเร็จ';
+  showToast('✅', msg);
+
+  // สั่งให้เด้งไปหน้า index2.html หลังจากผ่านไป 1.5 วินาที
+  setTimeout(() => {
+    window.location.href = 'index2.html';
+  }, 1500);
 }
 
-function showToast(icon,msg){
-  const t=document.getElementById('toast');
-  document.getElementById('toast-msg').textContent=msg;
-  document.querySelector('#toast .toast-icon').textContent=icon;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),4000);
+function showToast(icon, msg) {
+  const t = document.getElementById('toast');
+  const tMsg = document.getElementById('toast-msg');
+  const tIcon = document.querySelector('#toast .toast-icon');
+  
+  if(t && tMsg && tIcon) {
+    tMsg.textContent = msg;
+    tIcon.textContent = icon;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 4000);
+  }
 }
+
 
 /* FAQ */
 function toggleFaq(el){
