@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Globe Express — VIP Membership</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;600;700&family=Kanit:wght@200;300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;600;700&family=Kanit:wght@200;300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 :root {
@@ -672,6 +672,7 @@ body {
 <div id="modal-overlay">
   <div class="modal-box">
     <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-crown">👑</div>
     <div class="modal-title">Globe Express</div>
     <div class="modal-sub">เริ่มต้นการเดินทางสู่โลกที่ไม่มีขีดจำกัด</div>
     <div class="modal-tabs">
@@ -748,7 +749,7 @@ body {
   <div class="plans-grid">
 
     <!-- FREE -->
-    <div class="plan-card free">
+    <div class="plan-card free"data-aos="zoom-in-down">
       <div class="plan-inner">
         <div class="plan-icon">🌍</div>
         <div class="plan-name">Explorer</div>
@@ -770,8 +771,7 @@ body {
     </div>
 
     <!-- GOLD VIP -->
-    
-    <div class="plan-card gold popular">
+    <div class="plan-card gold popular"data-aos="zoom-in-down" >
       <div class="plan-popular-badge">⭐ ยอดนิยม</div>
       <div class="plan-inner" style="padding-top:50px;">
         <div class="plan-icon">👑</div>
@@ -794,7 +794,7 @@ body {
     </div>
 
     <!-- DIAMOND -->
-    <div class="plan-card diamond">
+    <div class="plan-card diamond"data-aos="zoom-in-down">
       <div class="plan-inner">
         <div class="plan-icon">💎</div>
         <div class="plan-name">Diamond VIP</div>
@@ -1198,28 +1198,17 @@ function switchTab(t){
 
 function handleSubmit(){
   closeModal();
-  const msg = currentTab === 'register' ? 'สมัครสมาชิกสำเร็จ' : 'เข้าสู่ระบบสำเร็จ';
-  showToast('✅', msg);
-
-  // สั่งให้เด้งไปหน้า index2.html หลังจากผ่านไป 1.5 วินาที
-  setTimeout(() => {
-    window.location.href = 'index2.html';
-  }, 1500);
+  const msg=currentTab==='register'?'สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Globe Express 🎉':'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับกลับมา 👋';
+  showToast('✅',msg);
 }
 
-function showToast(icon, msg) {
-  const t = document.getElementById('toast');
-  const tMsg = document.getElementById('toast-msg');
-  const tIcon = document.querySelector('#toast .toast-icon');
-  
-  if(t && tMsg && tIcon) {
-    tMsg.textContent = msg;
-    tIcon.textContent = icon;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 4000);
-  }
+function showToast(icon,msg){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  document.querySelector('#toast .toast-icon').textContent=icon;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),4000);
 }
-
 
 /* FAQ */
 function toggleFaq(el){
@@ -1255,10 +1244,10 @@ document.querySelectorAll('.plan-card,.feat-card,.vip-cat,.testi-card,.faq-item'
   el.style.transitionDelay=`${(i%4)*0.07}s`;
   obs.observe(el);
 });
+</script>
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script>
   AOS.init();
   </script>
-</script>
 </body>
 </html>
