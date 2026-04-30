@@ -1201,7 +1201,8 @@ function handleSubmit(){
   showToast('✅',msg);
 }
 
-function showToast(icon,msg){
+function showToast(icon,msg)
+window.location.href = 'index.html';{
   const t=document.getElementById('toast');
   document.getElementById('toast-msg').textContent=msg;
   document.querySelector('#toast .toast-icon').textContent=icon;
