@@ -361,97 +361,66 @@ html,body { width:100%; height:100%; overflow:hidden; font-family:'Inter',sans-s
 ═══════════════════════════════════════ */
 const destinations = [
   {
-    name:"NANGANO\nPREFECTURE",
-    region:"Japan Alps",
-    city:"Nagano City",
-    province:"Nagano Prefecture",
-    country:"🇯🇵 Japan",
-    desc:"Nagano Prefecture, set within the majestic Japan Alps, is a cultural jewellery trove with its historic shrines and temples. The region is also a hotspot for skiing and snowboarding, offering some of the country's best mountain experiences.",
-    img:"https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=85",
-    map:"https://www.google.com/maps/place/Nagano+Prefecture,+Japan"
+    name: "SIMILAN\nISLANDS",
+    region: "South",
+    city: "Thai Mueang",
+    province: "Phang Nga",
+    country: "🇹🇭 Thailand",
+    desc: "A breathtaking archipelago in the Andaman Sea, known for its crystal-clear blue waters and diverse marine life.",
+    img: "https://images.unsplash.com/photo-1589394815804-964ed9be2eb3?q=80&w=1600",
+    map: "https://www.google.com/maps/place/Similan+Islands"
   },
   {
-    name:"MARRAKECH\nMEROUGA",
-    region:"Sahara Desert",
-    city:"Merzouga",
-    province:"Drâa-Tafilalet Region",
-    country:"🇲🇦 Morocco",
-    desc:"The journey from the vibrant souks and palaces of Marrakech to the tranquil, starlit sands of Merzouga showcases the diverse splendour of Morocco. Camel treks and desert camps offer an unforgettable immersion into the nomadic way of life.",
-    img:"https://images.unsplash.com/photo-1489493887464-892be6d1daae?w=1600&q=85",
-    map:"https://www.google.com/maps/place/Merzouga,+Morocco"
+    name: "DOI\nINTHANON",
+    region: "North",
+    city: "Chom Thong",
+    province: "Chiang Mai",
+    country: "🇹🇭 Thailand",
+    desc: "The highest peak in Thailand, offering cool weather year-round, beautiful waterfalls, and twin royal pagodas.",
+    img: "https://images.unsplash.com/photo-1585123334904-845d60e97b29?q=80&w=1600",
+    map: "https://www.google.com/maps/place/Doi+Inthanon"
   },
   {
-    name:"YOSEMITE\nNATIONAL PARK",
-    region:"Sierra Nevada",
-    city:"Yosemite Valley",
-    province:"California",
-    country:"🇺🇸 United States",
-    desc:"Yosemite National Park is a paradise for outdoor enthusiasts and photographers alike. With towering granite cliffs, majestic waterfalls, and ancient sequoia groves, it stands as a cornerstone of American wilderness.",
-    img:"https://images.unsplash.com/photo-1472396961693-142e6e269027?w=1600&q=85",
-    map:"https://www.google.com/maps/place/Yosemite+National+Park,+CA,+USA"
+    name: "KHAO SOK\nLAKE",
+    region: "South",
+    city: "Ban Ta Khun",
+    province: "Surat Thani",
+    country: "🇹🇭 Thailand",
+    desc: "Famous for the Cheow Lan Lake, featuring dramatic limestone karsts rising from emerald green waters.",
+    img: "https://images.unsplash.com/photo-1550150311-667084534833?q=80&w=1600",
+    map: "https://www.google.com/maps/place/Khao+Sok+National+Park"
   },
   {
-    name:"LOS LANCES\nBEACH",
-    region:"Strait of Gibraltar",
-    city:"Tarifa",
-    province:"Cádiz Province, Andalusia",
-    country:"🇪🇸 Spain",
-    desc:"Los Lances Beach, stretching along the Strait of Gibraltar, is one of Europe's premier spots for kitesurfing and windsurfing. The constant Atlantic breeze and wild, unspoiled landscape make it a destination unlike any other.",
-    img:"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=85",
-    map:"https://www.google.com/maps/place/Los+Lances+Beach,+Tarifa,+Spain"
+    name: "SUKHOTHAI\nPARK",
+    region: "North",
+    city: "Mueang Sukhothai",
+    province: "Sukhothai",
+    country: "🇹🇭 Thailand",
+    desc: "A UNESCO World Heritage site featuring the ruins of the first capital of Siam with magnificent Buddha statues.",
+    img: "https://images.unsplash.com/photo-1528181304800-2f140819898f?q=80&w=1600",
+    map: "https://www.google.com/maps/place/Sukhothai+Historical+Park"
   },
   {
-    name:"GÖREME\nVALLEY",
-    region:"Cappadocia",
-    city:"Göreme",
-    province:"Nevşehir Province",
-    country:"🇹🇷 Turkey",
-    desc:"Göreme Valley in Cappadocia is a landscape straight out of another world — volcanic chimneys, ancient cave dwellings and the famous dawn hot-air balloon flights that paint the sky in warm colours above the fairy-tale plains.",
-    img:"https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=1600&q=85",
-    map:"https://www.google.com/maps/place/Göreme,+Nevşehir,+Turkey"
+    name: "WAT PHRA\nKAEW",
+    region: "Central",
+    city: "Phra Nakhon",
+    province: "Bangkok",
+    country: "🇹🇭 Thailand",
+    desc: "The Temple of the Emerald Buddha, a masterpiece of Thai architecture located within the Grand Palace grounds.",
+    img: "https://images.unsplash.com/photo-1504214208698-ea1919a243c8?q=80&w=1600",
+    map: "https://www.google.com/maps/place/Wat+Phra+Kaew"
   },
   {
-    name:"SAINT\nANTÖNIEN",
-    region:"Swiss Alps",
-    city:"St. Antönien",
-    province:"Graubünden",
-    country:"🇨🇭 Switzerland",
-    desc:"Nestled in the heart of the Swiss Alps, St. Antönien is a hidden gem of tranquillity. Surrounded by pristine meadows and towering peaks, this village offers world-class ski touring and hiking in unspoilt alpine serenity.",
-    img:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=85",
-    map:"https://www.google.com/maps/place/St.+Antönien,+Switzerland"
-  },
-  {
-  name: "RAILAY\nBEACH",
-  region: "South",
-  city: "Ao Nang",
-  province: "Krabi",
-  country: "🇹🇭 Thailand",
-  desc: "A stunning peninsula accessible only by boat, famous for its majestic limestone cliffs and world-class rock climbing.",
-  img: "https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?q=80&w=1600",
-  map: "https://www.google.com/maps/place/Railay+Beach"
-},
-{
-  name: "WAT\nARUN",
-  region: "Central",
-  city: "Bangkok",
-  province: "Bangkok",
-  country: "🇹🇭 Thailand",
-  desc: "The Temple of Dawn, one of Bangkok's most iconic landmarks, located on the west bank of the Chao Phraya River.",
-  img: "https://images.unsplash.com/photo-1528181304800-2f140819898f?q=80&w=1600",
-  map: "https://www.google.com/maps/place/Wat+Arun+Ratchawararam+Ratchaworamahawihan"
-},
-{
-  name: "PHI PHI\nISLANDS",
-  region: "South",
-  city: "Ao Nang",
-  province: "Krabi",
-  country: "🇹🇭 Thailand",
-  desc: "A tropical paradise featuring emerald waters and the famous Maya Bay, surrounded by dramatic cliffs.",
-  img: "https://images.unsplash.com/photo-1537956411701-16b2ee119042?q=80&w=1600",
-  map: "https://www.google.com/maps/place/Ko+Phi+Phi+Don"
-}
+    name: "KHAO YAI\nFOREST",
+    region: "Northeast",
+    city: "Pak Chong",
+    province: "Nakhon Ratchasima",
+    country: "🇹🇭 Thailand",
+    desc: "Thailand's first national park, a vast landscape of mountains, grasslands, and diverse wildlife just hours from Bangkok.",
+    img: "https://images.unsplash.com/photo-1590766948562-0f69f152ec56?q=80&w=1600",
+    map: "https://www.google.com/maps/place/Khao+Yai+National+Park"
+  }
 ];
-
 /* ═══════════════════════════════════════
    COOKIE HELPERS
 ═══════════════════════════════════════ */
