@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Globe Express — VIP Membership</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;600;700&family=Kanit:wght@200;300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 <style>
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 :root {
@@ -748,7 +749,7 @@ body {
   <div class="plans-grid">
 
     <!-- FREE -->
-    <div class="plan-card free">
+    <div data-aos="fade-down-right" class="plan-card free">
       <div class="plan-inner">
         <div class="plan-icon">🌍</div>
         <div class="plan-name">Explorer</div>
@@ -1254,6 +1255,10 @@ document.querySelectorAll('.plan-card,.feat-card,.vip-cat,.testi-card,.faq-item'
   el.style.transitionDelay=`${(i%4)*0.07}s`;
   obs.observe(el);
 });
+  <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+  <script>
+  AOS.init();
+  </script>
 </script>
 </body>
 </html>
