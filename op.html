@@ -1,1508 +1,834 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>TaxEasy — ระบบคำนวณภาษี</title>
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Globe Express — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 
 <!-- Firebase SDK -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-  import { getAuth, signInAnonymously, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-  import { getDatabase, ref, get, set, update }
-    from "https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword,
+           GoogleAuthProvider, signInWithPopup, onAuthStateChanged, sendPasswordResetEmail
+         } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
-  /* ─── Firebase Config ─── */
-  const firebaseConfig = {
-    apiKey: "AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",
-    authDomain: "greencat-c40c6.firebaseapp.com",
-    databaseURL: "https://greencat-c40c6-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "greencat-c40c6",
-    storageBucket: "greencat-c40c6.firebasestorage.app",
-    messagingSenderId: "574032692697",
-    appId: "1:574032692697:web:2778aaf8d0c5a07c15c5c8",
-    measurementId: "G-N4LFVEEMJW"
-  };
-
+ 
   const app  = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db   = getDatabase(app);
+  const analytics = getAnalytics(app);
+  const googleProvider = new GoogleAuthProvider();
 
-  /* ─── Quota Logic ──────────────────────────────────────────────────────────
-   *  Each anonymous user gets 1 free calculation stored in Realtime DB
-   *  under /users/{uid}/quota  (integer ≥ 0)
-   *  quota > 0  → allow calculation, decrement
-   *  quota === 0 → block and show payment modal
-   * ──────────────────────────────────────────────────────────────────────── */
+  // Expose to window so onclick handlers can call them
+  window._auth           = auth;
+  window._googleProvider = googleProvider;
+  window._signIn         = signInWithEmailAndPassword;
+  window._createUser     = createUserWithEmailAndPassword;
+  window._googleSignIn   = signInWithPopup;
+  window._resetPass      = sendPasswordResetEmail;
 
-  let currentUser = null;
-
-  // Sign in anonymously on page load
-  signInAnonymously(auth).catch(console.error);
-
-  onAuthStateChanged(auth, async user => {
-    if (!user) return;
-    currentUser = user;
-
-    const userRef = ref(db, `users/${user.uid}`);
-    const snap = await get(userRef);
-
-    if (!snap.exists()) {
-      // First-time visitor → grant 1 free calculation
-      await set(userRef, { quota: 1, totalCalcs: 0 });
+  // Auth state observer
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      console.log('Logged in:', user.email || user.displayName);
+      // window.location.href = '/dashboard'; // redirect after login
+      showAlert('login', 'success', `ยินดีต้อนรับ ${user.displayName || user.email}`);
     }
-    // Update UI badge
-    await refreshQuotaBadge();
   });
-
-  /* Read current quota from DB */
-  async function getQuota() {
-    if (!currentUser) return 0;
-    const snap = await get(ref(db, `users/${currentUser.uid}/quota`));
-    return snap.exists() ? snap.val() : 0;
-  }
-
-  /* Decrement quota after successful calc */
-  async function decrementQuota() {
-    if (!currentUser) return;
-    const uid = currentUser.uid;
-    const snap = await get(ref(db, `users/${uid}`));
-    const data = snap.val() || {};
-    const newQuota = Math.max(0, (data.quota || 0) - 1);
-    await update(ref(db, `users/${uid}`), {
-      quota: newQuota,
-      totalCalcs: (data.totalCalcs || 0) + 1
-    });
-    await refreshQuotaBadge();
-  }
-
-  /* Add quota after mock payment (top-up 1 calculation) */
-  async function addQuotaAfterPayment() {
-    if (!currentUser) return;
-    const uid = currentUser.uid;
-    const snap = await get(ref(db, `users/${uid}`));
-    const data = snap.val() || {};
-    await update(ref(db, `users/${uid}`), {
-      quota: (data.quota || 0) + 1
-    });
-    await refreshQuotaBadge();
-  }
-
-  async function refreshQuotaBadge() {
-    const q = await getQuota();
-    const badge = document.getElementById('quota-badge');
-    if (badge) {
-      const lang = document.documentElement.lang === 'en' ? 'en' : 'th';
-      badge.textContent = lang === 'th'
-        ? `เครดิตคงเหลือ: ${q} ครั้ง`
-        : `Credits left: ${q}`;
-      badge.className = q > 0 ? 'quota-badge quota-ok' : 'quota-badge quota-empty';
-    }
-  }
-
-  /* ─── Main entry point called by each "Calculate" button ─── */
-  window.handleCalculate = async function(calcFn) {
-    const q = await getQuota();
-    if (q <= 0) {
-      // No quota → show payment modal
-      showPaymentModal();
-      return;
-    }
-    // Has quota → run the calc, then decrement
-    calcFn();
-    await decrementQuota();
-  };
-
-  /* ─── Payment simulation ─── */
-  window.submitMockPayment = async function() {
-    const ref_ = document.getElementById('slip-input').value.trim();
-    if (!ref_) {
-      alert(document.documentElement.lang === 'en'
-        ? 'Please enter a reference number'
-        : 'กรุณากรอกเลขอ้างอิงการโอน');
-      return;
-    }
-    document.getElementById('pay-btn').disabled = true;
-    document.getElementById('pay-btn').textContent = '⏳ กำลังตรวจสอบ...';
-    // Simulate async verification
-    await new Promise(r => setTimeout(r, 1800));
-    await addQuotaAfterPayment();
-    closePaymentModal();
-    showSuccessToast();
-    document.getElementById('pay-btn').disabled = false;
-  };
-
-  window.refreshQuotaBadge = refreshQuotaBadge;
 </script>
 
 <style>
-/* ═══════════════════════════════════════════════
-   CSS VARIABLES & BASE
-═══════════════════════════════════════════════ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
 :root {
-  --bg:        #F7F8FC;
-  --surface:   #FFFFFF;
-  --border:    #E2E6F0;
-  --navy:      #0F2557;
-  --navy-mid:  #1A3A7A;
-  --accent:    #2563EB;
-  --accent-lt: #EFF4FF;
-  --gold:      #F59E0B;
-  --gold-lt:   #FFFBEB;
-  --green:     #10B981;
-  --green-lt:  #ECFDF5;
-  --red:       #EF4444;
-  --red-lt:    #FEF2F2;
-  --text:      #1E293B;
-  --muted:     #64748B;
-  --radius:    14px;
-  --shadow:    0 4px 24px rgba(15,37,87,.08);
-  --shadow-lg: 0 12px 48px rgba(15,37,87,.14);
+  --yellow:    #F5C843;
+  --yellow-dk: #c99e20;
+  --white:     #ffffff;
+  --glass:     rgba(255,255,255,0.10);
+  --glass-bdr: rgba(255,255,255,0.22);
+  --input-bg:  rgba(255,255,255,0.10);
+  --text-dim:  rgba(255,255,255,0.50);
+  --red:       #ff6b6b;
+  --green:     #51cf66;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Sarabun', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  min-height: 100vh;
-  font-size: 16px;
-  line-height: 1.6;
+html, body {
+  width:100%; height:100%;
+  overflow:hidden;
+  font-family:'Poppins', sans-serif;
+  background:#0a0a0a;
 }
 
-/* ═══════════════════════════════════════════════
-   HEADER
-═══════════════════════════════════════════════ */
-header {
-  background: var(--navy);
-  padding: 0 24px;
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  box-shadow: 0 2px 20px rgba(0,0,0,.25);
+/* ══ BACKGROUND SLIDES ══ */
+#bg-wrap {
+  position:fixed; inset:0; z-index:0; overflow:hidden;
 }
-.header-inner {
-  max-width: 900px;
-  margin: auto;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+.bg-slide {
+  position:absolute; inset:0;
+  background-size:cover; background-position:center;
+  opacity:0;
+  transform:scale(1.06);
+  transition: opacity .9s ease, transform 5s ease;
+  will-change:transform,opacity;
 }
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  text-decoration: none;
-}
-.logo-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--gold);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 18px;
-}
-.logo-text {
-  color: #fff;
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-.logo-sub {
-  color: rgba(255,255,255,.55);
-  font-size: 11px;
-  font-weight: 400;
-  display: block;
-  margin-top: -4px;
-}
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.lang-btn {
-  background: rgba(255,255,255,.12);
-  color: #fff;
-  border: 1px solid rgba(255,255,255,.2);
-  border-radius: 20px;
-  padding: 5px 14px;
-  font-size: 13px;
-  font-family: 'Sarabun', sans-serif;
-  cursor: pointer;
-  transition: background .2s;
-}
-.lang-btn:hover { background: rgba(255,255,255,.22); }
-
-/* Quota badge */
-.quota-badge {
-  font-size: 12px;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 20px;
-  white-space: nowrap;
-}
-.quota-ok    { background: var(--green-lt); color: var(--green); }
-.quota-empty { background: var(--red-lt); color: var(--red); }
-
-/* ═══════════════════════════════════════════════
-   MAIN LAYOUT
-═══════════════════════════════════════════════ */
-main {
-  max-width: 900px;
-  margin: 0 auto;
-  padding: 28px 16px 80px;
+.bg-slide.active { opacity:1; transform:scale(1); }
+#bg-wrap::after {
+  content:'';
+  position:absolute; inset:0; z-index:2;
+  background:
+    linear-gradient(to bottom, rgba(0,0,0,.45) 0%, rgba(0,0,0,.15) 40%, rgba(0,0,0,.55) 100%),
+    linear-gradient(to right,  rgba(0,0,0,.35) 0%, transparent 60%);
+  pointer-events:none;
 }
 
-/* Hero strip */
-.hero {
-  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
-  border-radius: var(--radius);
-  padding: 32px 28px;
-  margin-bottom: 28px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  overflow: hidden;
-  position: relative;
+/* ══ NAVBAR ══ */
+#navbar {
+  position:fixed; top:0; left:0; right:0; z-index:60;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:20px 36px;
 }
-.hero::after {
-  content: '₿';
-  position: absolute;
-  right: -10px;
-  top: -20px;
-  font-size: 140px;
-  opacity: .04;
+.nav-logo {
+  font-family:'Oswald',sans-serif;
+  font-size:15px; font-weight:700;
+  letter-spacing:4px; color:#fff;
+  text-transform:uppercase;
 }
-.hero-title { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
-.hero-sub   { color: rgba(255,255,255,.65); font-size: 15px; }
+.nav-right {
+  font-size:11px; letter-spacing:2px;
+  color:rgba(255,255,255,.5);
+  text-transform:uppercase;
+}
 
-/* Tab Navigation */
-.tabs {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 22px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+/* ══ CARDS STRIP (bottom) ══ */
+#cards-section {
+  position:fixed; bottom:0; left:0; right:0; z-index:50;
+  padding:0 0 22px 0;
+  display:flex; align-items:flex-end; justify-content:center;
+  pointer-events:auto;
+  -webkit-touch-callout:none;
 }
-.tabs::-webkit-scrollbar { display: none; }
+#cards-strip {
+  display:flex; gap:9px; align-items:flex-end;
+  padding:0 20px;
+  /* Prevent native scroll hijack */
+  touch-action:none;
+}
+.dest-card {
+  position:relative;
+  width:100px; height:140px;
+  border-radius:8px; overflow:hidden;
+  cursor:pointer; flex-shrink:0;
+  transition: width .5s cubic-bezier(.77,0,.18,1),
+              height .5s cubic-bezier(.77,0,.18,1),
+              box-shadow .3s ease;
+  -webkit-user-select:none; user-select:none;
+}
+.dest-card.active {
+  width:145px; height:165px;
+  box-shadow:0 0 0 2px var(--yellow), 0 12px 32px rgba(0,0,0,.5);
+}
+.card-img {
+  position:absolute; inset:0;
+  background-size:cover; background-position:center;
+  transform:scale(1);
+  transition:transform .6s ease, filter .4s ease;
+  filter:brightness(.65);
+}
+.dest-card.active .card-img { transform:scale(1.05); filter:brightness(.85); }
+.card-overlay {
+  position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 55%);
+  z-index:2;
+}
+.card-info {
+  position:absolute; bottom:0; left:0; right:0;
+  padding:10px 10px; z-index:3;
+}
+.card-place {
+  font-family:'Oswald',sans-serif;
+  font-size:11px; font-weight:600;
+  color:#fff; text-transform:uppercase;
+  letter-spacing:.8px; line-height:1.2;
+}
+.card-region { font-size:9px; color:rgba(255,255,255,.5); margin-top:2px; }
+.card-dot {
+  position:absolute; top:9px; right:9px;
+  width:7px; height:7px; border-radius:50%;
+  background:var(--yellow); z-index:5;
+  opacity:0; transform:scale(0);
+  transition:opacity .3s, transform .3s;
+}
+.dest-card.active .card-dot { opacity:1; transform:scale(1); }
+.card-progress {
+  position:absolute; bottom:0; left:0;
+  height:3px; background:var(--yellow);
+  width:0%; z-index:6; border-radius:0 2px 0 0;
+}
+
+/* ══ PREV / NEXT ARROWS ══ */
+#nav-arrows {
+  position:fixed; bottom:80px; right:24px; z-index:60;
+  display:flex; flex-direction:column; gap:8px;
+}
+.nav-arrow {
+  width:38px; height:38px; border-radius:50%;
+  border:1px solid rgba(255,255,255,.25);
+  background:rgba(0,0,0,.3);
+  backdrop-filter:blur(8px);
+  color:#fff; font-size:16px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .25s ease;
+}
+.nav-arrow:hover { background:var(--yellow); border-color:var(--yellow); color:#1a1400; }
+
+/* slide counter */
+#slide-counter {
+  position:fixed; bottom:190px; right:28px; z-index:60;
+  font-family:'Oswald',sans-serif; font-size:11px;
+  color:rgba(255,255,255,.4); letter-spacing:2px; text-align:center;
+}
+#slide-counter strong { display:block; font-size:20px; color:#fff; margin-bottom:2px; }
+
+/* ══ CENTER: AUTH GLASS CARD ══ */
+#auth-wrapper {
+  position:fixed; inset:0; z-index:55;
+  display:flex; align-items:center; justify-content:center;
+  padding:80px 20px 210px;   /* top:navbar, bottom:cards */
+  pointer-events:none;       /* let card strip clicks pass through */
+}
+
+/* TABS */
+.auth-tabs {
+  display:flex; gap:4px; margin-bottom:22px;
+  background:rgba(0,0,0,.3); border-radius:10px; padding:4px;
+}
 .tab-btn {
-  padding: 10px 20px;
-  border-radius: 30px;
-  border: 1.5px solid var(--border);
-  background: var(--surface);
-  color: var(--muted);
-  font-family: 'Sarabun', sans-serif;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all .18s;
+  flex:1; padding:9px 0;
+  border:none; background:transparent;
+  color:rgba(255,255,255,.45);
+  font-family:'Poppins',sans-serif; font-size:12px;
+  font-weight:500; letter-spacing:1px;
+  text-transform:uppercase; border-radius:7px;
+  cursor:pointer; transition:all .3s ease;
 }
-.tab-btn:hover { border-color: var(--accent); color: var(--accent); }
-.tab-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(37,99,235,.35);
-}
+.tab-btn.active { background:rgba(255,255,255,.12); color:#fff; }
 
-/* Card */
-.card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  padding: 28px;
-  box-shadow: var(--shadow);
-  margin-bottom: 20px;
-  border: 1px solid var(--border);
-}
-.card-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--navy);
-  margin-bottom: 6px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.card-desc {
-  color: var(--muted);
-  font-size: 14px;
-  margin-bottom: 22px;
-}
+/* FORM PANEL */
+.form-panel { display:none; }
+.form-panel.active { display:block; }
 
-/* Tax panel */
-.tax-panel { display: none; }
-.tax-panel.active { display: block; }
+.form-title {
+  font-family:'Oswald',sans-serif;
+  font-size:26px; font-weight:600;
+  color:#fff; margin-bottom:4px; letter-spacing:.5px;
+}
+.form-sub { font-size:11px; color:var(--text-dim); margin-bottom:20px; letter-spacing:.3px; }
 
-/* Form */
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-  margin-bottom: 20px;
+/* ALERT */
+.alert {
+  display:none; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:9px;
+  font-size:12px; margin-bottom:14px;
+  border:1px solid; animation:fadeIn .3s ease;
 }
-.form-group { display: flex; flex-direction: column; gap: 6px; }
-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-}
-label span { color: var(--muted); font-weight: 400; }
-input[type="number"], select {
-  width: 100%;
-  padding: 11px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-family: 'Sarabun', sans-serif;
-  font-size: 15px;
-  color: var(--text);
-  background: #fff;
-  outline: none;
-  transition: border-color .18s, box-shadow .18s;
-}
-input[type="number"]:focus, select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(37,99,235,.12);
-}
-.hint {
-  font-size: 12px;
-  color: var(--muted);
-  margin-top: 2px;
-}
+.alert.show { display:flex; }
+.alert-error   { background:rgba(255,107,107,.12); border-color:rgba(255,107,107,.35); color:#ff9999; }
+.alert-success { background:rgba(81,207,102,.12);  border-color:rgba(81,207,102,.35);  color:#7ee8a2; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:translateY(0)} }
 
-/* Range slider */
-.range-row { display: flex; align-items: center; gap: 10px; }
-input[type="range"] { flex: 1; accent-color: var(--accent); }
-.range-val {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  color: var(--accent);
-  font-weight: 500;
-  min-width: 48px;
-  text-align: right;
+/* INPUT */
+.input-group { margin-bottom:13px; }
+.input-field {
+  position:relative; display:flex; align-items:center;
 }
+.input-field i.icon-left {
+  position:absolute; left:13px;
+  font-size:17px; color:var(--text-dim);
+  pointer-events:none; z-index:1;
+  transition:color .3s;
+}
+.input-group:focus-within .input-field i.icon-left { color:var(--yellow); }
+.input-field input {
+  width:100%;
+  background:var(--input-bg);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:10px;
+  padding:12px 40px 12px 40px;
+  color:#fff; font-family:'Poppins',sans-serif; font-size:13px;
+  outline:none; transition:all .3s ease;
+}
+.input-field input::placeholder { color:rgba(255,255,255,.35); }
+.input-field input:focus {
+  border-color:rgba(245,200,67,.55);
+  background:rgba(255,255,255,.13);
+  box-shadow:0 0 0 3px rgba(245,200,67,.12);
+}
+.input-field input:-webkit-autofill {
+  -webkit-box-shadow:0 0 0 1000px rgba(20,20,20,.8) inset !important;
+  -webkit-text-fill-color:#fff !important;
+}
+.toggle-pw {
+  position:absolute; right:12px;
+  background:none; border:none; cursor:pointer;
+  color:var(--text-dim); font-size:17px; padding:0;
+  transition:color .25s; z-index:2;
+}
+.toggle-pw:hover { color:#fff; }
 
-/* Allowance checkboxes */
-.allowance-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  margin-bottom: 20px;
+/* REMEMBER / FORGOT */
+.row-flex {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:18px;
 }
-.check-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  cursor: pointer;
-  transition: all .18s;
-}
-.check-item:hover { border-color: var(--accent); background: var(--accent-lt); }
-.check-item input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; }
-.check-item label { cursor: pointer; font-size: 13px; font-weight: 500; }
-.check-item .amt { font-size: 11px; color: var(--muted); margin-left: auto; font-family: 'IBM Plex Mono', monospace; }
+.row-flex label { font-size:12px; color:var(--text-dim); cursor:pointer; display:flex; gap:7px; align-items:center; }
+.row-flex input[type=checkbox] { accent-color:var(--yellow); width:14px; height:14px; }
+.forgot-link { font-size:12px; color:rgba(255,255,255,.4); text-decoration:none; transition:color .25s; }
+.forgot-link:hover { color:var(--yellow); }
 
-/* Calc button */
-.calc-btn {
-  width: 100%;
-  padding: 14px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-family: 'Sarabun', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all .18s;
-  box-shadow: 0 4px 14px rgba(37,99,235,.3);
+/* BUTTONS */
+.btn-gold {
+  width:100%; padding:13px;
+  border:none; border-radius:10px;
+  background:linear-gradient(135deg, var(--yellow-dk) 0%, var(--yellow) 60%, #ffe066 100%);
+  color:#1a1200; font-family:'Poppins',sans-serif;
+  font-size:13px; font-weight:600;
+  letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer; position:relative; overflow:hidden;
+  transition:all .3s ease; margin-bottom:4px;
 }
-.calc-btn:hover { background: #1d4ed8; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(37,99,235,.4); }
-.calc-btn:active { transform: translateY(0); }
+.btn-gold:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(245,200,67,.4); }
+.btn-gold:active { transform:translateY(0); }
+.btn-outline-w {
+  width:100%; padding:13px;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:10px; background:rgba(255,255,255,.07);
+  color:#fff; font-family:'Poppins',sans-serif;
+  font-size:13px; font-weight:600;
+  letter-spacing:2px; text-transform:uppercase;
+  cursor:pointer; transition:all .3s ease; margin-bottom:4px;
+}
+.btn-outline-w:hover { background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.35); transform:translateY(-1px); }
+.spinner {
+  display:none; width:16px; height:16px;
+  border:2px solid currentColor; border-top-color:transparent;
+  border-radius:50%; animation:spin .7s linear infinite;
+  position:absolute; right:18px; top:50%; transform:translateY(-50%);
+}
+.loading .spinner { display:block; }
+@keyframes spin { to{transform:translateY(-50%) rotate(360deg)} }
 
-/* Result box */
-.result-box {
-  display: none;
-  margin-top: 22px;
-  padding: 22px;
-  background: linear-gradient(135deg, var(--green-lt), #f0fdf4);
-  border: 2px solid var(--green);
-  border-radius: var(--radius);
-  animation: slideUp .3s ease;
-}
-.result-box.visible { display: block; }
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-.result-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--green);
-  margin-bottom: 14px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.result-rows { display: flex; flex-direction: column; gap: 10px; }
-.result-row  {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 14px;
-  background: #fff;
-  border-radius: 10px;
-  border: 1px solid rgba(16,185,129,.2);
-}
-.result-label { font-size: 14px; color: var(--muted); }
-.result-value {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-}
-.result-value.highlight {
-  font-size: 18px;
-  color: var(--navy);
-}
-.result-value.tax { color: var(--red); }
-
-/* Divider */
+/* DIVIDER */
 .divider {
-  border: none;
-  border-top: 1px dashed var(--border);
-  margin: 16px 0;
+  display:flex; align-items:center; gap:10px;
+  margin:14px 0; color:var(--text-dim);
+  font-size:10px; letter-spacing:2px; text-transform:uppercase;
+}
+.divider::before,.divider::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.1); }
+
+/* GOOGLE BTN */
+.btn-google {
+  width:100%; padding:11px;
+  border:1px solid rgba(255,255,255,.15);
+  border-radius:10px; background:rgba(255,255,255,.06);
+  color:#fff; font-family:'Poppins',sans-serif;
+  font-size:12px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; gap:9px;
+  transition:all .25s ease;
+}
+.btn-google:hover { background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.3); }
+.btn-google img { width:18px; height:18px; }
+
+/* SWITCH */
+.switch-link {
+  text-align:center; margin-top:14px;
+  font-size:12px; color:var(--text-dim);
+}
+.switch-link a { color:var(--yellow); text-decoration:none; font-weight:500; }
+
+/* PASS STRENGTH */
+.strength-bars { display:flex; gap:4px; margin-top:6px; }
+.s-bar { flex:1; height:3px; border-radius:99px; background:rgba(255,255,255,.1); transition:background .3s; }
+
+/* PROGRESS LINE */
+#progress-line {
+  position:fixed; top:0; left:0;
+  height:2px; width:0%; background:var(--yellow);
+  z-index:999; transition:none;
 }
 
-/* ═══════════════════════════════════════════════
-   PAYMENT MODAL
-═══════════════════════════════════════════════ */
-.modal-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(10,20,50,.6);
-  backdrop-filter: blur(4px);
-  z-index: 500;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-}
-.modal-backdrop.open { display: flex; }
-.modal {
-  background: var(--surface);
-  border-radius: 20px;
-  padding: 32px;
-  max-width: 420px;
-  width: 100%;
-  box-shadow: var(--shadow-lg);
-  animation: popIn .3s cubic-bezier(.34,1.56,.64,1);
-}
-@keyframes popIn {
-  from { opacity:0; transform:scale(.88); }
-  to   { opacity:1; transform:scale(1); }
-}
-.modal-icon {
-  width: 60px;
-  height: 60px;
-  background: var(--gold-lt);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  margin: 0 auto 16px;
-}
-.modal-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--navy);
-  text-align: center;
-  margin-bottom: 8px;
-}
-.modal-sub {
-  font-size: 14px;
-  color: var(--muted);
-  text-align: center;
-  margin-bottom: 22px;
-}
-.price-tag {
-  background: var(--gold-lt);
-  border: 2px solid var(--gold);
-  border-radius: 12px;
-  padding: 14px;
-  text-align: center;
-  margin-bottom: 22px;
-}
-.price-tag .price {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--navy);
-}
-.price-tag .price-unit { font-size: 14px; color: var(--muted); }
-
-/* QR area */
-.qr-box {
-  background: var(--bg);
-  border-radius: 12px;
-  padding: 18px;
-  margin-bottom: 18px;
-  text-align: center;
-}
-.qr-mock {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto 10px;
-  background: var(--border);
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  color: var(--muted);
-  font-style: italic;
-  position: relative;
-  overflow: hidden;
-}
-/* Simple QR-like grid pattern */
-.qr-mock::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image:
-    repeating-linear-gradient(0deg, transparent, transparent 8px, rgba(0,0,0,.07) 8px, rgba(0,0,0,.07) 9px),
-    repeating-linear-gradient(90deg, transparent, transparent 8px, rgba(0,0,0,.07) 8px, rgba(0,0,0,.07) 9px);
-}
-.qr-note { font-size: 12px; color: var(--muted); }
-
-.modal-input {
-  width: 100%;
-  padding: 11px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-family: 'Sarabun', sans-serif;
-  font-size: 14px;
-  outline: none;
-  margin-bottom: 14px;
-  transition: border-color .18s;
-}
-.modal-input:focus { border-color: var(--accent); }
-
-.pay-btn {
-  width: 100%;
-  padding: 14px;
-  background: var(--gold);
-  color: var(--navy);
-  border: none;
-  border-radius: 12px;
-  font-family: 'Sarabun', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all .18s;
-  margin-bottom: 10px;
-}
-.pay-btn:hover { background: #d97706; }
-.pay-btn:disabled { opacity: .6; cursor: not-allowed; }
-
-.cancel-link {
-  display: block;
-  text-align: center;
-  font-size: 13px;
-  color: var(--muted);
-  cursor: pointer;
-  text-decoration: underline;
-}
-.cancel-link:hover { color: var(--text); }
-
-/* ═══════════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════════ */
-.toast {
-  position: fixed;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--navy);
-  color: #fff;
-  padding: 14px 24px;
-  border-radius: 30px;
-  font-size: 14px;
-  font-weight: 600;
-  z-index: 999;
-  transition: transform .35s cubic-bezier(.34,1.56,.64,1);
-  white-space: nowrap;
-  box-shadow: 0 8px 30px rgba(0,0,0,.25);
-}
-.toast.show { transform: translateX(-50%) translateY(0); }
-
-/* ═══════════════════════════════════════════════
-   CONTACT SECTION
-═══════════════════════════════════════════════ */
-.contact-card {
-  background: linear-gradient(135deg, #06B6D4, #0891B2);
-  border-radius: var(--radius);
-  padding: 28px;
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  flex-wrap: wrap;
-  margin-bottom: 20px;
-}
-.contact-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
-.contact-sub   { font-size: 14px; opacity: .8; }
-.line-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: #06C755;
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  padding: 12px 22px;
-  font-family: 'Sarabun', sans-serif;
-  font-size: 15px;
-  font-weight: 700;
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: all .18s;
-  box-shadow: 0 4px 14px rgba(6,199,85,.4);
-}
-.line-btn:hover { background: #05b84d; transform: translateY(-2px); }
-
-/* FAQ / note cards */
-.info-strip {
-  background: var(--accent-lt);
-  border: 1px solid rgba(37,99,235,.2);
-  border-radius: 10px;
-  padding: 14px 18px;
-  font-size: 13px;
-  color: var(--accent);
-  margin-bottom: 20px;
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-}
-
-/* Section heading */
-.section-heading {
-  font-size: 11px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--muted);
-  margin: 28px 0 14px;
-}
-
-/* Footer */
-footer {
-  text-align: center;
-  padding: 20px;
-  font-size: 12px;
-  color: var(--muted);
-  border-top: 1px solid var(--border);
-}
-
-/* ═══════════════════════════════════════════════
-   RESPONSIVE
-═══════════════════════════════════════════════ */
-@media (max-width: 600px) {
-  .hero { padding: 22px 18px; }
-  .hero-title { font-size: 21px; }
-  .card { padding: 20px 16px; }
-  .form-grid { grid-template-columns: 1fr; }
-  .logo-sub { display: none; }
-  .contact-card { flex-direction: column; text-align: center; }
+/* RESPONSIVE */
+@media (max-width:480px) {
+  .glass-card { padding:24px 18px 22px; }
+  #auth-wrapper { padding:68px 14px 200px; }
+  .dest-card { width:84px; height:118px; }
+  .dest-card.active { width:118px; height:138px; }
+  #nav-arrows { display:none; }
 }
 </style>
 </head>
 <body>
 
-<!-- ════════════════════════════════════════════
-     HEADER
-════════════════════════════════════════════ -->
-<header>
-  <div class="header-inner">
-    <a href="#" class="logo">
-      <div class="logo-icon">📊</div>
-      <div>
-        <span class="logo-text">TaxEasy</span>
-        <span class="logo-sub" data-th="ระบบคำนวณภาษี" data-en="Tax Calculator">ระบบคำนวณภาษี</span>
-      </div>
-    </a>
-    <div class="header-right">
-      <span id="quota-badge" class="quota-badge quota-ok">กำลังโหลด...</span>
-      <button class="lang-btn" onclick="toggleLanguage()" id="lang-toggle">🌐 EN</button>
-    </div>
-  </div>
-</header>
+<!-- BG SLIDES -->
+<div id="bg-wrap"></div>
 
-<!-- ════════════════════════════════════════════
-     MAIN
-════════════════════════════════════════════ -->
-<main>
+<!-- PROGRESS LINE -->
+<div id="progress-line"></div>
 
-  <!-- Hero -->
-  <div class="hero">
-    <div>
-      <div class="hero-title" data-th="คำนวณภาษีได้ง่ายๆ ไม่ต้องงง 🎯" data-en="Tax Made Simple — No More Confusion 🎯">
-        คำนวณภาษีได้ง่ายๆ ไม่ต้องงง 🎯
-      </div>
-      <div class="hero-sub" data-th="ภาษีเงินได้บุคคล · VAT · ภาษีหัก ณ ที่จ่าย — ครบในที่เดียว" data-en="Personal Income Tax · VAT · Withholding Tax — All in one place">
-        ภาษีเงินได้บุคคล · VAT · ภาษีหัก ณ ที่จ่าย — ครบในที่เดียว
-      </div>
-    </div>
-  </div>
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-logo">Globe Express</div>
+  <h1 class >Thailand
+  <div class="nav-right" id="nav-user">Travel · Explore</div>
+</nav>
 
-  <!-- Info strip -->
-  <div class="info-strip">
-    <span>💡</span>
-    <span data-th="คุณมีสิทธิ์คำนวณภาษีฟรี 1 ครั้ง หลังจากนั้นค่าบริการครั้งละ <strong>19 บาท</strong> เท่านั้น" 
-          data-en="You get <strong>1 free</strong> calculation. After that, only <strong>฿19 per calculation</strong>.">
-      คุณมีสิทธิ์คำนวณภาษีฟรี 1 ครั้ง หลังจากนั้นค่าบริการครั้งละ <strong>19 บาท</strong> เท่านั้น
-    </span>
-  </div>
-
-  <!-- Tab Navigation -->
-  <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('pit', this)">
-      <span data-th="🧑 ภาษีเงินได้บุคคลธรรมดา" data-en="🧑 Personal Income Tax">🧑 ภาษีเงินได้บุคคลธรรมดา</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('vat', this)">
-      <span data-th="🏪 ภาษีมูลค่าเพิ่ม (VAT)" data-en="🏪 Value Added Tax (VAT)">🏪 ภาษีมูลค่าเพิ่ม (VAT)</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('wht', this)">
-      <span data-th="📋 ภาษีหัก ณ ที่จ่าย" data-en="📋 Withholding Tax">📋 ภาษีหัก ณ ที่จ่าย</span>
-    </button>
-    <button class="tab-btn" onclick="switchTab('corp', this)">
-      <span data-th="🏢 ภาษีนิติบุคคล" data-en="🏢 Corporate Tax">🏢 ภาษีนิติบุคคล</span>
-    </button>
-  </div>
-
-  <!-- ────────────────────────────────────────
-       TAB 1: Personal Income Tax (PIT)
-  ──────────────────────────────────────── -->
-  <div class="tax-panel active" id="panel-pit">
-    <div class="card">
-      <div class="card-title">🧑 <span data-th="ภาษีเงินได้บุคคลธรรมดา" data-en="Personal Income Tax">ภาษีเงินได้บุคคลธรรมดา</span></div>
-      <div class="card-desc" data-th="กรอกรายได้และค่าลดหย่อนของคุณ แล้วเราจะคำนวณภาษีให้ทันที" data-en="Enter your income and deductions — we'll calculate your tax instantly.">
-        กรอกรายได้และค่าลดหย่อนของคุณ แล้วเราจะคำนวณภาษีให้ทันที
-      </div>
-
-      <div class="form-grid">
-        <div class="form-group">
-          <label data-th="รายได้รวมทั้งปี (บาท)" data-en="Total Annual Income (THB)">รายได้รวมทั้งปี (บาท)</label>
-          <input type="number" id="pit-income" placeholder="เช่น 600000" min="0" />
-          <span class="hint" data-th="รวมเงินเดือน โบนัส และรายได้อื่นๆ" data-en="Include salary, bonus, and other income">รวมเงินเดือน โบนัส และรายได้อื่นๆ</span>
-        </div>
-        <div class="form-group">
-          <label data-th="ประเภทรายได้" data-en="Income Type">ประเภทรายได้</label>
-          <select id="pit-type">
-            <option value="40_1" data-th="40(1) เงินเดือน ค่าจ้าง" data-en="40(1) Salary/Wages">40(1) เงินเดือน ค่าจ้าง</option>
-            <option value="40_2" data-th="40(2) รับจ้างทำงาน" data-en="40(2) Freelance/Contract">40(2) รับจ้างทำงาน</option>
-            <option value="40_8" data-th="40(8) ธุรกิจทั่วไป" data-en="40(8) General Business">40(8) ธุรกิจทั่วไป</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="card-title" style="font-size:15px; margin-bottom:12px;">
-        ✅ <span data-th="เลือกค่าลดหย่อนที่คุณมีสิทธิ์" data-en="Select your applicable deductions">เลือกค่าลดหย่อนที่คุณมีสิทธิ์</span>
-      </div>
-      <div class="allowance-grid">
-        <div class="check-item">
-          <input type="checkbox" id="all-personal" checked />
-          <label for="all-personal" data-th="ค่าลดหย่อนส่วนตัว" data-en="Personal Allowance">ค่าลดหย่อนส่วนตัว</label>
-          <span class="amt">60,000</span>
-        </div>
-        <div class="check-item">
-          <input type="checkbox" id="all-spouse" />
-          <label for="all-spouse" data-th="คู่สมรส" data-en="Spouse">คู่สมรส</label>
-          <span class="amt">60,000</span>
-        </div>
-        <div class="check-item">
-          <input type="checkbox" id="all-child" />
-          <label for="all-child" data-th="บุตร (คนแรก)" data-en="Child (1st)">บุตร (คนแรก)</label>
-          <span class="amt">30,000</span>
-        </div>
-        <div class="check-item">
-          <input type="checkbox" id="all-parent" />
-          <label for="all-parent" data-th="ค่าเลี้ยงดูบิดา/มารดา" data-en="Parent Support">ค่าเลี้ยงดูบิดา/มารดา</label>
-          <span class="amt">30,000</span>
-        </div>
-        <div class="check-item">
-          <input type="checkbox" id="all-life-ins" />
-          <label for="all-life-ins" data-th="ประกันชีวิต" data-en="Life Insurance">ประกันชีวิต</label>
-          <span class="amt">≤100,000</span>
-        </div>
-        <div class="check-item">
-          <input type="checkbox" id="all-rmf" />
-          <label for="all-rmf" data-th="กองทุน RMF" data-en="RMF Fund">กองทุน RMF</label>
-          <span class="amt">≤500,000</span>
-        </div>
-        <div class="check-item">
-          <input type="checkbox" id="all-ssf" />
-          <label for="all-ssf" data-th="กองทุน SSF" data-en="SSF Fund">กองทุน SSF</label>
-          <span class="amt">≤200,000</span>
-        </div>
-        <div class="check-item">
-          <input type="checkbox" id="all-pvd" />
-          <label for="all-pvd" data-th="กองทุนสำรองเลี้ยงชีพ" data-en="Provident Fund">กองทุนสำรองเลี้ยงชีพ</label>
-          <span class="amt">≤500,000</span>
-        </div>
-      </div>
-
-      <!-- Additional deductions inputs -->
-      <div class="form-grid">
-        <div class="form-group" id="life-ins-input" style="display:none">
-          <label data-th="เบี้ยประกันชีวิต (บาท)" data-en="Life Insurance Premium (THB)">เบี้ยประกันชีวิต (บาท)</label>
-          <input type="number" id="pit-life-ins" placeholder="0" min="0" max="100000" />
-        </div>
-        <div class="form-group" id="rmf-input" style="display:none">
-          <label data-th="ยอด RMF (บาท)" data-en="RMF Amount (THB)">ยอด RMF (บาท)</label>
-          <input type="number" id="pit-rmf" placeholder="0" min="0" />
-        </div>
-        <div class="form-group" id="ssf-input" style="display:none">
-          <label data-th="ยอด SSF (บาท)" data-en="SSF Amount (THB)">ยอด SSF (บาท)</label>
-          <input type="number" id="pit-ssf" placeholder="0" min="0" />
-        </div>
-        <div class="form-group" id="pvd-input" style="display:none">
-          <label data-th="ยอดกองทุนสำรองฯ (บาท)" data-en="Provident Fund (THB)">ยอดกองทุนสำรองฯ (บาท)</label>
-          <input type="number" id="pit-pvd" placeholder="0" min="0" />
-        </div>
-      </div>
-
-      <button class="calc-btn" onclick="handleCalculate(calcPIT)">
-        <span data-th="✨ คำนวณภาษีเลย!" data-en="✨ Calculate Tax Now!">✨ คำนวณภาษีเลย!</span>
-      </button>
-
-      <!-- PIT Result -->
-      <div class="result-box" id="pit-result">
-        <div class="result-title">✅ <span data-th="ผลการคำนวณ" data-en="Calculation Result">ผลการคำนวณ</span></div>
-        <div class="result-rows">
-          <div class="result-row">
-            <span class="result-label" data-th="รายได้รวม" data-en="Total Income">รายได้รวม</span>
-            <span class="result-value" id="pit-r-income">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="ค่าใช้จ่ายที่หักได้" data-en="Expense Deduction">ค่าใช้จ่ายที่หักได้</span>
-            <span class="result-value" id="pit-r-expense">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="ค่าลดหย่อนรวม" data-en="Total Allowances">ค่าลดหย่อนรวม</span>
-            <span class="result-value" id="pit-r-allowance">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="เงินได้สุทธิ" data-en="Net Taxable Income">เงินได้สุทธิ</span>
-            <span class="result-value" id="pit-r-net">—</span>
-          </div>
-          <hr class="divider" />
-          <div class="result-row" style="background: #fff7ed; border-color: rgba(239,68,68,.2);">
-            <span class="result-label" style="font-weight:700;" data-th="ภาษีที่ต้องจ่าย" data-en="Tax Payable">ภาษีที่ต้องจ่าย</span>
-            <span class="result-value highlight tax" id="pit-r-tax">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="อัตราภาษีที่แท้จริง" data-en="Effective Tax Rate">อัตราภาษีที่แท้จริง</span>
-            <span class="result-value" id="pit-r-rate">—</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ────────────────────────────────────────
-       TAB 2: VAT
-  ──────────────────────────────────────── -->
-  <div class="tax-panel" id="panel-vat">
-    <div class="card">
-      <div class="card-title">🏪 <span data-th="ภาษีมูลค่าเพิ่ม (VAT)" data-en="Value Added Tax (VAT)">ภาษีมูลค่าเพิ่ม (VAT)</span></div>
-      <div class="card-desc" data-th="คำนวณ VAT 7% ได้ง่ายๆ ทั้งแบบรวม VAT แล้ว และแบบที่ยังไม่รวม" data-en="Calculate 7% VAT — both inclusive and exclusive.">
-        คำนวณ VAT 7% ได้ง่ายๆ ทั้งแบบรวม VAT แล้ว และแบบที่ยังไม่รวม
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label data-th="ยอดเงิน (บาท)" data-en="Amount (THB)">ยอดเงิน (บาท)</label>
-          <input type="number" id="vat-amount" placeholder="เช่น 10000" min="0" />
-        </div>
-        <div class="form-group">
-          <label data-th="ประเภทการคำนวณ" data-en="Calculation Type">ประเภทการคำนวณ</label>
-          <select id="vat-type">
-            <option value="excl" data-th="ยังไม่รวม VAT (บวกเพิ่ม 7%)" data-en="Exclusive — Add 7% VAT">ยังไม่รวม VAT (บวกเพิ่ม 7%)</option>
-            <option value="incl" data-th="รวม VAT แล้ว (ถอด VAT ออก)" data-en="Inclusive — Extract VAT">รวม VAT แล้ว (ถอด VAT ออก)</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label data-th="อัตรา VAT (%)" data-en="VAT Rate (%)">อัตรา VAT (%)</label>
-          <div class="range-row">
-            <input type="range" id="vat-rate" min="0" max="15" step="0.5" value="7" oninput="document.getElementById('vat-rate-val').textContent=this.value+'%'" />
-            <span class="range-val" id="vat-rate-val">7%</span>
-          </div>
-        </div>
-      </div>
-      <button class="calc-btn" onclick="handleCalculate(calcVAT)">
-        <span data-th="✨ คำนวณ VAT" data-en="✨ Calculate VAT">✨ คำนวณ VAT</span>
-      </button>
-      <div class="result-box" id="vat-result">
-        <div class="result-title">✅ <span data-th="ผลการคำนวณ" data-en="Calculation Result">ผลการคำนวณ</span></div>
-        <div class="result-rows">
-          <div class="result-row">
-            <span class="result-label" data-th="ยอดก่อน VAT" data-en="Amount Before VAT">ยอดก่อน VAT</span>
-            <span class="result-value" id="vat-r-base">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="VAT" data-en="VAT Amount">VAT</span>
-            <span class="result-value tax" id="vat-r-vat">—</span>
-          </div>
-          <div class="result-row" style="background: #fff7ed; border-color:rgba(239,68,68,.2);">
-            <span class="result-label" style="font-weight:700;" data-th="ยอดรวม VAT" data-en="Total with VAT">ยอดรวม VAT</span>
-            <span class="result-value highlight" id="vat-r-total">—</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ────────────────────────────────────────
-       TAB 3: Withholding Tax (WHT)
-  ──────────────────────────────────────── -->
-  <div class="tax-panel" id="panel-wht">
-    <div class="card">
-      <div class="card-title">📋 <span data-th="ภาษีหัก ณ ที่จ่าย" data-en="Withholding Tax">ภาษีหัก ณ ที่จ่าย</span></div>
-      <div class="card-desc" data-th="คำนวณภาษีที่ถูกหัก ณ ที่จ่าย ตามประเภทรายได้และอัตราที่กำหนด" data-en="Calculate withholding tax by income type and applicable rate.">
-        คำนวณภาษีที่ถูกหัก ณ ที่จ่าย ตามประเภทรายได้และอัตราที่กำหนด
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label data-th="ยอดจ่าย (บาท)" data-en="Payment Amount (THB)">ยอดจ่าย (บาท)</label>
-          <input type="number" id="wht-amount" placeholder="เช่น 50000" min="0" />
-        </div>
-        <div class="form-group">
-          <label data-th="ประเภทรายได้ที่หัก ณ ที่จ่าย" data-en="WHT Income Type">ประเภทรายได้ที่หัก ณ ที่จ่าย</label>
-          <select id="wht-type" onchange="updateWHTRate()">
-            <option value="1" data-rate="3" data-th="ค่าจ้าง/บริการ — 3%" data-en="Services — 3%">ค่าจ้าง/บริการ — 3%</option>
-            <option value="2" data-rate="5" data-th="ค่าเช่า — 5%" data-en="Rent — 5%">ค่าเช่า — 5%</option>
-            <option value="3" data-rate="1" data-th="ค่าขนส่ง — 1%" data-en="Transport — 1%">ค่าขนส่ง — 1%</option>
-            <option value="4" data-rate="3" data-th="ค่าโฆษณา — 3%" data-en="Advertising — 3%">ค่าโฆษณา — 3%</option>
-            <option value="5" data-rate="10" data-th="เงินปันผล — 10%" data-en="Dividends — 10%">เงินปันผล — 10%</option>
-            <option value="6" data-rate="15" data-th="ดอกเบี้ย — 15%" data-en="Interest — 15%">ดอกเบี้ย — 15%</option>
-            <option value="custom" data-rate="0" data-th="กำหนดเอง" data-en="Custom Rate">กำหนดเอง</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label data-th="อัตราหัก ณ ที่จ่าย (%)" data-en="WHT Rate (%)">อัตราหัก ณ ที่จ่าย (%)</label>
-          <input type="number" id="wht-rate" value="3" min="0" max="100" step="0.5" />
-        </div>
-        <div class="form-group">
-          <label data-th="ผู้รับเงินเป็น" data-en="Recipient Type">ผู้รับเงินเป็น</label>
-          <select id="wht-entity">
-            <option value="person" data-th="บุคคลธรรมดา" data-en="Individual">บุคคลธรรมดา</option>
-            <option value="corp" data-th="นิติบุคคล" data-en="Corporate">นิติบุคคล</option>
-          </select>
-        </div>
-      </div>
-      <button class="calc-btn" onclick="handleCalculate(calcWHT)">
-        <span data-th="✨ คำนวณภาษีหัก ณ ที่จ่าย" data-en="✨ Calculate Withholding Tax">✨ คำนวณภาษีหัก ณ ที่จ่าย</span>
-      </button>
-      <div class="result-box" id="wht-result">
-        <div class="result-title">✅ <span data-th="ผลการคำนวณ" data-en="Calculation Result">ผลการคำนวณ</span></div>
-        <div class="result-rows">
-          <div class="result-row">
-            <span class="result-label" data-th="ยอดจ่ายเต็ม" data-en="Gross Payment">ยอดจ่ายเต็ม</span>
-            <span class="result-value" id="wht-r-gross">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="ภาษีที่หัก ณ ที่จ่าย" data-en="WHT Amount">ภาษีที่หัก ณ ที่จ่าย</span>
-            <span class="result-value tax" id="wht-r-wht">—</span>
-          </div>
-          <div class="result-row" style="background:#fff7ed; border-color:rgba(239,68,68,.2);">
-            <span class="result-label" style="font-weight:700;" data-th="ยอดจ่ายจริง (หักแล้ว)" data-en="Net Payment (after WHT)">ยอดจ่ายจริง (หักแล้ว)</span>
-            <span class="result-value highlight" id="wht-r-net">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="รหัสบัญชีภาษี" data-en="Tax Account Code">รหัสบัญชีภาษี</span>
-            <span class="result-value" id="wht-r-code" style="font-size:13px;">—</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ────────────────────────────────────────
-       TAB 4: Corporate Tax
-  ──────────────────────────────────────── -->
-  <div class="tax-panel" id="panel-corp">
-    <div class="card">
-      <div class="card-title">🏢 <span data-th="ภาษีเงินได้นิติบุคคล" data-en="Corporate Income Tax">ภาษีเงินได้นิติบุคคล</span></div>
-      <div class="card-desc" data-th="คำนวณภาษีนิติบุคคลตามขนาดกิจการและกำไรสุทธิ" data-en="Calculate corporate tax by business size and net profit.">
-        คำนวณภาษีนิติบุคคลตามขนาดกิจการและกำไรสุทธิ
-      </div>
-      <div class="form-grid">
-        <div class="form-group">
-          <label data-th="กำไรสุทธิ (บาท)" data-en="Net Profit (THB)">กำไรสุทธิ (บาท)</label>
-          <input type="number" id="corp-profit" placeholder="เช่น 1000000" min="0" />
-        </div>
-        <div class="form-group">
-          <label data-th="ประเภทบริษัท" data-en="Company Type">ประเภทบริษัท</label>
-          <select id="corp-type">
-            <option value="sme" data-th="SME (ทุนจดทะเบียนไม่เกิน 5 ล้านบาท)" data-en="SME (Registered Capital ≤ 5M THB)">SME (ทุน ≤ 5 ล้านบาท)</option>
-            <option value="listed" data-th="บริษัทจดทะเบียนในตลาดหลักทรัพย์" data-en="Listed Company (SET)">บริษัทจดทะเบียน SET</option>
-            <option value="general" data-th="บริษัททั่วไป" data-en="General Company">บริษัททั่วไป</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label data-th="รายได้รวมทั้งปี (บาท)" data-en="Total Revenue (THB)">รายได้รวมทั้งปี (บาท)</label>
-          <input type="number" id="corp-revenue" placeholder="เช่น 5000000" min="0" />
-          <span class="hint" data-th="ใช้ตรวจสอบเงื่อนไข SME" data-en="Used to verify SME conditions">ใช้ตรวจสอบเงื่อนไข SME</span>
-        </div>
-      </div>
-      <button class="calc-btn" onclick="handleCalculate(calcCorp)">
-        <span data-th="✨ คำนวณภาษีนิติบุคคล" data-en="✨ Calculate Corporate Tax">✨ คำนวณภาษีนิติบุคคล</span>
-      </button>
-      <div class="result-box" id="corp-result">
-        <div class="result-title">✅ <span data-th="ผลการคำนวณ" data-en="Calculation Result">ผลการคำนวณ</span></div>
-        <div class="result-rows">
-          <div class="result-row">
-            <span class="result-label" data-th="กำไรสุทธิ" data-en="Net Profit">กำไรสุทธิ</span>
-            <span class="result-value" id="corp-r-profit">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="อัตราภาษี" data-en="Tax Rate">อัตราภาษี</span>
-            <span class="result-value" id="corp-r-rate">—</span>
-          </div>
-          <div class="result-row">
-            <span class="result-label" data-th="หมายเหตุ" data-en="Note">หมายเหตุ</span>
-            <span class="result-value" id="corp-r-note" style="font-size:12px; color:var(--muted)">—</span>
-          </div>
-          <hr class="divider" />
-          <div class="result-row" style="background:#fff7ed; border-color:rgba(239,68,68,.2);">
-            <span class="result-label" style="font-weight:700;" data-th="ภาษีที่ต้องจ่าย" data-en="Tax Payable">ภาษีที่ต้องจ่าย</span>
-            <span class="result-value highlight tax" id="corp-r-tax">—</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ────────────────────────────────────────
-       CONTACT SECTION
-  ──────────────────────────────────────── -->
-  <div class="section-heading" data-th="ติดต่อเรา" data-en="CONTACT US">ติดต่อเรา</div>
-
-  <div class="contact-card">
-    <div>
-      <div class="contact-title" data-th="มีข้อสงสัย หรือต้องการความช่วยเหลือ?" data-en="Got questions or need help?">มีข้อสงสัย หรือต้องการความช่วยเหลือ?</div>
-      <div class="contact-sub" data-th="ทีมงานของเราพร้อมตอบทุกคำถามเกี่ยวกับภาษีของคุณ 7 วัน ตั้งแต่ 9:00–21:00 น." data-en="Our team is ready to answer all your tax questions — 7 days, 9AM–9PM.">
-        ทีมงานพร้อมตอบทุกคำถามภาษี 7 วัน ตั้งแต่ 9:00–21:00 น.
-      </div>
-    </div>
-    <a href="https://line.me/ti/p/~@taxeasy" target="_blank" class="line-btn">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M19.365 9.89c.25 0 .452.2.452.443v.01c0 .244-.202.443-.452.443H17.69v1.066h1.675c.25 0 .452.2.452.443v.01c0 .244-.202.443-.452.443h-2.128a.447.447 0 01-.452-.443V9.333c0-.244.203-.443.452-.443h2.128zm-9.942.443c0-.244.202-.443.452-.443.25 0 .452.2.452.443v3.077c0 .244-.202.443-.452.443a.447.447 0 01-.452-.443V10.333zm-1.793-.443H5.502c-.25 0-.452.2-.452.443v3.077c0 .244.203.443.452.443.25 0 .452-.2.452-.443V11.4l1.504 2.217a.455.455 0 00.377.196.447.447 0 00.452-.443V10.333a.447.447 0 00-.452-.443c-.25 0-.452.2-.452.443v1.95L5.88 10.066a.455.455 0 00-.25-.176zm5.38 0h-2.128a.447.447 0 00-.452.443v3.077c0 .244.203.443.452.443h2.128c.25 0 .452-.2.452-.443v-.01c0-.244-.202-.443-.452-.443H11.31v-.733h1.7c.25 0 .452-.2.452-.443v-.01c0-.244-.202-.443-.452-.443h-1.7v-.733h1.7c.25 0 .452-.2.452-.443v-.01c0-.244-.202-.443-.452-.443zM24 10.396c0-4.817-4.832-8.735-10.775-8.735C7.283 1.661 2.45 5.58 2.45 10.396c0 4.32 3.831 7.938 9.005 8.624.35.076.83.231.95.531.109.271.071.696.035.97l-.153.92c-.047.27-.215 1.057.927.576 1.142-.48 6.162-3.63 8.41-6.213C23.37 14.022 24 12.277 24 10.396z"/>
-      </svg>
-      <span data-th="แอดไลน์เราเลย!" data-en="Add us on LINE!">แอดไลน์เราเลย!</span>
-    </a>
-  </div>
-
-  <!-- Quick contact info -->
-  <div class="card" style="padding:20px 24px;">
-    <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:16px;">
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:22px;">📧</span>
-        <div>
-          <div style="font-size:12px; color:var(--muted);" data-th="อีเมล" data-en="Email">อีเมล</div>
-          <div style="font-size:14px; font-weight:600;">support@taxeasy.th</div>
-        </div>
-      </div>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:22px;">📞</span>
-        <div>
-          <div style="font-size:12px; color:var(--muted);" data-th="โทรศัพท์" data-en="Phone">โทรศัพท์</div>
-          <div style="font-size:14px; font-weight:600;">02-XXX-XXXX</div>
-        </div>
-      </div>
-      <div style="display:flex; align-items:center; gap:10px;">
-        <span style="font-size:22px;">🕐</span>
-        <div>
-          <div style="font-size:12px; color:var(--muted);" data-th="เวลาทำการ" data-en="Business Hours">เวลาทำการ</div>
-          <div style="font-size:14px; font-weight:600;" data-th="จ.–อา. 9:00–21:00" data-en="Mon–Sun 9AM–9PM">จ.–อา. 9:00–21:00</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-</main>
-
-<!-- ════════════════════════════════════════════
-     PAYMENT MODAL
-════════════════════════════════════════════ -->
-<div class="modal-backdrop" id="payment-modal">
-  <div class="modal">
-    <div class="modal-icon">💳</div>
-    <div class="modal-title" data-th="เติมเครดิตการคำนวณ" data-en="Top Up Calculation Credit">เติมเครดิตการคำนวณ</div>
-    <div class="modal-sub" data-th="เครดิตฟรีของคุณหมดแล้ว — เติม 1 ครั้ง ในราคาเพียง:" data-en="Your free credit is used up — add 1 more calculation for just:">
-      เครดิตฟรีของคุณหมดแล้ว — เติม 1 ครั้ง ในราคาเพียง:
-    </div>
-
-    <div class="price-tag">
-      <div class="price">฿19</div>
-      <div class="price-unit" data-th="ต่อ 1 การคำนวณ" data-en="per calculation">ต่อ 1 การคำนวณ</div>
-    </div>
-
-    <div class="qr-box">
-      <div class="qr-mock">QR<br>PromptPay</div>
-      <div class="qr-note" data-th="📱 สแกน QR เพื่อโอน 19 บาทผ่าน PromptPay / Mobile Banking" data-en="📱 Scan to pay ฿19 via PromptPay / Mobile Banking">
-        📱 สแกน QR เพื่อโอน 19 บาทผ่าน PromptPay / Mobile Banking
-      </div>
-      <div style="margin-top:8px; font-size:12px; color:var(--muted);" data-th="PromptPay: 0XX-XXX-XXXX" data-en="PromptPay: 0XX-XXX-XXXX">PromptPay: 0XX-XXX-XXXX</div>
-    </div>
-
-    <label style="font-size:13px; font-weight:600; display:block; margin-bottom:6px;" data-th="กรอกเลขอ้างอิงการโอน / หมายเลขสลิป" data-en="Enter transfer reference / slip number">
-      กรอกเลขอ้างอิงการโอน / หมายเลขสลิป
-    </label>
-    <input type="text" class="modal-input" id="slip-input" placeholder="เช่น 20240928-0001" maxlength="50" />
-
-    <button class="pay-btn" id="pay-btn" onclick="submitMockPayment()">
-      <span data-th="✅ ยืนยันการชำระเงิน" data-en="✅ Confirm Payment">✅ ยืนยันการชำระเงิน</span>
-    </button>
-    <a class="cancel-link" onclick="closePaymentModal()">
-      <span data-th="ยังไม่สะดวกตอนนี้ ปิดหน้าต่างนี้" data-en="Not now — close this window">ยังไม่สะดวกตอนนี้ ปิดหน้าต่างนี้</span>
-    </a>
-  </div>
+<!-- SLIDE COUNTER -->
+<div id="slide-counter">
+  <strong id="cur-num">01</strong>
+  <span id="tot-num">/06</span>
 </div>
 
-<!-- Toast -->
-<div class="toast" id="toast">🎉 ชำระเงินสำเร็จ! เพิ่ม 1 เครดิตให้คุณแล้ว</div>
+<!-- NAV ARROWS -->
+<div id="nav-arrows">
+  <button class="nav-arrow" id="btn-prev">↑</button>
+  <button class="nav-arrow" id="btn-next">↓</button>
+</div>
 
-<footer>
-  <span data-th="© 2025 TaxEasy · ข้อมูลอ้างอิงจากกรมสรรพากร · ไม่ใช่คำแนะนำทางกฎหมาย" data-en="© 2025 TaxEasy · Reference: Thai Revenue Department · Not legal advice">
-    © 2025 TaxEasy · ข้อมูลอ้างอิงจากกรมสรรพากร · ไม่ใช่คำแนะนำทางกฎหมาย
-  </span>
-</footer>
+<!-- AUTH GLASS CARD (center) -->
+<div id="auth-wrapper">
+  <div class="glass-card">
 
-<!-- ════════════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════════ -->
+   
+
+<!-- CARDS STRIP (bottom) -->
+<div id="cards-section">
+  <div id="cards-strip"></div>
+</div>
+
 <script>
-/* ─── Language System ─────────────────────────────────────────────── */
-let currentLang = 'th';
+/* ══════════════════════════════════════
+   DESTINATIONS DATA
+══════════════════════════════════════ */
+const destinations = [
+  {
+    name:"Nangano\nPrefecture",  region:"Japan Alps",
+    img:"https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=1600&q=85",
+    map:"https://www.google.com/maps/place/Nagano+Prefecture"
+  },
+  {
+    name:"Marrakech\nMerouga",   region:"Sahara Desert · Morocco",
+    img:"https://plus.unsplash.com/premium_photo-1676473482428-5123def3e3f7?q=80&w=1506&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    map:"https://www.google.com/maps/place/Merzouga"
+  },
+  {
+    name:"Yosemite\nNat. Park",  region:"Sierra Nevada · USA",
+    img:"https://images.unsplash.com/photo-1472396961693-142e6e269027?w=1600&q=85",
+    map:"https://www.google.com/maps/place/Yosemite+National+Park"
+  },
+  {
+    name:"Los Lances\nBeach",    region:"Tarifa · Spain",
+    img:"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1600&q=85",
+    map:"https://www.google.com/maps/place/Tarifa"
+  },
+  {
+    name:"Göreme\nValley",       region:"Cappadocia · Turkey",
+    img:"https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=1600&q=85",
+    map:"https://www.google.com/maps/place/Göreme"
+  },
+  {
+    name:"Nangano\nPrefecture",  region:"Japan Alps",
+    img:"https://plus.unsplash.com/premium_photo-1756131938884-f8ae4e2d6a78?q=80&w=750&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    map:"https://www.google.com/maps/place/Nagano+Prefecture"
+  },
+  {
+    name:"Marrakech\nMerouga",   region:"Sahara Desert · Morocco",
+    img:"https://images.unsplash.com/photo-1489493887464-892be6d1daae?w=1600&q=85",
+    map:"https://www.google.com/maps/place/Merzouga"
+  },
+  {
+    name:"Nangano\nPrefecture",  region:"Japan Alps",
+    img:"https://images.unsplash.com/photo-1587551329971-31ef450a12f3?q=80&w=626&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    map:"https://www.google.com/maps/place/Nagano+Prefecture"
+  },
+   {
+    name:"Yosemite\nNat. Park",  region:"Sierra Nevada · USA",
+    img:"https://images.unsplash.com/photo-1776734213580-d372bb764de9?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+    map:"https://www.google.com/maps/place/Yosemite+National+Park"
+  },
+  {
+    name:"Saint\nAntoinen",      region:"Swiss Alps · Switzerland",
+    img:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1600&q=85",
+    map:"https://www.google.com/maps/place/Switzerland"
+  }
+];
 
-function toggleLanguage() {
-  currentLang = currentLang === 'th' ? 'en' : 'th';
-  applyLanguage();
-}
+/* ══════════════════════════════════════
+   STATE
+══════════════════════════════════════ */
+let current = 0;
+let isAnimating = false;
+let autoRaf = null;
+let elapsed = 0;
+let lastTs  = null;
+const AUTO_MS = 6000;
 
-function applyLanguage() {
-  const isEN = currentLang === 'en';
-  document.documentElement.lang = currentLang;
+/* ══════════════════════════════════════
+   BUILD DOM
+══════════════════════════════════════ */
+function buildDOM() {
+  const bgWrap = document.getElementById('bg-wrap');
+  const strip  = document.getElementById('cards-strip');
 
-  // Toggle button label
-  document.getElementById('lang-toggle').textContent = isEN ? '🌐 TH' : '🌐 EN';
+  destinations.forEach((d, i) => {
+    // BG slide
+    const slide = document.createElement('div');
+    slide.className = 'bg-slide' + (i===0 ? ' active' : '');
+    slide.style.backgroundImage = `url(${d.img})`;
+    bgWrap.appendChild(slide);
 
-  // Translate all elements with data-th / data-en
-  document.querySelectorAll('[data-th]').forEach(el => {
-    el.innerHTML = isEN ? el.dataset.en : el.dataset.th;
+    // Card
+    const card = document.createElement('div');
+    card.className = 'dest-card' + (i===0 ? ' active' : '');
+    card.dataset.index = i;
+    card.innerHTML = `
+      <div class="card-img" style="background-image:url(${d.img})"></div>
+      <div class="card-overlay"></div>
+      <div class="card-dot"></div>
+      <div class="card-progress" id="prog-${i}"></div>
+      <div class="card-info">
+        <div class="card-place">${d.name.replace('\n',' ')}</div>
+        <div class="card-region">${d.region.split('·')[0].trim()}</div>
+      </div>
+    `;
+    strip.appendChild(card);
   });
 
-  // Also translate select options
-  document.querySelectorAll('option[data-th]').forEach(el => {
-    el.textContent = isEN ? el.dataset.en : el.dataset.th;
+  document.getElementById('tot-num').textContent = '/' + String(destinations.length).padStart(2,'0');
+}
+
+/* ══════════════════════════════════════
+   SWITCH SLIDE (with GSAP zoom bg)
+══════════════════════════════════════ */
+function switchTo(next, fromAuto=false) {
+  next = ((next % destinations.length) + destinations.length) % destinations.length;
+  if (next === current || isAnimating) return;
+  isAnimating = true;
+
+  const prev = current;
+  current    = next;
+
+  const bgs   = document.querySelectorAll('.bg-slide');
+  const cards = document.querySelectorAll('.dest-card');
+
+  // Get clicked card rect for zoom origin
+  const targetCard = cards[current];
+  const rect = targetCard.getBoundingClientRect();
+  const ox = ((rect.left + rect.width/2)  / window.innerWidth  * 100).toFixed(1) + '%';
+  const oy = ((rect.top  + rect.height/2) / window.innerHeight * 100).toFixed(1) + '%';
+
+  // New bg: start scaled-down from card position, zoom to full
+  const newBg = bgs[current];
+  newBg.style.transformOrigin = `${ox} ${oy}`;
+  gsap.set(newBg,  { opacity:0, scale:0.3 });
+  newBg.classList.add('active');
+
+  gsap.to(newBg, {
+    opacity:1, scale:1, duration:.75, ease:'power3.inOut',
+    onComplete:() => {
+      // fade out old bg
+      gsap.to(bgs[prev], {
+        opacity:0, scale:1.06, duration:.4, ease:'power2.in',
+        onComplete:() => {
+          bgs[prev].classList.remove('active');
+          gsap.set(bgs[prev], { scale:1, opacity:0, transformOrigin:'center center' });
+          newBg.style.transformOrigin = 'center center';
+          isAnimating = false;
+        }
+      });
+    }
   });
 
-  // Refresh quota badge text
-  if (typeof refreshQuotaBadge === 'function') refreshQuotaBadge();
+  // Swap card active
+  cards.forEach((c,i) => c.classList.toggle('active', i===current));
 
-  // Toast message
-  document.getElementById('toast').textContent = isEN
-    ? '🎉 Payment successful! 1 credit added.'
-    : '🎉 ชำระเงินสำเร็จ! เพิ่ม 1 เครดิตให้คุณแล้ว';
-}
+  // Reset old progress bar
+  gsap.set(`#prog-${prev}`, { width:'0%' });
 
-/* ─── Tab Navigation ──────────────────────────────────────────────── */
-function switchTab(panelId, btn) {
-  document.querySelectorAll('.tax-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel-' + panelId).classList.add('active');
-  btn.classList.add('active');
+  // Counter
+  document.getElementById('cur-num').textContent = String(current+1).padStart(2,'0');
+
+  if (!fromAuto) resetAuto();
 }
 
-/* ─── Modal helpers ───────────────────────────────────────────────── */
-function showPaymentModal() {
-  document.getElementById('slip-input').value = '';
-  const btn = document.getElementById('pay-btn');
-  btn.disabled = false;
-  btn.textContent = currentLang === 'th' ? '✅ ยืนยันการชำระเงิน' : '✅ Confirm Payment';
-  document.getElementById('payment-modal').classList.add('open');
+/* ══════════════════════════════════════
+   AUTO PLAY
+══════════════════════════════════════ */
+function tickAuto(ts) {
+  if (!lastTs) lastTs = ts;
+  elapsed += ts - lastTs;
+  lastTs   = ts;
+
+  const pct = Math.min(elapsed / AUTO_MS * 100, 100);
+  const prog = document.getElementById(`prog-${current}`);
+  if (prog) prog.style.width = pct + '%';
+  document.getElementById('progress-line').style.width = pct + '%';
+
+  if (elapsed >= AUTO_MS) {
+    elapsed = 0; lastTs = null;
+    if (prog) prog.style.width = '0%';
+    switchTo(current + 1, true);
+  }
+  autoRaf = requestAnimationFrame(tickAuto);
 }
-function closePaymentModal() {
-  document.getElementById('payment-modal').classList.remove('open');
+function startAuto() { elapsed=0; lastTs=null; autoRaf=requestAnimationFrame(tickAuto); }
+function stopAuto()  { cancelAnimationFrame(autoRaf); }
+function resetAuto() {
+  stopAuto();
+  const p = document.getElementById(`prog-${current}`);
+  if (p) p.style.width = '0%';
+  document.getElementById('progress-line').style.width = '0%';
+  elapsed=0; lastTs=null;
+  setTimeout(startAuto, 350);
 }
-// Close on backdrop click
-document.getElementById('payment-modal').addEventListener('click', function(e) {
-  if (e.target === this) closePaymentModal();
+
+/* ══════════════════════════════════════
+   CONTROLS: ARROWS + KEYBOARD
+══════════════════════════════════════ */
+document.getElementById('btn-prev').addEventListener('click', () => switchTo(current-1));
+document.getElementById('btn-next').addEventListener('click', () => switchTo(current+1));
+
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+  if (e.key==='ArrowRight'||e.key==='ArrowDown') switchTo(current+1);
+  if (e.key==='ArrowLeft' ||e.key==='ArrowUp')   switchTo(current-1);
 });
 
-function showSuccessToast() {
-  const t = document.getElementById('toast');
-  t.textContent = currentLang === 'th'
-    ? '🎉 ชำระเงินสำเร็จ! เพิ่ม 1 เครดิตให้คุณแล้ว'
-    : '🎉 Payment successful! 1 credit added.';
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3500);
-}
+/* ══════════════════════════════════════
+   TOUCH: QUICK SWIPE ONLY
+   - ถ้ากดค้าง (hold > 300ms) จะไม่เลื่อน
+   - ต้องปล่อยเร็วและเลื่อนระยะ > 30px ถึงจะเปลี่ยน slide
+══════════════════════════════════════ */
+(function setupTouch() {
+  let startX=0, startY=0, startT=0;
+  const HOLD_LIMIT    = 280;  // ms — ถ้า hold นานกว่านี้ ไม่เลื่อน
+  const SWIPE_MIN     = 30;   // px — ระยะขั้นต่ำ
 
-/* ─── Formatters ──────────────────────────────────────────────────── */
-function fmt(n) {
-  return n.toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ฿';
-}
-function fmtPct(n) {
-  return n.toFixed(2) + '%';
-}
+  // Listen on the whole document body (excluding glass card — that handles its own scroll)
+  const cardsEl = document.getElementById('cards-section');
 
-/* ═══════════════════════════════════════════════════════════════════
-   TAX CALCULATION FUNCTIONS
-   (These are called via window.handleCalculate from Firebase module)
-═══════════════════════════════════════════════════════════════════ */
+  cardsEl.addEventListener('touchstart', e => {
+    const t = e.touches[0];
+    startX = t.clientX;
+    startY = t.clientY;
+    startT = Date.now();
+  }, { passive:true });
 
-/* ─── 1. Personal Income Tax (PIT) ───────────────────────────────── */
-function calcPIT() {
-  const income = parseFloat(document.getElementById('pit-income').value) || 0;
-  const type   = document.getElementById('pit-type').value;
+  cardsEl.addEventListener('touchend', e => {
+    const t    = e.changedTouches[0];
+    const dx   = t.clientX - startX;
+    const dy   = t.clientY - startY;
+    const held = Date.now() - startT;
 
-  if (income <= 0) {
-    alert(currentLang === 'th' ? 'กรุณากรอกรายได้' : 'Please enter income');
-    return;
-  }
+    // Skip if held too long OR mostly vertical movement
+    if (held > HOLD_LIMIT) return;
+    if (Math.abs(dy) > Math.abs(dx)) return;
+    if (Math.abs(dx) < SWIPE_MIN) return;
 
-  /* Expense deduction rate by income type */
-  const expenseRates = { '40_1': 0.50, '40_2': 0.50, '40_8': 0.60 };
-  const expenseCaps  = { '40_1': 100000, '40_2': 100000, '40_8': 600000 };
-  const rate = expenseRates[type] || 0.5;
-  const cap  = expenseCaps[type] || 100000;
-  const expense = Math.min(income * rate, cap);
+    dx < 0 ? switchTo(current+1) : switchTo(current-1);
+  }, { passive:true });
+})();
 
-  /* Allowances */
-  let allowance = 0;
-  if (document.getElementById('all-personal').checked) allowance += 60000;
-  if (document.getElementById('all-spouse').checked)   allowance += 60000;
-  if (document.getElementById('all-child').checked)    allowance += 30000;
-  if (document.getElementById('all-parent').checked)   allowance += 30000;
-  if (document.getElementById('all-life-ins').checked) {
-    allowance += Math.min(parseFloat(document.getElementById('pit-life-ins').value) || 0, 100000);
-  }
-  if (document.getElementById('all-rmf').checked) {
-    const rmf = parseFloat(document.getElementById('pit-rmf').value) || 0;
-    allowance += Math.min(rmf, income * 0.30, 500000);
-  }
-  if (document.getElementById('all-ssf').checked) {
-    const ssf = parseFloat(document.getElementById('pit-ssf').value) || 0;
-    allowance += Math.min(ssf, income * 0.30, 200000);
-  }
-  if (document.getElementById('all-pvd').checked) {
-    const pvd = parseFloat(document.getElementById('pit-pvd').value) || 0;
-    allowance += Math.min(pvd, income * 0.15, 500000);
-  }
-
-  const netIncome = Math.max(0, income - expense - allowance);
-
-  /* Progressive tax brackets (2024 Thailand) */
-  const brackets = [
-    { limit: 150000,  rate: 0 },
-    { limit: 300000,  rate: 0.05 },
-    { limit: 500000,  rate: 0.10 },
-    { limit: 750000,  rate: 0.15 },
-    { limit: 1000000, rate: 0.20 },
-    { limit: 2000000, rate: 0.25 },
-    { limit: 5000000, rate: 0.30 },
-    { limit: Infinity,rate: 0.35 }
-  ];
-
-  let tax = 0, prev = 0;
-  for (const b of brackets) {
-    if (netIncome <= prev) break;
-    const taxable = Math.min(netIncome, b.limit) - prev;
-    tax += taxable * b.rate;
-    prev = b.limit;
-  }
-
-  /* Populate results */
-  document.getElementById('pit-r-income').textContent    = fmt(income);
-  document.getElementById('pit-r-expense').textContent   = fmt(expense);
-  document.getElementById('pit-r-allowance').textContent = fmt(allowance);
-  document.getElementById('pit-r-net').textContent       = fmt(netIncome);
-  document.getElementById('pit-r-tax').textContent       = fmt(tax);
-  document.getElementById('pit-r-rate').textContent      = income > 0 ? fmtPct(tax / income * 100) : '0%';
-
-  showResult('pit-result');
-}
-
-/* ─── 2. VAT ──────────────────────────────────────────────────────── */
-function calcVAT() {
-  const amount = parseFloat(document.getElementById('vat-amount').value) || 0;
-  const type   = document.getElementById('vat-type').value;
-  const rate   = parseFloat(document.getElementById('vat-rate').value) / 100;
-
-  if (amount <= 0) {
-    alert(currentLang === 'th' ? 'กรุณากรอกยอดเงิน' : 'Please enter an amount');
-    return;
-  }
-
-  let base, vat, total;
-  if (type === 'excl') {
-    base  = amount;
-    vat   = amount * rate;
-    total = amount + vat;
-  } else {
-    total = amount;
-    base  = amount / (1 + rate);
-    vat   = total - base;
-  }
-
-  document.getElementById('vat-r-base').textContent  = fmt(base);
-  document.getElementById('vat-r-vat').textContent   = fmt(vat);
-  document.getElementById('vat-r-total').textContent = fmt(total);
-
-  showResult('vat-result');
-}
-
-/* ─── 3. Withholding Tax (WHT) ────────────────────────────────────── */
-function calcWHT() {
-  const gross = parseFloat(document.getElementById('wht-amount').value) || 0;
-  const rate  = parseFloat(document.getElementById('wht-rate').value) / 100;
-  const sel   = document.getElementById('wht-type');
-  const opt   = sel.options[sel.selectedIndex];
-  const entity= document.getElementById('wht-entity').value;
-
-  if (gross <= 0) {
-    alert(currentLang === 'th' ? 'กรุณากรอกยอดจ่าย' : 'Please enter a payment amount');
-    return;
-  }
-
-  const wht = gross * rate;
-  const net = gross - wht;
-
-  // Build account code display
-  const codes = {
-    '1': 'ภ.ง.ด.53 (นิติ) / ภ.ง.ด.3 (บุคคล)',
-    '2': 'ภ.ง.ด.53 / ภ.ง.ด.3',
-    '3': 'ภ.ง.ด.53 / ภ.ง.ด.1ก',
-    '4': 'ภ.ง.ด.53 / ภ.ง.ด.3',
-    '5': 'ภ.ง.ด.2 (เงินปันผล)',
-    '6': 'ภ.ง.ด.2 (ดอกเบี้ย)',
-  };
-  const typeVal = sel.value;
-  const formCode = entity === 'corp'
-    ? (codes[typeVal] || 'ภ.ง.ด.53').split('/')[0].trim()
-    : (codes[typeVal] || 'ภ.ง.ด.3').split('/').pop().trim();
-
-  document.getElementById('wht-r-gross').textContent = fmt(gross);
-  document.getElementById('wht-r-wht').textContent   = fmt(wht);
-  document.getElementById('wht-r-net').textContent   = fmt(net);
-  document.getElementById('wht-r-code').textContent  = formCode;
-
-  showResult('wht-result');
-}
-
-/* ─── 4. Corporate Tax ────────────────────────────────────────────── */
-function calcCorp() {
-  const profit  = parseFloat(document.getElementById('corp-profit').value) || 0;
-  const revenue = parseFloat(document.getElementById('corp-revenue').value) || 0;
-  const type    = document.getElementById('corp-type').value;
-
-  if (profit < 0) {
-    alert(currentLang === 'th' ? 'กรุณากรอกกำไรสุทธิ' : 'Please enter net profit');
-    return;
-  }
-
-  let tax = 0, rateLabel = '', note = '';
-
-  if (type === 'sme') {
-    // SME: 0% ≤300k, 15% 300k–3M, 20% >3M (revenue ≤30M)
-    const qualifies = revenue <= 30_000_000;
-    if (!qualifies) {
-      note = currentLang === 'th'
-        ? 'รายได้เกิน 30 ล้านบาท — ใช้อัตรานิติบุคคลทั่วไป 20%'
-        : 'Revenue >30M THB — General corporate rate 20% applies';
-      tax = profit * 0.20;
-      rateLabel = '20%';
-    } else {
-      if (profit <= 300_000) {
-        tax = 0; rateLabel = '0%';
-        note = currentLang === 'th' ? 'กำไร ≤ 300,000 บาท — ยกเว้นภาษี' : 'Profit ≤ 300,000 THB — Exempt';
-      } else if (profit <= 3_000_000) {
-        tax = (profit - 300_000) * 0.15;
-        rateLabel = '0% / 15%';
-        note = currentLang === 'th' ? 'ส่วนที่เกิน 300,000 บาท — 15%' : 'Amount over 300,000 THB — 15%';
-      } else {
-        tax = (3_000_000 - 300_000) * 0.15 + (profit - 3_000_000) * 0.20;
-        rateLabel = '15% / 20%';
-        note = currentLang === 'th' ? 'ขั้น 300k–3M = 15%, >3M = 20%' : 'Bracket 300k–3M = 15%, >3M = 20%';
-      }
-    }
-  } else if (type === 'listed') {
-    tax = profit * 0.20;
-    rateLabel = '20%';
-    note = currentLang === 'th' ? 'บริษัทจดทะเบียน SET — อัตรา 20%' : 'SET Listed company — 20% flat';
-  } else {
-    tax = profit * 0.20;
-    rateLabel = '20%';
-    note = currentLang === 'th' ? 'บริษัททั่วไป — อัตรา 20%' : 'General company — 20% flat';
-  }
-
-  document.getElementById('corp-r-profit').textContent = fmt(profit);
-  document.getElementById('corp-r-rate').textContent   = rateLabel;
-  document.getElementById('corp-r-note').textContent   = note;
-  document.getElementById('corp-r-tax').textContent    = fmt(tax);
-
-  showResult('corp-result');
-}
-
-/* ─── Helper: show result box ─────────────────────────────────────── */
-function showResult(id) {
-  document.querySelectorAll('.result-box').forEach(b => {
-    b.classList.remove('visible');
+/* ══════════════════════════════════════
+   CARD TAP
+══════════════════════════════════════ */
+(function setupCardTap() {
+  document.getElementById('cards-strip').addEventListener('click', e => {
+    const card = e.target.closest('.dest-card');
+    if (!card) return;
+    switchTo(parseInt(card.dataset.index));
   });
-  const box = document.getElementById(id);
-  box.classList.add('visible');
-  setTimeout(() => box.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+})();
+
+/* ══════════════════════════════════════
+   WHEEL (desktop)
+══════════════════════════════════════ */
+let wLock = false;
+document.addEventListener('wheel', e => {
+  // Don't trigger if wheeling inside the glass card
+  if (e.target.closest('.glass-card')) return;
+  if (wLock) return;
+  wLock = true; setTimeout(() => wLock=false, 800);
+  e.deltaY > 0 ? switchTo(current+1) : switchTo(current-1);
+}, { passive:true });
+
+/* ══════════════════════════════════════
+   INIT
+══════════════════════════════════════ */
+function init() {
+  buildDOM();
+  document.getElementById('cur-num').textContent = '01';
+
+  // Entrance animation
+  gsap.set('.glass-card', { opacity:0, y:30, scale:.97 });
+  gsap.to('.glass-card', { opacity:1, y:0, scale:1, duration:.9, ease:'back.out(1.4)', delay:.5 });
+
+  gsap.set('.dest-card', { opacity:0, y:35, scale:.9 });
+  gsap.to('.dest-card', { opacity:1, y:0, scale:1, duration:.6, stagger:.08, ease:'back.out(1.4)', delay:.7 });
+
+  const firstBg = document.querySelector('.bg-slide.active');
+  gsap.from(firstBg, { scale:1.1, opacity:0, duration:1.5, ease:'power3.out', delay:.15 });
+
+  startAuto();
 }
 
-/* ─── WHT rate auto-update ────────────────────────────────────────── */
-function updateWHTRate() {
-  const sel = document.getElementById('wht-type');
-  const opt = sel.options[sel.selectedIndex];
-  const rate = opt.dataset.rate;
-  if (rate !== undefined && sel.value !== 'custom') {
-    document.getElementById('wht-rate').value = rate;
+init();
+
+/* ══════════════════════════════════════
+   AUTH UI HELPERS
+══════════════════════════════════════ */
+function toggleForm(panel) {
+  document.getElementById('form-login').classList.toggle('active', panel==='login');
+  document.getElementById('form-register').classList.toggle('active', panel==='register');
+  const tabs = document.querySelectorAll('.tab-btn');
+  tabs[0].classList.toggle('active', panel==='login');
+  tabs[1].classList.toggle('active', panel==='register');
+}
+
+function togglePW(id, btn) {
+  const inp  = document.getElementById(id);
+  const icon = btn.querySelector('i');
+  if (inp.type==='password') { inp.type='text';     icon.className='bx bx-show'; }
+  else                       { inp.type='password'; icon.className='bx bx-hide'; }
+}
+
+function checkStrength(v) {
+  let s=0;
+  if (v.length>=8) s++;
+  if (/[A-Z]/.test(v)) s++;
+  if (/[0-9]/.test(v)) s++;
+  if (/[^A-Za-z0-9]/.test(v)) s++;
+  const colors = ['#ff6b6b','#ffa94d','#74c0fc','#51cf66'];
+  [1,2,3,4].forEach(n => {
+    const el = document.getElementById('sb'+n);
+    el.style.background = n<=s ? colors[s-1] : 'rgba(255,255,255,.1)';
+  });
+}
+
+function showAlert(form, type, msg) {
+  // hide all alerts in this form
+  document.querySelectorAll(`#form-${form} .alert`).forEach(a => a.classList.remove('show'));
+  const alertId = type==='success'
+    ? (form==='login' ? 'login-ok'   : 'reg-alert')
+    : (form==='login' ? 'login-alert': 'reg-alert');
+  const msgId   = type==='success'
+    ? (form==='login' ? 'login-ok-msg' : 'reg-alert-msg')
+    : (form==='login' ? 'login-alert-msg' : 'reg-alert-msg');
+  const alertEl = document.getElementById(alertId);
+  const msgEl   = document.getElementById(msgId);
+  if (alertEl) {
+    if (type==='success') { alertEl.className='alert alert-success show'; }
+    else                  { alertEl.className='alert alert-error show'; }
+    if (msgEl && msg) msgEl.textContent = msg;
+    setTimeout(() => alertEl.classList.remove('show'), 5000);
   }
 }
 
-/* ─── Conditional input visibility ───────────────────────────────── */
-['all-life-ins', 'all-rmf', 'all-ssf', 'all-pvd'].forEach(id => {
+function setBtnLoading(id, on) {
+  const btn = document.getElementById(id);
+  if (!btn) return;
+  btn.classList.toggle('loading', on);
+  btn.disabled = on;
+}
+
+/* ══════════════════════════════════════
+   FIREBASE AUTH ACTIONS
+══════════════════════════════════════ */
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  if (!email || !pass) { showAlert('login','error','กรุณากรอกอีเมลและรหัสผ่าน'); return; }
+  if (!window._auth)   { showAlert('login','error','Firebase กำลังโหลด...'); return; }
+
+  setBtnLoading('btn-login', true);
+  window._signIn(window._auth, email, pass)
+    .then(cred => {
+      showAlert('login','success', `ยินดีต้อนรับ ${cred.user.email}`);
+      setBtnLoading('btn-login', false);
+      // window.location.href = '/dashboard';
+    })
+    .catch(err => {
+      const msg = firebaseErrMsg(err.code);
+      showAlert('login','error', msg);
+      setBtnLoading('btn-login', false);
+    });
+}
+
+function doRegister() {
+  const name    = document.getElementById('reg-name').value.trim();
+  const email   = document.getElementById('reg-email').value.trim();
+  const pass    = document.getElementById('reg-password').value;
+  const confirm = document.getElementById('reg-confirm').value;
+
+  if (!name||!email||!pass) { showAlert('register','error','กรุณากรอกข้อมูลให้ครบ'); return; }
+  if (pass!==confirm)       { showAlert('register','error','รหัสผ่านไม่ตรงกัน'); return; }
+  if (pass.length<8)        { showAlert('register','error','รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร'); return; }
+  if (!window._auth)        { showAlert('register','error','Firebase กำลังโหลด...'); return; }
+
+  setBtnLoading('btn-register', true);
+  window._createUser(window._auth, email, pass)
+    .then(cred => {
+      showAlert('register','success','สมัครสมาชิกสำเร็จ!');
+      setBtnLoading('btn-register', false);
+    })
+    .catch(err => {
+      showAlert('register','error', firebaseErrMsg(err.code));
+      setBtnLoading('btn-register', false);
+    });
+}
+
+function doGoogle() {
+  if (!window._auth) { alert('Firebase กำลังโหลด...'); return; }
+  window._googleSignIn(window._auth, window._googleProvider)
+    .then(result => {
+      showAlert('login','success', `ยินดีต้อนรับ ${result.user.displayName}`);
+    })
+    .catch(err => {
+      showAlert('login','error', firebaseErrMsg(err.code));
+    });
+}
+
+function doForgot(e) {
+  e.preventDefault();
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showAlert('login','error','กรุณากรอกอีเมลก่อน'); return; }
+  if (!window._auth) return;
+  window._resetPass(window._auth, email)
+    .then(() => showAlert('login','success','ส่งลิงก์รีเซ็ตไปที่อีเมลแล้ว'))
+    .catch(err => showAlert('login','error', firebaseErrMsg(err.code)));
+}
+
+function firebaseErrMsg(code) {
   const map = {
-    'all-life-ins': 'life-ins-input',
-    'all-rmf': 'rmf-input',
-    'all-ssf': 'ssf-input',
-    'all-pvd': 'pvd-input'
+    'auth/invalid-email':            'รูปแบบอีเมลไม่ถูกต้อง',
+    'auth/user-not-found':           'ไม่พบบัญชีนี้',
+    'auth/wrong-password':           'รหัสผ่านไม่ถูกต้อง',
+    'auth/invalid-credential':       'อีเมลหรือรหัสผ่านไม่ถูกต้อง',
+    'auth/email-already-in-use':     'อีเมลนี้ถูกใช้งานแล้ว',
+    'auth/weak-password':            'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
+    'auth/too-many-requests':        'ลองใหม่อีกครั้งในภายหลัง',
+    'auth/popup-closed-by-user':     'ยกเลิกการเข้าสู่ระบบ',
+    'auth/network-request-failed':   'ตรวจสอบการเชื่อมต่ออินเทอร์เน็ต',
   };
-  document.getElementById(id).addEventListener('change', function() {
-    document.getElementById(map[id]).style.display = this.checked ? 'flex' : 'none';
-  });
+  return map[code] || 'เกิดข้อผิดพลาด: ' + code;
+}
+
+// Enter key submit
+document.addEventListener('keydown', e => {
+  if (e.key!=='Enter') return;
+  if (document.getElementById('form-login').classList.contains('active')) doLogin();
+  else doRegister();
 });
 </script>
 </body>
