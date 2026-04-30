@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Globe Express — Explore Destinations 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root { --yellow:#F5C843; --ydark:#b8860b; }
+html,body { width:100%; height:100%; overflow:hidden; font-family:'Inter',sans-serif; background:#07090d; }
+
+/* BG */
+#bg-wrap { position:fixed; inset:0; z-index:0; overflow:hidden; }
+.bg-slide { position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transform:scale(1.07); will-change:transform,opacity; }
+.bg-slide.active { opacity:1; transform:scale(1); }
+#bg-wrap::after {
+  content:''; position:absolute; inset:0; z-index:2;
+  background:linear-gradient(to right,rgba(0,0,0,.80) 0%,rgba(0,0,0,.30) 55%,rgba(0,0,0,.10) 100%),
+             linear-gradient(to top,rgba(0,0,0,.75) 0%,transparent 38%),
+             linear-gradient(to bottom,rgba(0,0,0,.45) 0%,transparent 26%);
+  pointer-events:none;
+}
+#prog-line { position:fixed; top:0; left:0; height:2px; width:0%; background:var(--yellow); z-index:999; }
+
+/* NAVBAR */
+#navbar { position:fixed; top:0; left:0; right:0; z-index:60; display:flex; align-items:center; justify-content:space-between; padding:18px 44px; }
+.nav-logo { font-family:'Oswald',sans-serif; font-size:15px; font-weight:700; letter-spacing:5px; color:#fff; text-transform:uppercase; }
+.nav-pills { display:flex; align-items:center; gap:5px; background:rgba(0,0,0,.38); backdrop-filter:blur(10px); border:1px solid rgba(255,255,255,.1); border-radius:999px; padding:5px 8px; }
+.nav-pill { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:rgba(255,255,255,.42); padding:5px 14px; border-radius:999px; cursor:pointer; transition:all .25s; white-space:nowrap; }
+.nav-pill.active { background:var(--yellow); color:#1a1200; font-weight:600; }
+.nav-pill:hover:not(.active) { color:#fff; background:rgba(255,255,255,.08); }
+.nav-right { display:flex; align-items:center; gap:12px; }
+.nav-year { font-size:11px; letter-spacing:2px; color:rgba(255,255,255,.38); text-transform:uppercase; font-family:'Oswald',sans-serif; }
+.nav-signin { background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.18); color:#fff; font-size:11px; letter-spacing:2px; text-transform:uppercase; padding:8px 18px; border-radius:6px; cursor:pointer; text-decoration:none; transition:all .25s; }
+.nav-signin:hover { background:var(--yellow); border-color:var(--yellow); color:#1a1200; }
+
+/* LEFT PANEL */
+#left-panel { position:fixed; left:44px; top:50%; transform:translateY(-50%); z-index:40; max-width:430px; }
+.dest-region { font-size:10px; letter-spacing:4px; color:rgba(255,255,255,.48); text-transform:uppercase; margin-bottom:10px; display:flex; align-items:center; gap:10px; }
+.dest-region::before { content:''; width:24px; height:1px; background:rgba(255,255,255,.38); }
+.dest-title { font-family:'Oswald',sans-serif; font-size:clamp(40px,5.2vw,70px); font-weight:700; line-height:.92; text-transform:uppercase; color:#fff; letter-spacing:-1px; margin-bottom:14px; }
+.dest-desc { font-size:13px; line-height:1.75; color:rgba(255,255,255,.52); max-width:340px; margin-bottom:22px; font-weight:300; }
+.btn-row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.btn-discover { display:inline-flex; align-items:center; gap:10px; background:var(--yellow); color:#1a1200; font-family:'Inter',sans-serif; font-size:11px; font-weight:600; letter-spacing:3px; text-transform:uppercase; padding:12px 24px; border:none; cursor:pointer; border-radius:4px; transition:all .25s; text-decoration:none; }
+.btn-discover:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(245,200,67,.4); }
+.btn-discover svg { width:12px; transition:transform .2s; }
+.btn-discover:hover svg { transform:translateX(4px); }
+.btn-save { display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18); color:#fff; font-size:11px; letter-spacing:2px; text-transform:uppercase; padding:12px 18px; border-radius:4px; cursor:pointer; text-decoration:none; transition:all .25s; }
+.btn-save:hover { background:rgba(255,255,255,.15); }
+.badges { display:flex; gap:6px; margin-top:14px; flex-wrap:wrap; }
+.badge { font-size:9px; letter-spacing:2px; text-transform:uppercase; padding:4px 10px; border-radius:4px; border:1px solid rgba(255,255,255,.14); color:rgba(255,255,255,.5); }
+.badge.gold { border-color:rgba(245,200,67,.4); color:var(--yellow); }
+
+/* LOCATION BADGE */
+#loc-badge { position:fixed; left:44px; bottom:306px; z-index:50; display:flex; align-items:stretch; background:rgba(0,0,0,.5); backdrop-filter:blur(14px); border:1px solid rgba(255,255,255,.12); border-radius:10px; overflow:hidden; transition:bottom .5s cubic-bezier(.77,0,.18,1); }
+.loc-pin { padding:11px 13px; border-right:1px solid rgba(255,255,255,.1); font-size:17px; background:rgba(245,200,67,.1); display:flex; align-items:center; }
+.loc-info { padding:9px 13px; }
+.loc-city    { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; color:#fff; letter-spacing:.5px; text-transform:uppercase; line-height:1; }
+.loc-prov    { font-size:10px; color:rgba(255,255,255,.42); letter-spacing:1px; margin-top:2px; text-transform:uppercase; }
+.loc-ctry    { font-size:10px; color:var(--yellow); letter-spacing:2px; margin-top:2px; }
+.loc-map-btn { display:flex; align-items:center; gap:6px; padding:9px 14px; border-left:1px solid rgba(255,255,255,.1); background:rgba(245,200,67,.08); color:var(--yellow); text-decoration:none; font-size:10px; letter-spacing:2px; text-transform:uppercase; font-weight:600; transition:all .25s; white-space:nowrap; }
+.loc-map-btn:hover { background:var(--yellow); color:#1a1200; }
+.loc-map-btn svg { width:11px; }
+
+/* COUNTER + ARROWS */
+#slide-counter { position:fixed; right:28px; bottom:318px; z-index:60; text-align:center; transition:bottom .5s cubic-bezier(.77,0,.18,1); }
+#slide-counter strong { font-family:'Oswald',sans-serif; font-size:20px; color:#fff; display:block; line-height:1; }
+#slide-counter span { font-size:11px; color:rgba(255,255,255,.32); letter-spacing:2px; }
+#nav-arrows { position:fixed; right:26px; bottom:265px; z-index:60; display:flex; gap:8px; transition:bottom .5s cubic-bezier(.77,0,.18,1); }
+.nav-arr { width:36px; height:36px; border-radius:50%; border:1px solid rgba(255,255,255,.2); background:rgba(0,0,0,.3); backdrop-filter:blur(8px); color:#fff; font-size:15px; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all .25s; }
+.nav-arr:hover { background:var(--yellow); border-color:var(--yellow); color:#1a1200; }
+
+/* BOTTOM PANEL */
+#bottom-panel { position:fixed; bottom:0; left:0; right:0; z-index:50; }
+
+/* DEST STRIP */
+#dest-section { padding:0 24px; background:linear-gradient(to top,rgba(0,0,0,.88) 0%,rgba(0,0,0,.60) 100%); backdrop-filter:blur(4px); max-height:0; overflow:hidden; transition:max-height .55s cubic-bezier(.77,0,.18,1), padding .4s ease; }
+#dest-section.open { max-height:205px; padding:12px 24px 14px; }
+.ds-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.ds-country-name { font-family:'Oswald',sans-serif; font-size:13px; font-weight:600; color:#fff; letter-spacing:2px; text-transform:uppercase; display:flex; align-items:center; gap:8px; }
+.ds-country-name em { font-size:18px; font-style:normal; }
+.ds-badge { font-size:9px; letter-spacing:3px; color:var(--yellow); text-transform:uppercase; background:rgba(245,200,67,.1); border:1px solid rgba(245,200,67,.25); padding:3px 10px; border-radius:999px; }
+#dest-strip { display:flex; gap:9px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; touch-action:pan-x; }
+#dest-strip::-webkit-scrollbar { display:none; }
+
+/* DEST CARD */
+.dest-card { flex-shrink:0; position:relative; width:110px; height:130px; border-radius:9px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color .3s,transform .3s,box-shadow .3s; }
+.dest-card.active { border-color:var(--yellow); box-shadow:0 0 0 1px rgba(245,200,67,.25),0 6px 20px rgba(0,0,0,.5); transform:translateY(-3px); }
+.dest-card:hover:not(.active) { transform:translateY(-2px); border-color:rgba(255,255,255,.3); }
+.dc-img { position:absolute; inset:0; background-size:cover; background-position:center; filter:brightness(.62); transform:scale(1); transition:filter .4s,transform .6s; }
+.dest-card.active .dc-img, .dest-card:hover .dc-img { filter:brightness(.88); transform:scale(1.06); }
+.dc-over { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.82) 0%,transparent 55%); z-index:2; }
+.dc-prog { position:absolute; bottom:0; left:0; height:2px; background:var(--yellow); width:0%; z-index:6; }
+.dc-hot { position:absolute; top:6px; right:6px; z-index:4; font-size:8px; background:rgba(255,60,60,.88); color:#fff; padding:2px 5px; border-radius:3px; font-weight:700; letter-spacing:.5px; }
+.dc-info { position:absolute; bottom:0; left:0; right:0; padding:8px; z-index:3; }
+.dc-name { font-family:'Oswald',sans-serif; font-size:11px; font-weight:600; color:#fff; text-transform:uppercase; letter-spacing:.8px; line-height:1.2; }
+.dc-sub  { font-size:9px; color:rgba(255,255,255,.42); margin-top:2px; }
+
+/* COUNTRY STRIP */
+#country-section { padding:12px 24px 16px; border-top:1px solid rgba(255,255,255,.05); background:linear-gradient(to top,rgba(0,0,0,.85) 0%,rgba(0,0,0,.60) 100%); backdrop-filter:blur(4px); }
+.sec-label { font-size:9px; letter-spacing:4px; text-transform:uppercase; color:rgba(255,255,255,.28); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+.sec-label::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.07); }
+#country-strip { display:flex; gap:10px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; touch-action:pan-x; }
+#country-strip::-webkit-scrollbar { display:none; }
+
+/* COUNTRY CARD */
+.cc { flex-shrink:0; position:relative; width:102px; height:148px; border-radius:10px; overflow:hidden; cursor:pointer; border:2px solid transparent; transition:border-color .3s,transform .3s,box-shadow .3s; }
+.cc.active { border-color:var(--yellow); box-shadow:0 0 0 1px rgba(245,200,67,.3),0 8px 24px rgba(0,0,0,.5); transform:translateY(-4px); }
+.cc:hover:not(.active) { transform:translateY(-2px); border-color:rgba(255,255,255,.28); }
+.cc-img { position:absolute; inset:0; background-size:cover; background-position:center; filter:brightness(.58); transform:scale(1); transition:filter .4s,transform .6s; }
+.cc.active .cc-img, .cc:hover .cc-img { filter:brightness(.82); transform:scale(1.05); }
+.cc-over { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.85) 0%,transparent 55%); z-index:2; }
+.cc-flag { position:absolute; top:8px; left:8px; z-index:3; font-size:18px; filter:drop-shadow(0 1px 3px rgba(0,0,0,.7)); }
+.cc-rank { position:absolute; top:7px; right:7px; z-index:3; background:var(--yellow); color:#1a1200; font-size:8px; font-weight:700; letter-spacing:.5px; padding:2px 5px; border-radius:3px; }
+.cc-dot  { position:absolute; bottom:32px; right:8px; z-index:4; width:6px; height:6px; border-radius:50%; background:var(--yellow); opacity:0; transform:scale(0); transition:all .3s; }
+.cc.active .cc-dot { opacity:1; transform:scale(1); }
+.cc-name { position:absolute; bottom:8px; left:8px; right:8px; z-index:3; font-family:'Oswald',sans-serif; font-size:13px; font-weight:700; color:#fff; text-transform:uppercase; letter-spacing:.8px; line-height:1.2; }
+.cc-vis  { position:absolute; bottom:26px; left:8px; z-index:3; font-size:9px; color:rgba(255,255,255,.4); letter-spacing:1px; }
+
+/* COOKIE */
+#cookie-toast { position:fixed; bottom:22px; left:50%; transform:translateX(-50%) translateY(90px); z-index:999; background:rgba(8,8,14,.93); backdrop-filter:blur(18px); border:1px solid rgba(255,255,255,.11); border-radius:14px; padding:14px 18px 14px 16px; display:flex; align-items:center; gap:12px; max-width:380px; width:calc(100% - 40px); box-shadow:0 8px 36px rgba(0,0,0,.6); opacity:0; transition:transform .5s cubic-bezier(.34,1.3,.64,1),opacity .4s; }
+#cookie-toast.show { transform:translateX(-50%) translateY(0); opacity:1; }
+.ck-icon { font-size:20px; flex-shrink:0; }
+.ck-text { flex:1; font-size:12px; color:rgba(255,255,255,.72); line-height:1.5; }
+.ck-text strong { color:#fff; }
+.ck-btns { display:flex; gap:7px; flex-shrink:0; }
+.ck-ok  { background:var(--yellow); color:#1a1200; border:none; border-radius:7px; padding:7px 14px; font-size:11px; font-weight:600; cursor:pointer; }
+.ck-no  { background:rgba(255,255,255,.07); color:rgba(255,255,255,.4); border:1px solid rgba(255,255,255,.14); border-radius:7px; padding:7px 10px; font-size:11px; cursor:pointer; }
+
+/* RESPONSIVE */
+@media(max-width:768px) {
+  #navbar { padding:14px 18px; }
+  .nav-pills { display:none; }
+  .nav-year  { display:none; }
+  #left-panel { left:18px; right:18px; max-width:100%; top:auto; transform:none; bottom:455px; }
+  .dest-desc  { display:none; }
+  .dest-title { font-size:32px; }
+  #loc-badge  { left:18px; bottom:460px; }
+  #slide-counter,#nav-arrows { display:none; }
+  .cc { width:88px; height:128px; }
+  .dest-card { width:95px; height:118px; }
+}
+</style>
+</head>
+<body>
+<div id="bg-wrap"></div>
+<div id="prog-line"></div>
+
+<!-- NAVBAR -->
+<nav id="navbar">
+  <div class="nav-logo">Globe Express</div>
+  <div class="nav-pills">
+    <div class="nav-pill active" data-cat="all">🌍 All</div>
+    <div class="nav-pill" data-cat="asia">🌏 Asia</div>
+    <div class="nav-pill" data-cat="europe">🏰 Europe</div>
+    <div class="nav-pill" data-cat="americas">🗽 Americas</div>
+    <div class="nav-pill" data-cat="oceania">🦘 Oceania</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-year">🔥 Top Picks 2025</div>
+    <a href="auth-login.html" class="nav-signin">Sign In →</a>
+  </div>
+</nav>
+
+<!-- LEFT PANEL -->
+<div id="left-panel">
+  <div class="dest-region" id="dest-region">Loading...</div>
+  <h1 class="dest-title" id="dest-title">—</h1>
+  <p class="dest-desc"   id="dest-desc"></p>
+  <div class="btn-row">
+    <a class="btn-discover" id="btn-discover" href="#" target="_blank" rel="noopener">
+      View on Map
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+    <a class="btn-save" href="#" onclick="return false">♡ บันทึก</a>
+  </div>
+  <div class="badges" id="dest-badges"></div>
+</div>
+
+<!-- LOCATION BADGE -->
+<div id="loc-badge">
+  <div class="loc-pin">📍</div>
+  <div class="loc-info">
+    <div class="loc-city" id="loc-city"></div>
+    <div class="loc-prov" id="loc-prov"></div>
+    <div class="loc-ctry" id="loc-ctry"></div>
+  </div>
+  <a class="loc-map-btn" id="loc-map" href="#" target="_blank" rel="noopener">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
+    Google Maps
+  </a>
+</div>
+
+<!-- COUNTER + ARROWS -->
+<div id="slide-counter"><strong id="cur-num">01</strong><span id="tot-num">/05</span></div>
+<div id="nav-arrows">
+  <button class="nav-arr" id="btn-prev">←</button>
+  <button class="nav-arr" id="btn-next">→</button>
+</div>
+
+<!-- BOTTOM PANEL -->
+<div id="bottom-panel">
+  <!-- DESTINATIONS -->
+  <div id="dest-section">
+    <div class="ds-header">
+      <div class="ds-country-name"><em id="ds-flag"></em><span id="ds-name"></span></div>
+      <div class="ds-badge">🔥 Top Destinations 2025</div>
+    </div>
+    <div id="dest-strip"></div>
+  </div>
+  <!-- COUNTRIES -->
+  <div id="country-section">
+    <div class="sec-label">เลือกประเทศปลายทาง</div>
+    <div id="country-strip"></div>
+  </div>
+</div>
+
+<!-- COOKIE -->
+<div id="cookie-toast">
+  <div class="ck-icon">🍪</div>
+  <div class="ck-text"><strong>เว็บไซต์นี้ใช้คุกกี้</strong><br>เราบันทึกสถานที่โปรดและประวัติการเยี่ยมชม</div>
+  <div class="ck-btns">
+    <button class="ck-ok" onclick="acceptCookies()">ยอมรับ</button>
+    <button class="ck-no" onclick="declineCookies()">ปฏิเสธ</button>
+  </div>
+</div>
+
+<script>
+/* ═══ DATA ═══ */
+const COUNTRIES = [
+  {
+    id:'jp', flag:'🇯🇵', name:'Japan', nameLocal:'ญี่ปุ่น', continent:'asia', rank:'#1',
+    visitors:'31.9M/yr',
+    img:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80',
+    dests:[
+      { name:'Tokyo',     sub:'Kanto Region',      hot:true,  city:'Tokyo',           prov:'Kanto Region',       ctry:'🇯🇵 Japan',       map:'https://maps.google.com/?q=Tokyo,Japan',                    img:'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1400&q=85', desc:'มหานครที่ไม่มีวันหลับใหล ผสมผสานเทคโนโลยีล้ำยุคกับวัฒนธรรมซามูไรที่ยังมีชีวิต ย่านชิบูยา อากิฮาบาระ และวัดเซ็นโซจิ', badges:['#1 City 2025','Anime Capital','Michelin Stars','24h City'] },
+      { name:'Kyoto',     sub:'Kansai Region',      hot:true,  city:'Kyoto City',      prov:'Kyoto Prefecture',   ctry:'🇯🇵 Japan',       map:'https://maps.google.com/?q=Kyoto,Japan',                    img:'https://images.unsplash.com/photo-1493997181344-712f2f19d87a?w=1400&q=85', desc:'อดีตราชธานีที่ยังอนุรักษ์ความงามดั้งเดิมไว้ครบครัน วัดทอง ฟูชิมิ อินาริ พิธีชงชา และเกอิชาที่หาดูได้ที่นี่', badges:['UNESCO Heritage','Cherry Blossom','Geisha','1000+ Temples'] },
+      { name:'Osaka',     sub:'Kansai Region',      hot:false, city:'Osaka',           prov:'Osaka Prefecture',   ctry:'🇯🇵 Japan',       map:'https://maps.google.com/?q=Osaka,Japan',                    img:'https://images.unsplash.com/photo-1589452271712-64b8a66c7b71?w=1400&q=85', desc:'เมืองอาหารชั้นเยี่ยม ตลาดโดทงโบริสุดคึกคัก ปราสาทโอซาก้า และ Universal Studios Japan', badges:['Street Food Capital','USJ Theme Park','Dotonbori','Nightlife'] },
+      { name:'Hokkaido',  sub:'Northern Island',    hot:false, city:'Sapporo',         prov:'Hokkaido Prefecture',ctry:'🇯🇵 Japan',       map:'https://maps.google.com/?q=Hokkaido,Japan',                 img:'https://images.unsplash.com/photo-1553701256-0beaec0234df?w=1400&q=85', desc:'เกาะทางเหนือสุดขั้ว หิมะขาวโพลน สกีรีสอร์ทระดับโลก อาหารทะเลสดๆ และดอกลาเวนเดอร์ในฤดูร้อน', badges:['Best Ski Slopes','Snow Festival','Fresh Seafood','Lavender Fields'] },
+      { name:'Nara',      sub:'Kansai Region',      hot:false, city:'Nara City',       prov:'Nara Prefecture',    ctry:'🇯🇵 Japan',       map:'https://maps.google.com/?q=Nara,Japan',                     img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=85', desc:'เมืองกวางป่าเดินเล่นอิสระ วัดโตไดจิที่ใหญ่โตอลังการ และบรรยากาศสงบงามที่หาไม่ได้ที่อื่น', badges:['Free Roaming Deer','UNESCO','Todai-ji Temple','Ancient Capital'] },
+    ]
+  },
+  {
+    id:'th', flag:'🇹🇭', name:'Thailand', nameLocal:'ไทย', continent:'asia', rank:'#2',
+    visitors:'28.1M/yr',
+    img:'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80',
+    dests:[
+      { name:'Bangkok',    sub:'Central Thailand',  hot:true,  city:'Bangkok (กรุงเทพฯ)', prov:'Bangkok Metropolitan', ctry:'🇹🇭 Thailand', map:'https://maps.google.com/?q=Bangkok,Thailand',                img:'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=1400&q=85', desc:'เมืองหลวงสุดคึกคัก วัดวาอารามหลวงผสมกับไลฟ์สไตล์สมัยใหม่ สตรีทฟู้ดระดับ Michelin และตลาดสดตลอด 24 ชั่วโมง', badges:['#1 Street Food','Grand Palace','Muay Thai','Chatuchak Market'] },
+      { name:'Chiang Mai', sub:'Northern Thailand', hot:true,  city:'Chiang Mai',       prov:'Chiang Mai Province',  ctry:'🇹🇭 Thailand', map:'https://maps.google.com/?q=Chiang+Mai,Thailand',             img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1400&q=85', desc:'เมืองเหนือโบราณ 300 วัดงดงาม ดอยสุเทพคู่เมือง ช้างไทยในจุดอนุรักษ์ และบรรยากาศโบฮีเมียนของนิมมานเหมินท์', badges:['300 Temples','Elephant Sanctuary','Night Bazaar','Yi Peng Lanterns'] },
+      { name:'Phuket',     sub:'Andaman Coast',     hot:false, city:'Phuket Town',      prov:'Phuket Province',      ctry:'🇹🇭 Thailand', map:'https://maps.google.com/?q=Phuket,Thailand',                 img:'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=1400&q=85', desc:'เกาะที่ใหญ่ที่สุดของไทย ทะเลอันดามันสีเขียวมรกต หาดป่าตอง ล่องเรือเที่ยวเกาะเล็กเกาะน้อย', badges:['Crystal Clear Sea','Island Hopping','Water Sports','Sunset Cruise'] },
+      { name:'Krabi',      sub:'Andaman Coast',     hot:false, city:'Ao Nang',          prov:'Krabi Province',       ctry:'🇹🇭 Thailand', map:'https://maps.google.com/?q=Krabi,Thailand',                  img:'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1400&q=85', desc:'หน้าผาหินปูนยักษ์ริมทะเล เกาะที่งดงาม ถ้ำมรกต พระนาง และหาดเรลย์ที่เข้าถึงได้ทางเรือเท่านั้น', badges:['Railay Beach','Rock Climbing','Emerald Cave','4 Islands Tour'] },
+      { name:'Pai',        sub:'Mae Hong Son',      hot:false, city:'Pai District',     prov:'Mae Hong Son Province',ctry:'🇹🇭 Thailand', map:'https://maps.google.com/?q=Pai,Thailand',                    img:'https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=1400&q=85', desc:'หุบเขาเล็กๆ ในสายหมอก บรรยากาศแบ็คแพ็คเกอร์สุดโรแมนติก น้ำตก สระน้ำ และการขี่มอเตอร์ไซค์ชมธรรมชาติ', badges:['Misty Valley','Backpacker Haven','Hot Springs','Sunrise Views'] },
+    ]
+  },
+  {
+    id:'it', flag:'🇮🇹', name:'Italy', nameLocal:'อิตาลี', continent:'europe', rank:'#3',
+    visitors:'57.2M/yr',
+    img:'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80',
+    dests:[
+      { name:'Rome',         sub:'Lazio',           hot:true,  city:'Rome (Roma)',      prov:'Lazio Region',       ctry:'🇮🇹 Italy',      map:'https://maps.google.com/?q=Rome,Italy',                     img:'https://images.unsplash.com/photo-1525874684015-58379d421a52?w=1400&q=85', desc:'นครนิรันดร์ 2700 ปี โคลอสเซียม ฟอรัมโรมัน นครวาติกัน สาดน้ำโทรวี และเจลาโต้ที่ดีที่สุดในโลก', badges:['Colosseum','Vatican City','Trevi Fountain','Pizza Napoletana'] },
+      { name:'Venice',       sub:'Veneto Region',   hot:true,  city:'Venice (Venezia)', prov:'Veneto Region',      ctry:'🇮🇹 Italy',      map:'https://maps.google.com/?q=Venice,Italy',                   img:'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=1400&q=85', desc:'เมืองลอยน้ำที่ไม่มีที่ไหนเหมือนในโลก Grand Canal คลองกอนโดล่า จัตุรัสเซนต์มาร์ค และเทศกาลคาร์นิวัล', badges:['Grand Canal','Gondola Ride','UNESCO','Carnival Festival'] },
+      { name:'Florence',     sub:'Tuscany',         hot:false, city:'Florence (Firenze)',prov:'Tuscany Region',     ctry:'🇮🇹 Italy',      map:'https://maps.google.com/?q=Florence,Italy',                 img:'https://images.unsplash.com/photo-1541343672885-9be56236302a?w=1400&q=85', desc:'เมืองหลวงแห่ง Renaissance Uffizi Gallery รูปปั้นดาวิด โดมของบรูเนลเลสกี และไร่องุ่นทัสคานี', badges:['Renaissance Capital','Uffizi Gallery','Michelangelo\'s David','Tuscan Wine'] },
+      { name:'Amalfi Coast', sub:'Campania',        hot:false, city:'Positano',         prov:'Campania Region',    ctry:'🇮🇹 Italy',      map:'https://maps.google.com/?q=Amalfi+Coast,Italy',             img:'https://images.unsplash.com/photo-1534308143481-c55f00be8bd7?w=1400&q=85', desc:'ชายฝั่งเมดิเตอร์เรเนียนสุดตระการตา บ้านสีสันบนหน้าผา เส้นทางขับรถชมวิว และ Limoncello เลื่องชื่อ', badges:['UNESCO Drive','Cliffside Villages','Limoncello','Mediterranean Sea'] },
+      { name:'Cinque Terre', sub:'Liguria',         hot:false, city:'Riomaggiore',      prov:'Liguria Region',     ctry:'🇮🇹 Italy',      map:'https://maps.google.com/?q=Cinque+Terre,Italy',             img:'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1400&q=85', desc:'5 หมู่บ้านชาวประมงสีสดใสบนหน้าผาริมทะเล เส้นทางเดินป่าชายฝั่ง Sentiero Azzurro และปลาทูน่าสดๆ', badges:['UNESCO','Colorful Villages','Coastal Hiking','Fresh Seafood'] },
+    ]
+  },
+  {
+    id:'fr', flag:'🇫🇷', name:'France', nameLocal:'ฝรั่งเศส', continent:'europe', rank:'#4',
+    visitors:'100M/yr',
+    img:'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80',
+    dests:[
+      { name:'Paris',            sub:'Île-de-France',  hot:true,  city:'Paris',            prov:'Île-de-France',      ctry:'🇫🇷 France',     map:'https://maps.google.com/?q=Paris,France',                   img:'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1400&q=85', desc:'เมืองแห่งความรักและศิลปะ หอไอเฟล พิพิธภัณฑ์ลูฟวร์ มงมาร์ต บูเลอวาร์ดชานเอลิเซ และร้านกาแฟริมถนนสุดคลาสสิค', badges:['City of Love','Eiffel Tower','Louvre Museum','Fashion Capital'] },
+      { name:'Nice',             sub:'French Riviera', hot:true,  city:'Nice',             prov:'Alpes-Maritimes',    ctry:'🇫🇷 France',     map:'https://maps.google.com/?q=Nice,France',                    img:'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=1400&q=85', desc:'ไข่มุกแห่ง Côte d\'Azur Promenade des Anglais ตลาด Cours Saleya สีสัน และน้ำทะเลสีฟ้าครามสุดสวย', badges:['French Riviera','Promenade des Anglais','Casino de Monte-Carlo','Flower Market'] },
+      { name:'Mont Saint-Michel',sub:'Normandy',       hot:false, city:'Mont-Saint-Michel', prov:'Normandy Region',   ctry:'🇫🇷 France',     map:'https://maps.google.com/?q=Mont+Saint+Michel,France',       img:'https://images.unsplash.com/photo-1589083130544-0d6a2926e519?w=1400&q=85', desc:'ปราสาทสุดเหนือจินตนาการกลางอ่าว น้ำขึ้นน้ำลงห้อมล้อม Abbey สมัยกลาง และทิวทัศน์ที่ทำให้อึ้งทุกครั้ง', badges:['UNESCO','Tidal Island','Medieval Abbey','Normandy Coast'] },
+      { name:'Versailles',       sub:'Île-de-France',  hot:false, city:'Versailles',        prov:'Yvelines Dept.',    ctry:'🇫🇷 France',     map:'https://maps.google.com/?q=Palace+of+Versailles,France',    img:'https://images.unsplash.com/photo-1565099824688-e93eb20fe622?w=1400&q=85', desc:'พระราชวังสุดอลังการของพระเจ้าหลุยส์ที่ 14 สวนฝรั่งเศสขนาดมหึมา ห้องกระจก และนิทรรศการราชวงศ์', badges:['UNESCO Palace','Hall of Mirrors','French Gardens','Royal History'] },
+      { name:'Lyon',             sub:'Auvergne-Rhône', hot:false, city:'Lyon',              prov:'Auvergne-Rhône-Alpes',ctry:'🇫🇷 France',  map:'https://maps.google.com/?q=Lyon,France',                    img:'https://images.unsplash.com/photo-1524591986429-9f57c1b9e05e?w=1400&q=85', desc:'เมืองหลวงแห่งอาหารฝรั่งเศส Bouchon Lyonnais ประวัติศาสตร์โรมัน ผ้าไหมลีอง และ Fête des Lumières สุดอลัง', badges:['Gastronomie Capital','UNESCO','Silk City','Festival of Lights'] },
+    ]
+  },
+  {
+    id:'us', flag:'🇺🇸', name:'USA', nameLocal:'สหรัฐฯ', continent:'americas', rank:'#5',
+    visitors:'76.9M/yr',
+    img:'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=800&q=80',
+    dests:[
+      { name:'New York',      sub:'East Coast',       hot:true,  city:'New York City',    prov:'New York State',     ctry:'🇺🇸 USA',        map:'https://maps.google.com/?q=New+York+City,USA',              img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1400&q=85', desc:'เมืองที่ไม่มีวันหลับใหล Times Square เสรีภาพ Central Park Brooklyn Bridge และ Broadway โชว์ที่หาดูได้ที่นี่', badges:['Times Square','Statue of Liberty','Broadway','Central Park'] },
+      { name:'Grand Canyon',  sub:'Arizona Desert',   hot:true,  city:'Grand Canyon',     prov:'Arizona State',      ctry:'🇺🇸 USA',        map:'https://maps.google.com/?q=Grand+Canyon,Arizona,USA',       img:'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=1400&q=85', desc:'หุบผาอันยิ่งใหญ่ที่สุดในโลก แกะสลักโดยแม่น้ำโคโลราโด 5-6 ล้านปี ชมพระอาทิตย์ขึ้นจากขอบหน้าผา', badges:['Natural Wonder','Colorado River','Helicopter Tours','Sunrise Views'] },
+      { name:'Hawaii',        sub:'Pacific Islands',  hot:false, city:'Honolulu',          prov:'Hawaii State',       ctry:'🇺🇸 USA',        map:'https://maps.google.com/?q=Hawaii,USA',                     img:'https://images.unsplash.com/photo-1542259009477-d625272157b7?w=1400&q=85', desc:'หมู่เกาะสวรรค์ มหาสมุทรแปซิฟิก ภูเขาไฟที่ยังคุกรุ่น เล่นเซิร์ฟ หาดทราย Aloha Spirit', badges:['Aloha Spirit','Active Volcano','World-class Surf','Pearl Harbor'] },
+      { name:'Las Vegas',     sub:'Nevada Desert',    hot:false, city:'Las Vegas',         prov:'Nevada State',       ctry:'🇺🇸 USA',        map:'https://maps.google.com/?q=Las+Vegas,Nevada,USA',           img:'https://images.unsplash.com/photo-1617404803854-58b81b1c9a3e?w=1400&q=85', desc:'Entertainment Capital of the World The Strip แสงนีออนมิลยัน Cirque du Soleil และโรงแรมระดับโลก', badges:['The Strip','World-class Shows','Casino Capital','24h Entertainment'] },
+      { name:'Yellowstone',   sub:'Rocky Mountains',  hot:false, city:'Yellowstone',       prov:'Wyoming/Montana',    ctry:'🇺🇸 USA',        map:'https://maps.google.com/?q=Yellowstone+National+Park,USA',  img:'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=1400&q=85', desc:'อุทยานแห่งชาติแห่งแรกของโลก Old Faithful Geyser บัฟฟาโล หมาป่า หมีและธรรมชาติสมบูรณ์', badges:['World\'s First Nat\'l Park','Old Faithful','Bison Herds','Geothermal Wonders'] },
+    ]
+  },
+  {
+    id:'au', flag:'🇦🇺', name:'Australia', nameLocal:'ออสเตรเลีย', continent:'oceania', rank:'#6',
+    visitors:'9.5M/yr',
+    img:'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=800&q=80',
+    dests:[
+      { name:'Sydney',          sub:'New South Wales', hot:true,  city:'Sydney',           prov:'New South Wales',    ctry:'🇦🇺 Australia',  map:'https://maps.google.com/?q=Sydney,Australia',               img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&q=85', desc:'Harbour City สุดงาม Opera House ที่โด่งดังทั่วโลก Harbour Bridge หาด Bondi และวัฒนธรรมมัลติคัลเจอร์', badges:['Opera House','Bondi Beach','Harbour Bridge','World-class Coffee'] },
+      { name:'Great Barrier Reef',sub:'Queensland',    hot:true,  city:'Cairns',           prov:'Queensland State',   ctry:'🇦🇺 Australia',  map:'https://maps.google.com/?q=Great+Barrier+Reef,Australia',   img:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1400&q=85', desc:'แนวปะการังที่ยาวที่สุดในโลก 2,300 กม. ดำน้ำชมปลาหลากสี เต่าทะเล ฉลาม และความงามใต้น้ำที่ไม่มีที่ไหนเทียบ', badges:['UNESCO','World\'s Largest Reef','Scuba Diving','Marine Life'] },
+      { name:'Melbourne',       sub:'Victoria State',  hot:false, city:'Melbourne',        prov:'Victoria State',     ctry:'🇦🇺 Australia',  map:'https://maps.google.com/?q=Melbourne,Australia',            img:'https://images.unsplash.com/photo-1514395462725-fb4566210144?w=1400&q=85', desc:'เมืองศิลปะและวัฒนธรรม Street Art Lanes ร้านกาแฟ Specialty รายล้อม ร้านอาหารหลายร้อยแห่ง และ Australian Open', badges:['Coffee Capital','Street Art','Australian Open','Food Culture'] },
+      { name:'Uluru',           sub:'Northern Territory',hot:false,city:'Uluru-Kata Tjuta', prov:'Northern Territory', ctry:'🇦🇺 Australia',  map:'https://maps.google.com/?q=Uluru,Australia',                img:'https://images.unsplash.com/photo-1529108190281-9a4f620bc2d8?w=1400&q=85', desc:'มหาศิลาสีแดงอันศักดิ์สิทธิ์กลางทะเลทราย จุดรวมจิตวิญญาณของชาว Anangu ชมพระอาทิตย์ตกสีทอง', badges:['UNESCO','Sacred Site','Outback Adventure','Star Gazing'] },
+      { name:'Gold Coast',      sub:'Queensland',      hot:false, city:'Surfers Paradise',  prov:'Queensland State',   ctry:'🇦🇺 Australia',  map:'https://maps.google.com/?q=Gold+Coast,Queensland,Australia',img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400&q=85', desc:'หาดทรายขาว 57 กม. Surfers Paradise สวนสนุก Movie World Warner Bros. และ Sea World', badges:['57km Beach','Theme Parks','World-class Surfing','Whale Watching'] },
+    ]
+  },
+];
+
+/* ═══ STATE ═══ */
+let CUR_CTRY  = 0;
+let CUR_DEST  = 0;
+let FILTERED  = [...COUNTRIES];
+let autoRaf=null, elapsed=0, lastTs=null;
+const AUTO_MS = 6500;
+
+/* ═══ COOKIE ═══ */
+function setCookie(n,v,d){ const e=new Date(); e.setTime(e.getTime()+d*86400000); document.cookie=`${n}=${encodeURIComponent(v)};expires=${e.toUTCString()};path=/;SameSite=Lax`; }
+function getCookie(n){ const m=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)'); return m?decodeURIComponent(m.pop()):''; }
+function acceptCookies(){ setCookie('ge_consent','yes',365); document.getElementById('cookie-toast').classList.remove('show'); }
+function declineCookies(){ setCookie('ge_consent','no',30); document.getElementById('cookie-toast').classList.remove('show'); }
+
+/* ═══ BUILD BG SLIDES ═══ */
+function buildBGSlides() {
+  const wrap = document.getElementById('bg-wrap');
+  wrap.querySelectorAll('.bg-slide').forEach(el=>el.remove());
+  COUNTRIES.forEach(c => c.dests.forEach(d => {
+    const el = document.createElement('div');
+    el.className='bg-slide'; el.dataset.key=d.img;
+    el.style.backgroundImage=`url(${d.img})`; wrap.appendChild(el);
+  }));
+}
+
+/* ═══ BUILD COUNTRY CARDS ═══ */
+function buildCountryCards() {
+  const strip = document.getElementById('country-strip');
+  strip.innerHTML='';
+  FILTERED.forEach((c,i) => {
+    const el=document.createElement('div');
+    el.className='cc'+(i===0?' active':''); el.dataset.i=i;
+    el.innerHTML=`
+      <div class="cc-img" style="background-image:url(${c.img})"></div>
+      <div class="cc-over"></div>
+      <div class="cc-flag">${c.flag}</div>
+      <div class="cc-rank">${c.rank}</div>
+      <div class="cc-dot"></div>
+      <div class="cc-vis">${c.visitors}</div>
+      <div class="cc-name">${c.name}<br><span style="font-size:10px;font-weight:300;opacity:.6">${c.nameLocal}</span></div>
+    `;
+    el.addEventListener('click',()=>selectCountry(i));
+    strip.appendChild(el);
+  });
+}
+
+/* ═══ BUILD DEST STRIP ═══ */
+function buildDestStrip(country) {
+  const strip=document.getElementById('dest-strip'); strip.innerHTML='';
+  country.dests.forEach((d,i)=>{
+    const el=document.createElement('div');
+    el.className='dest-card'+(i===0?' active':''); el.dataset.i=i;
+    el.innerHTML=`
+      <div class="dc-img" style="background-image:url(${d.img})"></div>
+      <div class="dc-over"></div>
+      ${d.hot?'<div class="dc-hot">HOT</div>':''}
+      <div class="dc-prog" id="dp-${i}"></div>
+      <div class="dc-info"><div class="dc-name">${d.name}</div><div class="dc-sub">${d.sub}</div></div>
+    `;
+    el.addEventListener('click',()=>switchDest(i, FILTERED[CUR_CTRY]));
+    strip.appendChild(el);
+  });
+}
+
+/* ═══ SELECT COUNTRY ═══ */
+function selectCountry(idx) {
+  CUR_CTRY=idx; CUR_DEST=0;
+  const c=FILTERED[idx];
+  document.querySelectorAll('.cc').forEach((el,i)=>el.classList.toggle('active',i===idx));
+  buildDestStrip(c);
+  document.getElementById('dest-section').classList.add('open');
+  document.getElementById('ds-flag').textContent=c.flag;
+  document.getElementById('ds-name').textContent=c.name+' · สถานที่ยอดนิยม';
+  document.getElementById('tot-num').textContent='/'+String(c.dests.length).padStart(2,'0');
+  switchDest(0, c, true);
+  resetAuto();
+}
+
+/* ═══ SWITCH DESTINATION ═══ */
+function switchDest(idx, country, instant=false) {
+  const prev=CUR_DEST; CUR_DEST=idx;
+  const d=country.dests[idx];
+  const bgs=document.querySelectorAll('.bg-slide');
+  let newBg=null; bgs.forEach(b=>{ if(b.dataset.key===d.img) newBg=b; });
+  if(!newBg){
+    newBg=document.createElement('div'); newBg.className='bg-slide'; newBg.dataset.key=d.img;
+    newBg.style.backgroundImage=`url(${d.img})`; document.getElementById('bg-wrap').appendChild(newBg);
+  }
+  const dcards=document.querySelectorAll('.dest-card');
+  const activeCard=dcards[idx];
+  if(instant||!activeCard||!activeCard.getBoundingClientRect().width){
+    bgs.forEach(b=>b.classList.remove('active')); newBg.classList.add('active');
+    gsap.fromTo(newBg,{scale:1.06,opacity:0},{scale:1,opacity:1,duration:.85,ease:'power2.out'});
+  } else {
+    const rect=activeCard.getBoundingClientRect();
+    const ox=((rect.left+rect.width/2)/window.innerWidth*100).toFixed(1)+'%';
+    const oy=((rect.top+rect.height/2)/window.innerHeight*100).toFixed(1)+'%';
+    newBg.style.transformOrigin=`${ox} ${oy}`;
+    gsap.set(newBg,{opacity:0,scale:.25}); newBg.classList.add('active');
+    gsap.to(newBg,{
+      opacity:1,scale:1,duration:.72,ease:'power3.inOut',
+      onComplete:()=>{
+        bgs.forEach(b=>{if(b!==newBg){b.classList.remove('active'); gsap.set(b,{scale:1,opacity:0});}});
+        newBg.style.transformOrigin='center center';
+      }
+    });
+    [...bgs].filter(b=>b!==newBg&&b.classList.contains('active'))
+      .forEach(b=>gsap.to(b,{opacity:0,scale:1.04,duration:.4,ease:'power2.in'}));
+  }
+  dcards.forEach((c,i)=>c.classList.toggle('active',i===idx));
+  const op=document.getElementById(`dp-${prev}`);
+  if(op&&prev!==idx) gsap.set(op,{width:'0%'});
+  updateLeft(d); updateBadge(d);
+  document.getElementById('cur-num').textContent=String(idx+1).padStart(2,'0');
+  resetAuto();
+}
+
+/* ═══ UPDATE PANELS ═══ */
+function updateLeft(d, anim=true) {
+  const r=document.getElementById('dest-region'),
+        t=document.getElementById('dest-title'),
+        desc=document.getElementById('dest-desc'),
+        btn=document.getElementById('btn-discover'),
+        badges=document.getElementById('dest-badges');
+  const doUpdate=()=>{
+    r.textContent=d.sub; t.innerHTML=d.name; desc.textContent=d.desc;
+    btn.href=d.map;
+    badges.innerHTML=(d.badges||[]).map((b,i)=>`<span class="badge${i===0?' gold':''}">${b}</span>`).join('');
+  };
+  if(anim){
+    gsap.to([r,t,desc],{y:-14,opacity:0,duration:.2,stagger:.04,onComplete:()=>{
+      doUpdate(); gsap.fromTo([r,t,desc],{y:18,opacity:0},{y:0,opacity:1,duration:.44,stagger:.07,ease:'power2.out'});
+    }});
+    gsap.to(badges,{opacity:0,duration:.18,onComplete:()=>gsap.to(badges,{opacity:1,duration:.4})});
+  } else doUpdate();
+}
+function updateBadge(d) {
+  const animate=(ids,vals,href)=>{
+    gsap.to('#loc-badge',{opacity:0,x:-8,duration:.16,onComplete:()=>{
+      document.getElementById('loc-city').textContent=vals[0];
+      document.getElementById('loc-prov').textContent=vals[1];
+      document.getElementById('loc-ctry').textContent=vals[2];
+      document.getElementById('loc-map').href=href;
+      gsap.to('#loc-badge',{opacity:1,x:0,duration:.34,ease:'power2.out'});
+    }});
+  };
+  animate([],[d.city,d.prov,d.ctry],d.map);
+}
+
+/* ═══ FILTER ═══ */
+document.querySelectorAll('.nav-pill').forEach(p=>{
+  p.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));
+    p.classList.add('active');
+    const cat=p.dataset.cat;
+    FILTERED=cat==='all'?[...COUNTRIES]:COUNTRIES.filter(c=>c.continent===cat);
+    buildCountryCards();
+    if(FILTERED.length>0){CUR_CTRY=0;selectCountry(0);}
+  });
+});
+
+/* ═══ AUTO PLAY ═══ */
+function tickAuto(ts){
+  if(!lastTs)lastTs=ts; elapsed+=ts-lastTs; lastTs=ts;
+  const pct=Math.min(elapsed/AUTO_MS*100,100);
+  const dp=document.getElementById(`dp-${CUR_DEST}`);
+  if(dp)dp.style.width=pct+'%';
+  document.getElementById('prog-line').style.width=pct+'%';
+  if(elapsed>=AUTO_MS){
+    elapsed=0;lastTs=null; if(dp)dp.style.width='0%';
+    const c=FILTERED[CUR_CTRY];
+    switchDest((CUR_DEST+1)%c.dests.length, c);
+  }
+  autoRaf=requestAnimationFrame(tickAuto);
+}
+function startAuto(){ elapsed=0;lastTs=null;autoRaf=requestAnimationFrame(tickAuto); }
+function stopAuto() { cancelAnimationFrame(autoRaf); }
+function resetAuto(){
+  stopAuto();
+  const dp=document.getElementById(`dp-${CUR_DEST}`);
+  if(dp)dp.style.width='0%';
+  document.getElementById('prog-line').style.width='0%';
+  elapsed=0;lastTs=null; setTimeout(startAuto,350);
+}
+
+/* ═══ CONTROLS ═══ */
+document.getElementById('btn-prev').addEventListener('click',()=>{ const c=FILTERED[CUR_CTRY]; switchDest((CUR_DEST-1+c.dests.length)%c.dests.length,c); });
+document.getElementById('btn-next').addEventListener('click',()=>{ const c=FILTERED[CUR_CTRY]; switchDest((CUR_DEST+1)%c.dests.length,c); });
+document.addEventListener('keydown',e=>{
+  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
+  const c=FILTERED[CUR_CTRY];
+  if(e.key==='ArrowRight'||e.key==='ArrowDown') switchDest((CUR_DEST+1)%c.dests.length,c);
+  if(e.key==='ArrowLeft' ||e.key==='ArrowUp')   switchDest((CUR_DEST-1+c.dests.length)%c.dests.length,c);
+});
+let wLock=false;
+document.addEventListener('wheel',e=>{ if(wLock)return; wLock=true; setTimeout(()=>wLock=false,850); const c=FILTERED[CUR_CTRY]; e.deltaY>0?switchDest((CUR_DEST+1)%c.dests.length,c):switchDest((CUR_DEST-1+c.dests.length)%c.dests.length,c); },{passive:true});
+(function(){
+  let sx=0,sy=0,st=0;
+  document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();},{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy,held=Date.now()-st;
+    if(held>300||Math.abs(dy)>Math.abs(dx)||Math.abs(dx)<35)return;
+    const c=FILTERED[CUR_CTRY];
+    dx<0?switchDest((CUR_DEST+1)%c.dests.length,c):switchDest((CUR_DEST-1+c.dests.length)%c.dests.length,c);
+  },{passive:true});
+})();
+
+/* ═══ INIT ═══ */
+function init(){
+  buildBGSlides(); buildCountryCards();
+  if(!getCookie('ge_consent')) setTimeout(()=>document.getElementById('cookie-toast').classList.add('show'),2200);
+  selectCountry(0);
+  gsap.set('#left-panel > *',{opacity:0,y:22}); gsap.to('#left-panel > *',{opacity:1,y:0,duration:.8,stagger:.1,ease:'power3.out',delay:.6});
+  gsap.set('#loc-badge',{opacity:0,x:-16}); gsap.to('#loc-badge',{opacity:1,x:0,duration:.7,ease:'power3.out',delay:.9});
+  gsap.set('.cc',{opacity:0,y:26,scale:.93}); gsap.to('.cc',{opacity:1,y:0,scale:1,duration:.55,stagger:.08,ease:'back.out(1.4)',delay:.75});
+  startAuto();
+}
+init();
+</script>
+</body>
+</html>
