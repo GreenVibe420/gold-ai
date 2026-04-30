@@ -1201,18 +1201,14 @@ function handleSubmit(){
     const msg = currentTab === 'register' ? 'สมัครสมาชิกสำเร็จ' : 'เข้าสู่ระบบสำเร็จ';
     showToast('✅', msg);
 
-    // ใส่ตรงนี้เพื่อให้รอแสดงข้อความก่อนค่อยเด้ง
     setTimeout(() => {
-        window.location.href = 'index2.html'; 
+        window.location.href = 'index2.html';
     }, 1500);
 }
 
-function showToast(icon,msg)
-  const t=document.getElementById('toast');
-  document.getElementById('toast-msg').textContent=msg;
-  document.querySelector('#toast .toast-icon').textContent=icon;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),4000);
+function showToast(icon, msg) {
+    const t = document.getElementById('toast');
+    // โค้ดเดิมของคุณด้านล่าง...
 }
 
 /* FAQ */
