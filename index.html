@@ -756,14 +756,14 @@ body { font-family:'Kanit',sans-serif; background:var(--bg); color:#fff; overflo
 ══════════════════════════════════════ -->
 <section id="plans" class="section">
   <div class="section-inner">
-    <div class="section-head" data-aos="fade-up">
+    <div  data-aos="fade-up" class="section-head">
       <div class="section-label">เลือกแพ็กเกจของคุณ</div>
       <h2 class="section-title">Membership Plans</h2>
     </div>
     <div class="plans-wrap">
 
       <!-- FREE -->
-      <div class="plan-card free-plan" data-aos="fade-up" data-aos-delay="0" data-aos-duration="700">
+      <div data-aos="fade-up-right" class="plan-card free-plan" >
         <div class="plan-body">
           <div class="plan-icon-box"><i class="fa-solid fa-earth-asia"></i></div>
           <div class="plan-tier">Explorer</div>
@@ -1553,6 +1553,10 @@ document.querySelectorAll('.plan-card').forEach(card => {
    INIT
 ════════════════════════════════════ */
 renderFreemiumUI();
+</script>
+   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+   <script>
+  AOS.init();
 </script>
 </body>
 </html>
