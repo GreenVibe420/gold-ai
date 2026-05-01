@@ -726,6 +726,9 @@ body { font-family:'Kanit',sans-serif; background:var(--bg); color:#fff; overflo
   <div class="hero-streak"></div>
   <div class="hero-particles" id="heroParticles"></div>
   <div class="hero-inner">
+    <div class="hero-badge" data-aos="fade-down" data-aos-duration="700">
+      <i class="fa-solid fa-star"></i> Globe Express Membership 2025
+    </div>
     <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100" data-aos-duration="800">
       <span class="t1">สมัครสมาชิก</span>
       <span class="t2">VIP Access</span>
@@ -756,14 +759,14 @@ body { font-family:'Kanit',sans-serif; background:var(--bg); color:#fff; overflo
 ══════════════════════════════════════ -->
 <section id="plans" class="section">
   <div class="section-inner">
-    <div  data-aos="fade-up" class="section-head">
+    <div class="section-head" data-aos="fade-up">
       <div class="section-label">เลือกแพ็กเกจของคุณ</div>
       <h2 class="section-title">Membership Plans</h2>
     </div>
     <div class="plans-wrap">
 
       <!-- FREE -->
-      <div data-aos="fade-up-right" class="plan-card free-plan" >
+      <div class="plan-card free-plan"  data-aos="fade-up-right">
         <div class="plan-body">
           <div class="plan-icon-box"><i class="fa-solid fa-earth-asia"></i></div>
           <div class="plan-tier">Explorer</div>
@@ -808,7 +811,7 @@ body { font-family:'Kanit',sans-serif; background:var(--bg); color:#fff; overflo
       </div>
 
       <!-- DIAMOND -->
-      <div class="plan-card vip-diamond" data-aos="fade-up" data-aos-delay="260" data-aos-duration="700">
+      <div class="plan-card vip-diamond"  data-aos="fade-up-left">
         <div class="plan-body">
           <div class="plan-icon-box"><i class="fa-solid fa-gem"></i></div>
           <div class="plan-tier">Diamond VIP</div>
@@ -1403,7 +1406,7 @@ function handleUpgrade() {
       closePaywall();
       renderFreemiumUI();
       showToast('crown', 'อัปเกรดสำเร็จ! ยินดีต้อนรับสู่ Globe VIP');
-      setTimeout(() => {
+       setTimeout(() => {
     window.location.href = 'index2.html';
   }, 1500);
     })
