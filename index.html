@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Globe Express — VIP Membership</title>
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@200;300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
@@ -1051,7 +1052,7 @@ body::before {
   <div class="hero-inner">
     <div class="hero-eyebrow">Globe Express · Membership 2025</div>
     <h1 class="hero-title">
-      <span class="t1">สมัครสมาชิก</span>
+      <span class="t1">เที่ยวทั่วโลก</span>
       <span class="t2 gold-text">VIP Access</span>
     </h1>
     <div class="hero-divider"></div>
@@ -1060,22 +1061,6 @@ body::before {
       แผนเดินทางสุดเอกซ์คลูซีฟ และสิทธิพิเศษที่หาไม่ได้จากที่ไหน
     </p>
     <div class="hero-stats">
-      <div class="stat-cell">
-        <div class="stat-n gold-text">500+</div>
-        <div class="stat-l">สถานที่ VIP</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-n gold-text">48</div>
-        <div class="stat-l">ประเทศ</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-n gold-text">120K+</div>
-        <div class="stat-l">สมาชิก</div>
-      </div>
-      <div class="stat-cell">
-        <div class="stat-n gold-text">4.9</div>
-        <div class="stat-l">คะแนนรีวิว</div>
-      </div>
     </div>
     <div class="hero-cta">
       <button class="btn-prime" onclick="openModal()">
@@ -1101,7 +1086,7 @@ body::before {
     <div class="plans-grid">
 
       <!-- FREE -->
-      <div class="plan-card plan-free reveal reveal-d1">
+      <div class="plan-card plan-free reveal reveal-d1" data-aos="zoom-out-right">
         <div class="plan-body">
           <div class="plan-tier-row">
             <div class="plan-icon pi-free"><i class="fa-solid fa-earth-asia"></i></div>
@@ -1940,5 +1925,9 @@ window.addEventListener('scroll', () => {
 ────────────────────────────── */
 refreshUI();
 </script>
+   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+   <script>
+  AOS.init();
+   </script>
 </body>
 </html>
