@@ -1395,30 +1395,45 @@ function handleUpgrade() {
     showToast('circle-info', 'กรุณาเข้าสู่ระบบก่อนอัปเกรด');
     return;
   }
-  // Write VIP status to Firebase
-  db.ref('users/' + currentUser.uid).update({ membership: 'gold', upgradedAt: Date.now() })
-    .then(() => {
-      membership = 'gold';
-      localStorage.setItem('ge_membership', 'gold');
-      closePaywall();
-      renderFreemiumUI();
-      showToast('crown', 'อัปเกรดสำเร็จ! ยินดีต้อนรับสู่ Globe VIP');
-       setTimeout(() => {
-    window.location.href = 'index2.html';
-  }, 1500);
-    })
-    .catch(() => {
-      // Offline fallback
-      membership = 'gold';
-      localStorage.setItem('ge_membership', 'gold');
-      closePaywall();
-      renderFreemiumUI();
-      showToast('crown', 'อัปเกรดสำเร็จ! ยินดีต้อนรับสู่ Globe VIP');
-       setTimeout(() => {
-    window.location.href = 'kia1.html';
-  }, 1500);
-    });
+
+  // อัปเดตสถานะ VIP ไปที่ Firebase
+  db.ref('users/' + currentUser.uid).update({ 
+    membership: 'gold', 
+    upgradedAt: Date.now() 
+  })
+  .then(() => {
+    // กรณีที่ 1: อัปเกรดสำเร็จ (ทำงานปกติ)
+    membership = 'gold';
+    localStorage.setItem('ge_membership', 'gold');
+    closePaywall();
+    renderFreemiumUI();
+    showToast('crown', 'อัปเกรดสำเร็จ! ยินดีต้อนรับสู่ Globe VIP');
+
+    // สั่งให้ไปหน้า index.html หรือ kia2.html ตามเงื่อนไขที่คุณต้องการ
+    setTimeout(() => {
+      // ตัวอย่าง: ถ้าต้องการไปหน้าหลักให้ใช้ index.html 
+      // หรือถ้าเป็นหน้าพิเศษสำหรับสมาชิกใหม่ให้ใช้ kia2.html
+      window.location.href = 'index.html'; 
+    }, 1500);
+  })
+  .catch((error) => {
+    // กรณีที่ 2: เกิดข้อผิดพลาด หรือ Offline fallback
+    console.error("Upgrade failed:", error);
+    
+    membership = 'gold';
+    localStorage.setItem('ge_membership', 'gold');
+    closePaywall();
+    renderFreemiumUI();
+    showToast('crown', 'อัปเกรดสำเร็จ! (โหมดสำรอง)');
+
+    // สั่งให้ไปหน้า kia1.html
+    setTimeout(() => {
+      window.location.href = 'kia1.html';
+    }, 1500);
+  });
 }
+
+
 
 /* ════════════════════════════════════
    MODALS
