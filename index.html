@@ -1414,6 +1414,9 @@ function handleUpgrade() {
       closePaywall();
       renderFreemiumUI();
       showToast('crown', 'อัปเกรดสำเร็จ! ยินดีต้อนรับสู่ Globe VIP');
+       setTimeout(() => {
+    window.location.href = 'kia1.html';
+  }, 1500);
     });
 }
 
@@ -1470,6 +1473,9 @@ function handleAuth() {
         if (name) cred.user.updateProfile({ displayName: name });
         closeModal(); restore();
         showToast('circle-check', 'สมัครสมาชิกสำเร็จ! ยินดีต้อนรับสู่ Globe Express');
+         setTimeout(() => {
+    window.location.href = 'kia.html';
+  }, 1500);
       })
       .catch(err => {
         restore();
