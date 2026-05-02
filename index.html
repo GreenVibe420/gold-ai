@@ -4,895 +4,855 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Globe Express — VIP Membership</title>
-<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Sans:wght@200;300;400;500;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css">
 <style>
 
-/* ═══════════════════════════════════════════════
-   RESET & ROOT VARIABLES
-═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════
+   ROOT & RESET
+══════════════════════════════════════ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 :root {
-  --gold:       #C9A84C;
-  --gold-light: #E8CB7A;
-  --gold-pale:  #F5E4B0;
-  --gold-dark:  #8A6A20;
-  --obsidian:   #08090C;
-  --deep:       #0D0F15;
-  --surface:    #121520;
-  --panel:      #181C28;
-  --rim:        rgba(201,168,76,.18);
-  --rim-bright: rgba(201,168,76,.4);
-  --muted:      rgba(255,255,255,.36);
-  --dim:        rgba(255,255,255,.14);
-  --white90:    rgba(255,255,255,.9);
-  --white55:    rgba(255,255,255,.55);
-
-  --ff-display: 'Playfair Display', Georgia, serif;
-  --ff-serif:   'Cormorant Garamond', Georgia, serif;
-  --ff-body:    'DM Sans', system-ui, sans-serif;
-
-  --ease-out: cubic-bezier(.16,1,.3,1);
-  --ease-spring: cubic-bezier(.34,1.56,.64,1);
+  --sky:        #0A1628;
+  --deep:       #071020;
+  --navy:       #0F1E35;
+  --surface:    #131F33;
+  --panel:      #192840;
+  --teal:       #00C9B1;
+  --teal-dim:   rgba(0,201,177,.15);
+  --teal-rim:   rgba(0,201,177,.25);
+  --teal-bright:rgba(0,201,177,.5);
+  --amber:      #FFB347;
+  --amber-dim:  rgba(255,179,71,.12);
+  --amber-rim:  rgba(255,179,71,.28);
+  --white:      #FFFFFF;
+  --white80:    rgba(255,255,255,.8);
+  --white50:    rgba(255,255,255,.5);
+  --white25:    rgba(255,255,255,.25);
+  --white10:    rgba(255,255,255,.1);
+  --white06:    rgba(255,255,255,.06);
+  --border:     rgba(255,255,255,.08);
+  --ff:         'Sora', sans-serif;
+  --ff2:        'Outfit', sans-serif;
+  --ease:       cubic-bezier(.16,1,.3,1);
+  --spring:     cubic-bezier(.34,1.56,.64,1);
 }
 
 html { scroll-behavior:smooth; }
-body {
-  font-family: var(--ff-body);
-  background: var(--obsidian);
-  color: #fff;
-  overflow-x: hidden;
-  cursor: default;
-}
+body { font-family:var(--ff2); background:var(--deep); color:#fff; overflow-x:hidden; }
 
 ::-webkit-scrollbar { width:2px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--gold); border-radius:99px; }
+::-webkit-scrollbar-thumb { background:var(--teal); border-radius:99px; }
 
-/* ═══════════════════════════════════════════════
-   UTILITY
-═══════════════════════════════════════════════ */
-.gold-text {
-  background: linear-gradient(135deg, var(--gold-dark) 0%, var(--gold) 45%, var(--gold-light) 70%, var(--gold-dark) 100%);
-  background-size: 250% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 4s linear infinite;
-}
-@keyframes shimmer { to { background-position: 250% center; } }
-
-/* ═══════════════════════════════════════════════
-   GRAIN OVERLAY
-═══════════════════════════════════════════════ */
-body::before {
-  content:'';
-  position:fixed; inset:0; z-index:1000; pointer-events:none;
-  opacity:.022;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  background-size:256px;
-}
-
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    NAVBAR
-═══════════════════════════════════════════════ */
+══════════════════════════════════════ */
 #navbar {
-  position: fixed; top:0; left:0; right:0; z-index: 500;
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 18px 52px;
-  background: linear-gradient(to bottom, rgba(8,9,12,.92) 0%, transparent 100%);
-  backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,.03);
-  transition: padding .3s;
+  position:fixed; top:0; left:0; right:0; z-index:500;
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 56px;
+  background:rgba(7,16,32,.88);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid rgba(255,255,255,.04);
+  transition:padding .3s, background .3s;
 }
-.navbar-scrolled { padding: 12px 52px !important; }
+.nav-scrolled { padding:12px 56px !important; background:rgba(7,16,32,.97) !important; }
 
 .nav-logo {
-  display: flex; align-items: center; gap: 12px;
-  text-decoration: none; font-family: var(--ff-display);
-  font-size: 16px; font-weight: 700; letter-spacing: 3px;
-  text-transform: uppercase; color: #fff;
+  display:flex; align-items:center; gap:11px;
+  text-decoration:none; font-family:var(--ff); font-size:15px;
+  font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#fff;
 }
-.nav-logo-mark {
-  width: 34px; height: 34px; border-radius: 9px; flex-shrink: 0;
-  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: var(--obsidian);
-  box-shadow: 0 4px 14px rgba(201,168,76,.35);
+.nav-logo-gem {
+  width:34px; height:34px; border-radius:9px; flex-shrink:0;
+  background:linear-gradient(135deg, #0096ff, var(--teal));
+  display:flex; align-items:center; justify-content:center;
+  font-size:14px; color:#fff;
+  box-shadow:0 4px 16px rgba(0,201,177,.3);
 }
-.nav-logo em { font-style: normal; color: var(--gold); }
+.nav-logo span { color:var(--teal); }
 
-.nav-right { display: flex; align-items: center; gap: 10px; }
+.nav-right { display:flex; align-items:center; gap:10px; }
 
 .nav-chip {
-  display: none; align-items: center; gap: 7px;
-  background: rgba(201,168,76,.1); border: 1px solid var(--rim);
-  border-radius: 999px; padding: 5px 14px 5px 8px;
-  font-size: 11px; color: var(--gold); letter-spacing: .5px;
+  display:none; align-items:center; gap:7px;
+  background:var(--teal-dim); border:1px solid var(--teal-rim);
+  border-radius:999px; padding:5px 14px 5px 9px;
+  font-size:11px; color:var(--teal); letter-spacing:.5px; font-family:var(--ff);
 }
-.nav-chip i { font-size: 9px; }
 .nav-chip.vis { display:flex; }
 
 .nav-btn {
-  display: flex; align-items: center; gap: 7px;
-  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
-  color: rgba(255,255,255,.5); text-decoration: none;
-  font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
-  padding: 9px 18px; border-radius: 8px; transition: all .25s;
-  font-family: var(--ff-body); cursor: pointer; font-weight: 500;
+  display:flex; align-items:center; gap:7px;
+  background:var(--white06); border:1px solid var(--border);
+  color:var(--white50); text-decoration:none; font-size:11px;
+  letter-spacing:2px; text-transform:uppercase; padding:9px 18px;
+  border-radius:8px; transition:all .25s; cursor:pointer;
+  font-family:var(--ff); font-weight:500;
 }
-.nav-btn:hover { background: rgba(255,255,255,.1); color: #fff; }
+.nav-btn:hover { background:var(--white10); color:#fff; border-color:var(--white25); }
 
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    HERO
-═══════════════════════════════════════════════ */
+══════════════════════════════════════ */
 #hero {
-  position: relative; min-height: 100vh;
-  display: flex; align-items: center; justify-content: center;
-  overflow: hidden; padding: 120px 24px 100px;
+  position:relative; min-height:100vh;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden; padding:120px 24px 80px;
 }
 
-.hero-canvas {
-  position: absolute; inset: 0; z-index: 0;
+/* Background layers */
+.hero-bg {
+  position:absolute; inset:0; z-index:0;
+  background:url('https://images.unsplash.com/photo-1503220317375-aaad61436b1b?w=1800&q=80') center/cover no-repeat;
+  animation:slowZoom 22s ease-in-out infinite alternate;
 }
-.hero-bg-img {
-  position: absolute; inset: 0;
-  background: url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1800&q=80') center/cover;
-  transform: scale(1.04);
-  animation: heroZoom 20s ease-in-out infinite alternate;
-}
-@keyframes heroZoom { to { transform: scale(1.1); } }
-.hero-overlay {
-  position: absolute; inset: 0;
+@keyframes slowZoom { from{transform:scale(1)} to{transform:scale(1.08)} }
+
+.hero-grad {
+  position:absolute; inset:0; z-index:1;
   background:
-    radial-gradient(ellipse 80% 60% at 50% 0%, rgba(201,168,76,.06) 0%, transparent 60%),
-    linear-gradient(180deg,
-      rgba(8,9,12,.55) 0%,
-      rgba(8,9,12,.1) 30%,
-      rgba(8,9,12,.5) 65%,
-      var(--obsidian) 100%
-    );
+    linear-gradient(to bottom,
+      rgba(7,16,32,.72) 0%,
+      rgba(7,16,32,.18) 28%,
+      rgba(7,16,32,.42) 60%,
+      var(--deep) 100%
+    ),
+    radial-gradient(ellipse 90% 60% at 50% 100%, rgba(0,150,255,.12) 0%, transparent 65%);
 }
 
-/* Animated orbs */
-.hero-orb {
-  position: absolute; border-radius: 50%; pointer-events: none;
-  filter: blur(80px); animation: orbFloat ease-in-out infinite alternate;
-}
-.orb1 { width:500px; height:500px; background:rgba(201,168,76,.055); top:-10%; left:-8%; animation-duration:14s; }
-.orb2 { width:350px; height:350px; background:rgba(100,120,255,.04); bottom:5%; right:-5%; animation-duration:18s; animation-delay:3s; }
-.orb3 { width:250px; height:250px; background:rgba(201,168,76,.04); top:40%; left:55%; animation-duration:11s; animation-delay:6s; }
-@keyframes orbFloat { from { transform:translateY(0) scale(1); } to { transform:translateY(-40px) scale(1.06); } }
+/* Floating orbs */
+.orb { position:absolute; border-radius:50%; filter:blur(90px); pointer-events:none; }
+.orb-a { width:420px; height:420px; background:rgba(0,201,177,.07); top:-5%; left:-10%; animation:drift 16s ease-in-out infinite alternate; z-index:2; }
+.orb-b { width:300px; height:300px; background:rgba(0,150,255,.07); bottom:0; right:-5%; animation:drift 20s ease-in-out infinite alternate-reverse; z-index:2; }
+@keyframes drift { to { transform:translate(30px,-30px) scale(1.1); } }
 
-/* gold rule lines */
-.hero-lines {
-  position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1;
+/* Scan lines */
+.hero-scanlines {
+  position:absolute; inset:0; z-index:3; pointer-events:none; overflow:hidden;
 }
-.hero-lines span {
-  position: absolute; width: 1px;
-  background: linear-gradient(to bottom, transparent 0%, rgba(201,168,76,.15) 50%, transparent 100%);
-  animation: lineRise 8s ease-in-out infinite;
+.hero-scanlines::after {
+  content:''; position:absolute; inset:0;
+  background:repeating-linear-gradient(
+    to bottom, transparent 0px, transparent 3px,
+    rgba(255,255,255,.007) 3px, rgba(255,255,255,.007) 4px
+  );
 }
-.hero-lines span:nth-child(1) { height: 40%; left: 22%; top: -5%; animation-delay: 0s; }
-.hero-lines span:nth-child(2) { height: 55%; left: 67%; top: 10%; animation-delay: 2.5s; }
-.hero-lines span:nth-child(3) { height: 30%; left: 44%; top: -10%; animation-delay: 5s; }
-@keyframes lineRise { 0%,100%{opacity:0; transform:translateY(0);} 50%{opacity:1; transform:translateY(30px);} }
+
+/* Horizontal gold rule */
+.hero-rule {
+  position:absolute; bottom:0; left:0; right:0; height:1px; z-index:4;
+  background:linear-gradient(90deg, transparent 0%, var(--teal) 40%, var(--teal) 60%, transparent 100%);
+  opacity:.25;
+}
 
 .hero-inner {
-  position: relative; z-index: 10; text-align: center;
-  max-width: 740px;
-  opacity: 0; transform: translateY(28px);
-  animation: heroReveal .9s var(--ease-out) .2s forwards;
+  position:relative; z-index:10; text-align:center; max-width:780px;
+  opacity:0; transform:translateY(32px);
+  animation:revealUp 1s var(--ease) .15s forwards;
 }
-@keyframes heroReveal { to { opacity:1; transform:translateY(0); } }
+@keyframes revealUp { to { opacity:1; transform:translateY(0); } }
 
-.hero-eyebrow {
-  display: inline-flex; align-items: center; gap: 10px;
-  border: 1px solid var(--rim);
-  border-radius: 999px; padding: 7px 20px; margin-bottom: 32px;
-  font-size: 10px; letter-spacing: 4px; color: var(--gold);
-  text-transform: uppercase; font-weight: 500;
-  background: rgba(201,168,76,.06);
-  backdrop-filter: blur(8px);
-  opacity: 0; animation: heroReveal .7s var(--ease-out) .5s forwards;
+.hero-badge {
+  display:inline-flex; align-items:center; gap:9px;
+  background:rgba(0,201,177,.1); border:1px solid var(--teal-rim);
+  border-radius:999px; padding:8px 22px; margin-bottom:28px;
+  font-family:var(--ff); font-size:10px; letter-spacing:3.5px;
+  color:var(--teal); text-transform:uppercase; font-weight:600;
+  backdrop-filter:blur(8px);
+  opacity:0; animation:revealUp .7s var(--ease) .6s forwards;
 }
-.hero-eyebrow::before { content:''; width:4px; height:4px; border-radius:50%; background:var(--gold); flex-shrink:0; }
+.hero-badge i { font-size:9px; }
 
 .hero-title {
-  font-family: var(--ff-display);
-  font-size: clamp(52px, 8.5vw, 112px);
-  font-weight: 900; line-height: .88;
-  letter-spacing: -3px;
-  margin-bottom: 28px;
-  opacity: 0; animation: heroReveal .9s var(--ease-out) .35s forwards;
+  font-family:var(--ff); font-size:clamp(46px,8vw,100px);
+  font-weight:800; line-height:.9; letter-spacing:-2px;
+  margin-bottom:24px; text-transform:uppercase;
+  opacity:0; animation:revealUp .9s var(--ease) .35s forwards;
 }
-.hero-title .t1 { display:block; color:#fff; }
-.hero-title .t2 {
-  display: block; font-style: italic;
+.hero-title .l1 { display:block; color:#fff; }
+.hero-title .l2 {
+  display:block;
+  background:linear-gradient(90deg, #00b4d8 0%, var(--teal) 45%, #80ffea 80%, #00b4d8 100%);
+  background-size:220% auto;
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;
+  animation:bgScroll 4s linear infinite;
 }
-
-.hero-divider {
-  width: 60px; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent);
-  margin: 0 auto 28px;
-  opacity: 0; animation: heroReveal .7s var(--ease-out) .55s forwards;
-}
+@keyframes bgScroll { to { background-position:220% center; } }
 
 .hero-sub {
-  font-size: 15px; font-weight: 300; color: var(--white55);
-  line-height: 1.9; margin-bottom: 48px;
-  max-width: 520px; margin-inline: auto;
-  font-family: var(--ff-serif); font-size: 17px; letter-spacing: .2px;
-  opacity: 0; animation: heroReveal .8s var(--ease-out) .65s forwards;
+  font-size:16px; font-weight:300; color:var(--white50); line-height:1.9;
+  margin-bottom:52px; max-width:540px; margin-inline:auto;
+  opacity:0; animation:revealUp .8s var(--ease) .7s forwards;
 }
 
+/* Stats row */
 .hero-stats {
-  display: flex; gap: 0; justify-content: center; flex-wrap: wrap;
-  margin-bottom: 52px; border: 1px solid var(--rim);
-  border-radius: 16px; overflow: hidden; backdrop-filter: blur(10px);
-  background: rgba(13,15,21,.5);
-  opacity: 0; animation: heroReveal .8s var(--ease-out) .8s forwards;
+  display:flex; justify-content:center; flex-wrap:wrap;
+  border:1px solid rgba(255,255,255,.09); border-radius:16px;
+  overflow:hidden; backdrop-filter:blur(12px);
+  background:rgba(10,22,40,.55); margin-bottom:50px;
+  opacity:0; animation:revealUp .8s var(--ease) .85s forwards;
 }
-.stat-cell {
-  flex: 1; min-width: 100px; padding: 22px 16px; text-align: center;
-  border-right: 1px solid var(--rim);
-  transition: background .3s;
+.stat-box {
+  flex:1; min-width:110px; padding:22px 18px; text-align:center;
+  border-right:1px solid rgba(255,255,255,.08); transition:background .3s;
 }
-.stat-cell:last-child { border-right: none; }
-.stat-cell:hover { background: rgba(201,168,76,.06); }
-.stat-n {
-  font-family: var(--ff-display); font-size: 32px; font-weight: 700;
-  color: var(--gold); line-height: 1; margin-bottom: 5px;
-}
-.stat-l { font-size: 9px; letter-spacing: 2.5px; color: var(--muted); text-transform: uppercase; font-weight: 500; }
+.stat-box:last-child { border-right:none; }
+.stat-box:hover { background:rgba(0,201,177,.06); }
+.stat-num { font-family:var(--ff); font-size:30px; font-weight:700; color:var(--teal); line-height:1; margin-bottom:5px; }
+.stat-lbl { font-size:9px; letter-spacing:2.5px; color:var(--white25); text-transform:uppercase; font-weight:600; }
 
 .hero-cta {
-  display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;
-  opacity: 0; animation: heroReveal .8s var(--ease-out) .95s forwards;
+  display:flex; gap:14px; justify-content:center; flex-wrap:wrap;
+  opacity:0; animation:revealUp .8s var(--ease) 1s forwards;
 }
 
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    BUTTONS
-═══════════════════════════════════════════════ */
-.btn-prime {
-  display: inline-flex; align-items: center; gap: 10px;
-  background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
-  background-size: 200% auto;
-  color: var(--obsidian); font-family: var(--ff-body); font-size: 12px; font-weight: 700;
-  letter-spacing: 2.5px; text-transform: uppercase;
-  padding: 16px 36px; border: none; border-radius: 10px;
-  cursor: pointer; transition: all .35s var(--ease-out);
-  box-shadow: 0 8px 28px rgba(201,168,76,.32), inset 0 1px 0 rgba(255,255,255,.25);
+══════════════════════════════════════ */
+.btn-primary {
+  display:inline-flex; align-items:center; gap:9px;
+  background:linear-gradient(135deg, #0096ff, var(--teal));
+  color:#fff; font-family:var(--ff); font-size:11px; font-weight:700;
+  letter-spacing:2.5px; text-transform:uppercase;
+  padding:16px 36px; border:none; border-radius:10px;
+  cursor:pointer; transition:all .35s var(--ease);
+  box-shadow:0 8px 28px rgba(0,201,177,.3);
 }
-.btn-prime:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 18px 40px rgba(201,168,76,.46);
-  background-position: right center;
-}
+.btn-primary:hover { transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,201,177,.45); }
 
-.btn-outline {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: transparent; border: 1px solid rgba(255,255,255,.2);
-  color: rgba(255,255,255,.65); font-family: var(--ff-body); font-size: 12px;
-  letter-spacing: 2px; text-transform: uppercase;
-  padding: 15px 30px; border-radius: 10px;
-  text-decoration: none; transition: all .3s; cursor: pointer; font-weight: 500;
+.btn-ghost {
+  display:inline-flex; align-items:center; gap:8px;
+  background:transparent; border:1px solid rgba(255,255,255,.2);
+  color:var(--white50); font-family:var(--ff); font-size:11px; font-weight:600;
+  letter-spacing:2px; text-transform:uppercase;
+  padding:15px 30px; border-radius:10px; text-decoration:none;
+  transition:all .3s; cursor:pointer;
 }
-.btn-outline:hover { background: rgba(255,255,255,.07); color: #fff; border-color: rgba(255,255,255,.35); }
+.btn-ghost:hover { background:var(--white06); color:#fff; border-color:var(--white25); }
 
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    SECTION COMMONS
-═══════════════════════════════════════════════ */
-.section { padding: 96px 24px; }
-.section-inner { max-width: 1140px; margin: 0 auto; }
+══════════════════════════════════════ */
+.section { padding:96px 24px; }
+.wrap { max-width:1140px; margin:0 auto; }
+.sec-head { text-align:center; margin-bottom:64px; }
+.sec-tag {
+  display:inline-flex; align-items:center; gap:12px;
+  font-family:var(--ff); font-size:10px; letter-spacing:4px; color:var(--teal);
+  text-transform:uppercase; font-weight:600; margin-bottom:14px;
+}
+.sec-tag::before, .sec-tag::after {
+  content:''; display:block; width:26px; height:1px;
+  background:var(--teal); opacity:.5;
+}
+.sec-title {
+  font-family:var(--ff); font-size:clamp(30px,4vw,50px);
+  font-weight:800; color:#fff; letter-spacing:-1px; line-height:1; text-transform:uppercase;
+}
+.sec-sub { margin-top:12px; font-size:14px; color:var(--white25); line-height:1.75; }
 
-.section-head { text-align: center; margin-bottom: 64px; }
-.eyebrow {
-  display: inline-flex; align-items: center; gap: 12px;
-  font-size: 10px; letter-spacing: 5px; color: var(--gold);
-  text-transform: uppercase; font-weight: 600; margin-bottom: 16px;
-}
-.eyebrow::before, .eyebrow::after {
-  content:''; display: block; width: 28px; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--gold));
-}
-.eyebrow::after { background: linear-gradient(90deg, var(--gold), transparent); }
-
-.section-title {
-  font-family: var(--ff-display); font-size: clamp(32px, 4.5vw, 56px);
-  font-weight: 700; color: #fff; letter-spacing: -1.5px; line-height: 1;
-}
-.section-sub {
-  margin-top: 14px; font-size: 15px; color: var(--muted);
-  font-family: var(--ff-serif); line-height: 1.7;
-}
-
-/* ═══════════════════════════════════════════════
-   PLANS SECTION
-═══════════════════════════════════════════════ */
+/* ══════════════════════════════════════
+   PLANS
+══════════════════════════════════════ */
 #plans {
-  background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(201,168,76,.04) 0%, transparent 65%),
-    linear-gradient(180deg, transparent 0%, var(--deep) 30%, var(--obsidian) 80%);
+  background:radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,201,177,.04) 0%, transparent 65%),
+             linear-gradient(180deg, transparent 0%, var(--sky) 40%, var(--deep) 90%);
 }
 
-.plans-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-@media(max-width:900px) { .plans-grid { grid-template-columns: 1fr; max-width:460px; margin:auto; } }
-@media(max-width:600px) { .plans-grid { grid-template-columns: 1fr; } }
+.plans-row { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+@media(max-width:900px) { .plans-row { grid-template-columns:1fr; max-width:440px; margin:auto; } }
 
-.plan-card {
-  border-radius: 22px; overflow: hidden; position: relative;
-  border: 1px solid rgba(255,255,255,.08);
-  background: var(--surface);
-  transition: transform .4s var(--ease-out), box-shadow .4s;
-  display: flex; flex-direction: column;
+.plan {
+  border-radius:20px; border:1px solid var(--border);
+  background:var(--surface); position:relative; overflow:hidden;
+  transition:transform .4s var(--ease), box-shadow .4s;
+  display:flex; flex-direction:column;
 }
-.plan-card:hover { transform: translateY(-8px); }
+.plan:hover { transform:translateY(-8px); }
+.plan::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:1px;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.15), transparent);
+}
+.plan-hot {
+  border-color:var(--teal-rim);
+  background:linear-gradient(160deg, rgba(0,201,177,.07) 0%, var(--surface) 55%);
+  box-shadow:0 0 48px rgba(0,201,177,.1);
+}
+.plan-hot:hover { box-shadow:0 30px 70px rgba(0,201,177,.2); }
+.plan-hot::before { background:linear-gradient(90deg, transparent, var(--teal), transparent); opacity:.4; }
 
-/* glow on hover */
-.plan-card::after {
-  content: ''; position: absolute; inset: 0; border-radius: 22px;
-  background: radial-gradient(circle at 50% 0%, rgba(201,168,76,.08) 0%, transparent 60%);
-  opacity: 0; transition: opacity .4s; pointer-events: none;
-}
-.plan-card:hover::after { opacity: 1; }
-
-/* featured */
-.plan-featured {
-  border-color: var(--rim-bright);
-  background: linear-gradient(160deg, rgba(201,168,76,.07) 0%, var(--surface) 50%);
-  box-shadow: 0 0 50px rgba(201,168,76,.1), 0 0 0 1px rgba(201,168,76,.18);
-}
-.plan-featured:hover {
-  box-shadow: 0 30px 70px rgba(201,168,76,.22), 0 0 0 1px rgba(201,168,76,.3);
+.plan-ribbon {
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  background:linear-gradient(90deg, #0096ff, var(--teal));
+  color:#fff; font-family:var(--ff); font-size:9px; font-weight:700;
+  letter-spacing:3px; padding:6px 22px; border-radius:0 0 12px 12px;
+  text-transform:uppercase; display:flex; align-items:center; gap:6px;
 }
 
-.plan-badge {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-  background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-light));
-  color: var(--obsidian); font-size: 9px; font-weight: 700;
-  letter-spacing: 3px; padding: 5px 22px;
-  border-radius: 0 0 12px 12px; text-transform: uppercase;
-  display: flex; align-items: center; gap: 5px;
-  font-family: var(--ff-body);
+.plan-body { padding:36px 28px 26px; flex:1; display:flex; flex-direction:column; }
+.plan-body-push { padding-top:54px; }
+
+.plan-icon-row { display:flex; align-items:center; gap:10px; margin-bottom:20px; }
+.plan-ico {
+  width:44px; height:44px; border-radius:12px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:18px;
+}
+.ico-free    { background:var(--white06); color:var(--white25); }
+.ico-gold    { background:var(--teal-dim); border:1px solid var(--teal-rim); color:var(--teal); }
+.ico-diamond { background:rgba(120,180,255,.1); border:1px solid rgba(120,180,255,.2); color:#78b4ff; }
+
+.plan-tier { font-family:var(--ff); font-size:9px; letter-spacing:3px; color:var(--white25); text-transform:uppercase; font-weight:600; }
+
+.plan-price-row { display:flex; align-items:baseline; gap:4px; margin-bottom:4px; }
+.plan-price { font-family:var(--ff); font-size:52px; font-weight:800; line-height:1; color:#fff; }
+.plan-price-free { color:#fff; }
+.plan-price-gold { color:var(--teal); }
+.plan-price-dia  { color:#78b4ff; }
+.plan-unit { font-family:var(--ff); font-size:18px; font-weight:400; color:var(--white25); align-self:flex-start; margin-top:10px; }
+.plan-period { font-family:var(--ff); font-size:12px; color:var(--white25); margin-left:2px; }
+
+.plan-save { font-size:11px; color:var(--teal); margin-bottom:20px; display:flex; align-items:center; gap:5px; }
+.plan-desc {
+  font-size:13px; color:var(--white25); line-height:1.75; font-weight:300;
+  margin-bottom:22px; padding-bottom:20px; border-bottom:1px solid rgba(255,255,255,.05);
 }
 
-.plan-body { padding: 36px 30px 28px; flex: 1; display: flex; flex-direction: column; }
-.plan-body-pt { padding-top: 52px; }
-
-.plan-tier-row { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
-.plan-icon {
-  width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 18px;
+.plan-list { list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:26px; flex:1; }
+.pl-item { display:flex; align-items:flex-start; gap:10px; font-size:13px; color:rgba(255,255,255,.6); font-weight:300; line-height:1.5; }
+.pl-check {
+  width:20px; height:20px; border-radius:6px; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center; font-size:9px; margin-top:1px;
 }
-.pi-free     { background: rgba(255,255,255,.07); color: var(--muted); }
-.pi-gold     { background: rgba(201,168,76,.15); border: 1px solid var(--rim); color: var(--gold); }
-.pi-diamond  { background: rgba(120,180,255,.1); border: 1px solid rgba(120,180,255,.2); color: #78b4ff; }
+.chk-free    { background:var(--white06); color:var(--white25); }
+.chk-gold    { background:var(--teal-dim); color:var(--teal); }
+.chk-diamond { background:rgba(120,180,255,.1); color:#78b4ff; }
+.pl-item.dim { opacity:.28; }
+.pl-item.dim .pl-check { filter:grayscale(1); }
 
-.plan-tier { font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; font-weight: 600; }
+.plan-btn {
+  width:100%; padding:14px 16px; border-radius:12px; border:none;
+  font-family:var(--ff); font-size:11px; font-weight:700; letter-spacing:2.5px;
+  text-transform:uppercase; cursor:pointer; transition:all .3s;
+  display:flex; align-items:center; justify-content:center; gap:8px;
+}
+.pbtn-free { background:var(--white06); border:1px solid var(--border); color:var(--white50); }
+.pbtn-free:hover { background:var(--white10); color:#fff; }
+.pbtn-gold { background:linear-gradient(135deg,#0096ff,var(--teal)); color:#fff; box-shadow:0 6px 20px rgba(0,201,177,.28); }
+.pbtn-gold:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(0,201,177,.44); }
+.pbtn-diamond { background:linear-gradient(135deg,#1a5fa6,#78b4ff); color:#fff; box-shadow:0 6px 20px rgba(120,180,255,.22); }
+.pbtn-diamond:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(120,180,255,.38); }
 
-.plan-price-row { margin-bottom: 6px; display: flex; align-items: baseline; gap: 4px; }
-.plan-price {
-  font-family: var(--ff-display); font-size: 52px; font-weight: 700; line-height: 1;
-}
-.plan-card.plan-free .plan-price { color: #fff; }
-.plan-card.plan-gold .plan-price { }
-.plan-currency { font-size: 20px; font-weight: 400; align-self: flex-start; margin-top: 8px; color: var(--gold); }
-.plan-period { font-size: 12px; color: var(--muted); margin-left: 2px; }
+.plans-footnote { text-align:center; margin-top:28px; font-size:12px; color:rgba(255,255,255,.2); }
+.plans-footnote a { color:var(--teal); text-decoration:none; }
 
-.plan-desc { font-size: 13px; color: var(--muted); line-height: 1.75; margin-bottom: 26px; font-weight: 300; border-bottom: 1px solid rgba(255,255,255,.06); padding-bottom: 22px; }
+/* ══════════════════════════════════════
+   FREE STATUS BAR
+══════════════════════════════════════ */
+.status-bar {
+  max-width:1140px; margin:0 auto 44px;
+  background:var(--white06); border:1px solid var(--border);
+  border-radius:14px; padding:16px 26px;
+  display:flex; align-items:center; gap:18px; flex-wrap:wrap;
+}
+.sb-label { font-size:12px; color:var(--white25); display:flex; align-items:center; gap:8px; }
+.sb-label i { color:var(--teal); }
+.sb-track { flex:1; min-width:100px; height:3px; background:rgba(255,255,255,.07); border-radius:99px; overflow:hidden; }
+.sb-fill { height:100%; background:linear-gradient(90deg,#0096ff,var(--teal)); border-radius:99px; transition:width .6s var(--ease); }
+.sb-count { font-family:var(--ff); font-size:14px; color:var(--teal); white-space:nowrap; font-weight:700; }
+.sb-upbtn {
+  display:flex; align-items:center; gap:7px;
+  background:linear-gradient(135deg,#0096ff,var(--teal));
+  color:#fff; font-family:var(--ff); font-size:10px; font-weight:700; letter-spacing:2px;
+  padding:10px 20px; border-radius:9px; border:none; cursor:pointer;
+  text-transform:uppercase; transition:all .28s; white-space:nowrap;
+}
+.sb-upbtn:hover { transform:translateY(-1px); box-shadow:0 8px 22px rgba(0,201,177,.38); }
 
-.plan-perks { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; flex: 1; }
-.perk {
-  display: flex; align-items: flex-start; gap: 10px;
-  font-size: 13px; color: rgba(255,255,255,.62); font-weight: 300; line-height: 1.5;
+.vip-strip {
+  display:none; align-items:center; gap:10px;
+  background:var(--teal-dim); border:1px solid var(--teal-rim);
+  border-radius:10px; padding:12px 20px;
+  font-size:12px; color:var(--teal); font-weight:600; font-family:var(--ff);
 }
-.perk-ic {
-  width: 20px; height: 20px; border-radius: 6px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center; font-size: 9px;
-  margin-top: 1px;
-}
-.perk-ic.ok-free     { background: rgba(255,255,255,.07); color: rgba(255,255,255,.4); }
-.perk-ic.ok-gold     { background: rgba(201,168,76,.15); color: var(--gold); }
-.perk-ic.ok-diamond  { background: rgba(120,180,255,.1); color: #78b4ff; }
-.perk.off { opacity: .3; }
-.perk.off .perk-ic { filter: grayscale(1); }
+.vip-strip.vis { display:flex; }
 
-.plan-cta {
-  width: 100%; padding: 14px 16px; border-radius: 12px; border: none;
-  font-family: var(--ff-body); font-size: 12px; font-weight: 700;
-  letter-spacing: 2px; text-transform: uppercase; cursor: pointer;
-  transition: all .3s; display: flex; align-items: center; justify-content: center; gap: 8px;
-}
-.cta-free    { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: var(--white55); }
-.cta-free:hover { background: rgba(255,255,255,.13); color: #fff; }
-.cta-gold    {
-  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-  color: var(--obsidian); box-shadow: 0 6px 20px rgba(201,168,76,.3);
-}
-.cta-gold:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(201,168,76,.45); }
-.cta-diamond {
-  background: linear-gradient(135deg, #1a5fa6, #78b4ff);
-  color: #020d1a; box-shadow: 0 6px 20px rgba(120,180,255,.22);
-}
-.cta-diamond:hover { transform:translateY(-2px); box-shadow:0 12px 32px rgba(120,180,255,.38); }
-
-.plans-note { text-align:center; margin-top:28px; font-size:12px; color:var(--dim); }
-.plans-note a { color:var(--gold); text-decoration:none; }
-.plans-note a:hover { text-decoration:underline; }
-
-/* ═══════════════════════════════════════════════
-   FREEMIUM BAR
-═══════════════════════════════════════════════ */
-.freemium-bar {
-  max-width: 1140px; margin: 0 auto 44px;
-  background: rgba(255,255,255,.025); border: 1px solid rgba(255,255,255,.08);
-  border-radius: 16px; padding: 18px 28px;
-  display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
-}
-.fb-label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); white-space: nowrap; }
-.fb-label i { color: var(--gold); }
-.fb-track { flex: 1; min-width: 100px; height: 3px; background: rgba(255,255,255,.07); border-radius: 99px; overflow: hidden; }
-.fb-fill { height: 100%; border-radius: 99px; background: linear-gradient(90deg, var(--gold-dark), var(--gold)); transition: width .6s var(--ease-out); }
-.fb-count { font-family: var(--ff-display); font-size: 15px; color: var(--gold); white-space: nowrap; font-weight: 700; }
-.fb-upgrade-btn {
-  display: flex; align-items: center; gap: 7px;
-  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-  color: var(--obsidian); font-size: 11px; font-weight: 700; letter-spacing: 2px;
-  padding: 10px 20px; border-radius: 9px; border: none; cursor: pointer;
-  text-transform: uppercase; transition: all .28s; white-space: nowrap;
-}
-.fb-upgrade-btn:hover { transform:translateY(-1px); box-shadow:0 8px 22px rgba(201,168,76,.38); }
-
-.fb-vip-pill {
-  display: none; align-items: center; gap: 10px;
-  background: rgba(201,168,76,.07); border: 1px solid var(--rim);
-  border-radius: 10px; padding: 10px 18px;
-  font-size: 12px; color: var(--gold); font-weight: 500;
-}
-.fb-vip-pill.vis { display:flex; }
-.fb-vip-pill i { font-size: 10px; }
-
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    DESTINATIONS
-═══════════════════════════════════════════════ */
-#destinations { background: var(--obsidian); }
+══════════════════════════════════════ */
+#destinations { background:var(--deep); }
 
-.unlock-strip {
-  max-width: 1140px; margin: 0 auto 44px;
-  border: 1px solid var(--rim); border-radius: 16px; padding: 24px 30px;
-  display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
-  background: linear-gradient(100deg, rgba(201,168,76,.05) 0%, rgba(201,168,76,.09) 50%, rgba(201,168,76,.05) 100%);
+.unlock-banner {
+  max-width:1140px; margin:0 auto 44px;
+  border:1px solid var(--teal-rim); border-radius:16px; padding:24px 30px;
+  display:flex; align-items:center; gap:22px; flex-wrap:wrap;
+  background:linear-gradient(100deg,rgba(0,201,177,.05) 0%,rgba(0,150,255,.07) 50%,rgba(0,201,177,.05) 100%);
 }
-.us-icon {
-  width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
-  background: rgba(201,168,76,.12); border: 1px solid var(--rim);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 22px; color: var(--gold);
+.ub-icon {
+  width:52px; height:52px; border-radius:14px; flex-shrink:0;
+  background:var(--teal-dim); border:1px solid var(--teal-rim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; color:var(--teal);
 }
-.us-text { flex: 1; min-width: 200px; }
-.us-title { font-family: var(--ff-display); font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 3px; }
-.us-sub { font-size: 12px; color: var(--muted); font-weight: 300; }
+.ub-text { flex:1; min-width:200px; }
+.ub-title { font-family:var(--ff); font-size:17px; font-weight:700; color:#fff; margin-bottom:4px; }
+.ub-sub { font-size:12px; color:var(--white25); font-weight:300; }
 
-.dest-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 18px;
-}
+.dest-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:18px; }
 
 .dest-card {
-  position: relative; border-radius: 16px; overflow: hidden;
-  height: 220px; cursor: pointer;
-  border: 1px solid rgba(255,255,255,.08);
-  transition: transform .38s var(--ease-out), border-color .3s;
+  position:relative; border-radius:16px; overflow:hidden; height:225px;
+  cursor:pointer; border:1px solid var(--border);
+  transition:transform .38s var(--ease), border-color .3s;
 }
-.dest-card:hover { transform: scale(1.024); }
-.dest-card.open:hover { border-color: var(--rim-bright); }
+.dest-card:hover { transform:scale(1.022); }
+.dest-card.d-open:hover { border-color:var(--teal-rim); }
 
-.dest-img {
-  position: absolute; inset: 0; background-size: cover; background-position: center;
-  transition: transform .5s var(--ease-out);
-}
-.dest-card:hover .dest-img { transform: scale(1.06); }
-.dest-card.locked-d .dest-img { filter: brightness(.35) saturate(.4); }
-.dest-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.9) 0%, transparent 52%); z-index: 2; }
-.dest-tier {
-  position: absolute; top: 12px; left: 12px; z-index: 4;
-  font-size: 8px; font-weight: 700; letter-spacing: 3px;
-  padding: 3px 10px; border-radius: 5px; text-transform: uppercase;
-}
-.tier-g { background: linear-gradient(90deg, var(--gold-dark), var(--gold)); color: var(--obsidian); }
-.tier-d { background: linear-gradient(90deg, #1a5fa6, #78b4ff); color: #020d1a; }
+.di { position:absolute; inset:0; background-size:cover; background-position:center; transition:transform .5s var(--ease); }
+.dest-card:hover .di { transform:scale(1.07); }
+.dest-card.d-locked .di { filter:brightness(.3) saturate(.3); }
 
-.dest-lock-ic {
-  position: absolute; top: 12px; right: 12px; z-index: 4;
-  width: 30px; height: 30px; border-radius: 9px;
-  background: rgba(0,0,0,.5); backdrop-filter: blur(6px);
-  border: 1px solid rgba(255,255,255,.14);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; color: var(--muted); transition: all .25s;
-}
-.dest-card.open .dest-lock-ic { border-color: var(--rim); color: var(--gold); }
-.dest-card.open:hover .dest-lock-ic { background: var(--gold); border-color: var(--gold); color: var(--obsidian); }
+.d-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(0,0,0,.88) 0%,transparent 55%); z-index:2; }
 
-.dest-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 18px; z-index: 3; }
-.dest-region { font-size: 9px; letter-spacing: 3px; color: rgba(255,255,255,.35); text-transform: uppercase; margin-bottom: 4px; }
-.dest-name { font-family: var(--ff-display); font-size: 20px; font-weight: 700; color: #fff; line-height: 1.05; }
-.dest-meta { font-size: 10px; color: var(--gold); margin-top: 5px; display:flex; align-items:center; gap:5px; }
-
-.dest-lock-overlay {
-  position: absolute; inset: 0; z-index: 5;
-  backdrop-filter: blur(4px); background: rgba(0,0,0,.25);
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
-  transition: opacity .3s;
+.d-tier {
+  position:absolute; top:12px; left:12px; z-index:4;
+  font-family:var(--ff); font-size:8px; font-weight:700; letter-spacing:3px;
+  padding:3px 10px; border-radius:5px; text-transform:uppercase;
 }
-.dest-card.locked-d:hover .dest-lock-overlay { opacity: .7; }
+.t-vip  { background:linear-gradient(90deg,#0096ff,var(--teal)); color:#fff; }
+.t-dia  { background:linear-gradient(90deg,#1a5fa6,#78b4ff); color:#fff; }
+
+.d-lock-dot {
+  position:absolute; top:12px; right:12px; z-index:4;
+  width:30px; height:30px; border-radius:9px;
+  background:rgba(0,0,0,.5); backdrop-filter:blur(6px);
+  border:1px solid rgba(255,255,255,.14);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; color:var(--white25); transition:all .25s;
+}
+.dest-card.d-open .d-lock-dot { border-color:var(--teal-rim); color:var(--teal); }
+.dest-card.d-open:hover .d-lock-dot { background:var(--teal); border-color:var(--teal); color:#fff; }
+
+.d-info { position:absolute; bottom:0; left:0; right:0; padding:18px; z-index:3; }
+.d-region { font-size:9px; letter-spacing:3px; color:rgba(255,255,255,.35); text-transform:uppercase; margin-bottom:4px; }
+.d-name { font-family:var(--ff); font-size:19px; font-weight:700; color:#fff; line-height:1.05; }
+.d-meta { font-size:10px; color:var(--teal); margin-top:5px; display:flex; align-items:center; gap:5px; }
+
+.d-lock-overlay {
+  position:absolute; inset:0; z-index:5;
+  backdrop-filter:blur(4px); background:rgba(0,0,0,.22);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px;
+}
 .lock-chip {
-  background: linear-gradient(90deg, var(--gold-dark), var(--gold));
-  color: var(--obsidian); font-size: 10px; font-weight: 700; letter-spacing: 2px;
-  padding: 8px 18px; border-radius: 8px; text-transform: uppercase;
-  display: flex; align-items: center; gap: 6px;
+  background:linear-gradient(90deg,#0096ff,var(--teal));
+  color:#fff; font-family:var(--ff); font-size:10px; font-weight:700;
+  letter-spacing:2px; padding:9px 20px; border-radius:8px; text-transform:uppercase;
+  display:flex; align-items:center; gap:6px;
 }
 
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    FEATURES
-═══════════════════════════════════════════════ */
-#features { background: linear-gradient(180deg, var(--obsidian) 0%, var(--deep) 100%); }
-.feat-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+══════════════════════════════════════ */
+#features { background:linear-gradient(180deg,var(--deep) 0%,var(--sky) 100%); }
+.feat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:18px; }
 
 .feat-card {
-  background: var(--surface); border: 1px solid rgba(255,255,255,.07);
-  border-radius: 18px; padding: 30px 26px; transition: all .35s var(--ease-out);
-  position: relative; overflow: hidden;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:18px; padding:30px 26px; transition:all .35s var(--ease);
+  position:relative; overflow:hidden;
 }
-.feat-card::before {
-  content: ''; position: absolute; top: -30px; right: -30px;
-  width: 100px; height: 100px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,168,76,.08) 0%, transparent 70%);
-  transition: transform .4s; pointer-events: none;
+.feat-card::after {
+  content:''; position:absolute; top:-30px; right:-30px;
+  width:100px; height:100px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,201,177,.08) 0%,transparent 70%);
+  transition:transform .4s; pointer-events:none;
 }
-.feat-card:hover::before { transform: scale(2); }
-.feat-card:hover { border-color: var(--rim); transform: translateY(-5px); }
+.feat-card:hover::after { transform:scale(2.2); }
+.feat-card:hover { border-color:var(--teal-rim); transform:translateY(-5px); }
 
-.feat-ico {
-  width: 48px; height: 48px; border-radius: 13px;
-  background: rgba(201,168,76,.1); border: 1px solid var(--rim);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 19px; color: var(--gold); margin-bottom: 18px;
+.feat-ico-box {
+  width:48px; height:48px; border-radius:13px;
+  background:var(--teal-dim); border:1px solid var(--teal-rim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:19px; color:var(--teal); margin-bottom:18px;
 }
-.feat-name {
-  font-family: var(--ff-display); font-size: 16px; font-weight: 700;
-  color: #fff; margin-bottom: 9px; line-height: 1.2;
-}
-.feat-text { font-size: 13px; color: var(--muted); line-height: 1.8; font-weight: 300; margin-bottom: 14px; }
-.feat-tag {
-  display: inline-block;
-  font-size: 9px; letter-spacing: 2px; text-transform: uppercase; font-weight: 600;
-  padding: 3px 10px; border-radius: 5px;
-  background: rgba(201,168,76,.08); border: 1px solid var(--rim);
-  color: var(--gold);
+.feat-title { font-family:var(--ff); font-size:15px; font-weight:700; color:#fff; margin-bottom:9px; }
+.feat-text { font-size:13px; color:var(--white25); line-height:1.8; font-weight:300; margin-bottom:14px; }
+.feat-badge {
+  display:inline-block; font-family:var(--ff); font-size:9px; letter-spacing:2px;
+  text-transform:uppercase; font-weight:600; padding:3px 10px; border-radius:5px;
+  background:var(--teal-dim); border:1px solid var(--teal-rim); color:var(--teal);
 }
 
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    TESTIMONIALS
-═══════════════════════════════════════════════ */
-#testimonials { background: var(--obsidian); }
-.testi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px; }
+══════════════════════════════════════ */
+#testimonials { background:var(--deep); }
+.testi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:18px; }
+
 .testi-card {
-  background: var(--surface); border: 1px solid rgba(255,255,255,.07);
-  border-radius: 18px; padding: 28px 26px; position: relative;
-  transition: border-color .3s, transform .35s var(--ease-out);
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:18px; padding:28px 26px; position:relative;
+  transition:border-color .3s,transform .35s var(--ease);
 }
-.testi-card:hover { border-color: var(--rim); transform: translateY(-4px); }
-.testi-stars { position: absolute; top: 22px; right: 24px; display:flex; gap:2px; color:var(--gold); font-size:10px; }
-.testi-quote-ic { font-size: 36px; color: rgba(201,168,76,.14); margin-bottom: 12px; line-height: 1; }
-.testi-body { font-size: 14px; color: var(--white55); line-height: 1.85; font-weight: 300; margin-bottom: 22px; font-family: var(--ff-serif); font-size: 15px; }
-.testi-foot { display: flex; align-items: center; gap: 12px; }
-.testi-av { width: 44px; height: 44px; border-radius: 50%; background-size:cover; background-position:center; border: 2px solid var(--rim); flex-shrink: 0; }
-.testi-name { font-weight: 600; font-size: 13px; color: #fff; }
-.testi-role { font-size: 9px; letter-spacing: 2px; color: var(--gold); text-transform: uppercase; font-weight: 600; display:flex; align-items:center; gap:5px; margin-top:3px; }
+.testi-card:hover { border-color:var(--teal-rim); transform:translateY(-4px); }
+.testi-stars { position:absolute; top:22px; right:24px; display:flex; gap:2px; color:var(--amber); font-size:10px; }
+.testi-q { font-size:34px; color:rgba(0,201,177,.18); margin-bottom:12px; line-height:1; }
+.testi-body { font-size:14px; color:var(--white50); line-height:1.85; font-weight:300; margin-bottom:22px; }
+.testi-foot { display:flex; align-items:center; gap:12px; }
+.testi-av { width:44px; height:44px; border-radius:50%; background-size:cover; background-position:center; border:2px solid var(--teal-rim); flex-shrink:0; }
+.testi-name { font-family:var(--ff); font-weight:700; font-size:13px; color:#fff; }
+.testi-role { font-family:var(--ff); font-size:9px; letter-spacing:2px; color:var(--teal); text-transform:uppercase; font-weight:600; display:flex; align-items:center; gap:5px; margin-top:3px; }
 
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    FAQ
-═══════════════════════════════════════════════ */
-#faq { background: linear-gradient(180deg, var(--deep) 0%, var(--obsidian) 100%); }
-.faq-list { max-width: 740px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
-.faq-item {
-  background: var(--surface); border: 1px solid rgba(255,255,255,.07);
-  border-radius: 14px; overflow: hidden; transition: border-color .3s;
-}
-.faq-item.open { border-color: var(--rim); }
-.faq-q { padding: 18px 22px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:16px; }
-.faq-qt { font-size: 14px; font-weight: 500; color: rgba(255,255,255,.8); flex: 1; }
-.faq-icon {
-  width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(255,255,255,.1);
-  display: flex; align-items: center; justify-content: center;
-  color: var(--gold); font-size: 10px; transition: transform .3s, background .3s; flex-shrink:0;
-}
-.faq-item.open .faq-icon { transform: rotate(45deg); background: rgba(201,168,76,.1); }
-.faq-ans {
-  max-height: 0; overflow: hidden; font-size: 13px; color: var(--muted);
-  line-height: 1.85; font-weight: 300;
-  transition: max-height .42s cubic-bezier(.77,0,.18,1), padding .3s;
-  padding: 0 22px;
-}
-.faq-item.open .faq-ans { max-height: 240px; padding: 0 22px 20px; }
+══════════════════════════════════════ */
+#faq { background:linear-gradient(180deg,var(--sky) 0%,var(--deep) 100%); }
+.faq-wrap { max-width:740px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
 
-/* ═══════════════════════════════════════════════
-   FOOTER
-═══════════════════════════════════════════════ */
-#footer {
-  background: var(--deep);
-  border-top: 1px solid rgba(255,255,255,.05);
-  padding: 80px 24px 0;
-  position: relative; overflow: hidden;
+.faq-item { background:var(--surface); border:1px solid var(--border); border-radius:14px; overflow:hidden; transition:border-color .3s; }
+.faq-item.on { border-color:var(--teal-rim); }
+.faq-q { padding:18px 22px; display:flex; align-items:center; justify-content:space-between; cursor:pointer; gap:16px; }
+.faq-qt { font-family:var(--ff); font-size:14px; font-weight:600; color:rgba(255,255,255,.8); flex:1; }
+.faq-ic {
+  width:28px; height:28px; border-radius:50%; border:1px solid rgba(255,255,255,.1);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--teal); font-size:10px; transition:transform .3s,background .3s; flex-shrink:0;
 }
+.faq-item.on .faq-ic { transform:rotate(45deg); background:var(--teal-dim); }
+.faq-a {
+  max-height:0; overflow:hidden; font-size:13px; color:var(--white25);
+  line-height:1.85; font-weight:300;
+  transition:max-height .42s cubic-bezier(.77,0,.18,1),padding .3s; padding:0 22px;
+}
+.faq-item.on .faq-a { max-height:240px; padding:0 22px 20px; }
+
+/* ══════════════════════════════════════
+   FOOTER
+══════════════════════════════════════ */
+#footer { background:var(--navy); border-top:1px solid rgba(255,255,255,.05); padding:80px 24px 0; position:relative; }
 #footer::before {
-  content: ''; position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
-  width: 600px; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(201,168,76,.2), transparent);
+  content:''; position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:600px; height:1px; background:linear-gradient(90deg,transparent,var(--teal),transparent); opacity:.25;
 }
 
 .footer-grid {
-  max-width: 1140px; margin: 0 auto;
-  display: grid; grid-template-columns: 1.6fr 1fr 1fr;
-  gap: 64px; padding-bottom: 60px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  max-width:1140px; margin:0 auto; display:grid; grid-template-columns:1.6fr 1fr 1fr;
+  gap:64px; padding-bottom:60px; border-bottom:1px solid rgba(255,255,255,.05);
 }
 @media(max-width:880px) {
-  .footer-grid { grid-template-columns: 1fr 1fr; }
-  .footer-grid > div:first-child { grid-column: 1/-1; }
+  .footer-grid { grid-template-columns:1fr 1fr; }
+  .footer-grid>div:first-child { grid-column:1/-1; }
 }
-@media(max-width:540px) { .footer-grid { grid-template-columns: 1fr; gap:40px; } }
+@media(max-width:540px) { .footer-grid { grid-template-columns:1fr; gap:40px; } }
 
-.footer-brand { font-family: var(--ff-display); font-size: 18px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 14px; display:flex; align-items:center; gap:10px; color:#fff; }
-.footer-brand-ic { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,var(--gold-dark),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--obsidian); }
-.footer-brand em { font-style:normal; color:var(--gold); }
-.footer-desc { font-size: 12px; color: rgba(255,255,255,.3); line-height: 1.9; font-weight: 300; max-width: 260px; margin-bottom: 24px; }
-.social-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.soc-btn {
-  width: 36px; height: 36px; border-radius: 9px;
-  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; color: var(--muted); text-decoration: none; transition: all .25s;
-}
-.soc-btn:hover { background: rgba(201,168,76,.12); border-color: var(--rim); color: var(--gold); }
+.ft-brand { font-family:var(--ff); font-size:16px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; margin-bottom:14px; display:flex; align-items:center; gap:10px; color:#fff; }
+.ft-brand-ic { width:32px; height:32px; border-radius:8px; background:linear-gradient(135deg,#0096ff,var(--teal)); display:flex; align-items:center; justify-content:center; font-size:13px; color:#fff; }
+.ft-brand span { color:var(--teal); }
+.ft-desc { font-size:12px; color:rgba(255,255,255,.25); line-height:1.9; font-weight:300; max-width:260px; margin-bottom:24px; }
+.soc-row { display:flex; gap:8px; flex-wrap:wrap; }
+.soc-ico { width:36px; height:36px; border-radius:9px; background:var(--white06); border:1px solid var(--border); display:flex; align-items:center; justify-content:center; font-size:14px; color:var(--white25); text-decoration:none; transition:all .25s; }
+.soc-ico:hover { background:var(--teal-dim); border-color:var(--teal-rim); color:var(--teal); }
 
-.footer-col-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: rgba(255,255,255,.25); margin-bottom: 20px; font-weight: 600; }
-.footer-link {
-  display: flex; align-items: flex-start; gap: 10px;
-  font-size: 13px; color: rgba(255,255,255,.4); margin-bottom: 14px;
-  text-decoration: none; transition: color .2s; font-weight: 300; line-height: 1.4;
-}
-.footer-link:hover { color: rgba(255,255,255,.8); }
-.footer-link-ic {
-  width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0;
-  background: rgba(201,168,76,.06); border: 1px solid rgba(201,168,76,.12);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; color: var(--gold); margin-top: 1px;
-}
+.ft-col-title { font-family:var(--ff); font-size:9px; letter-spacing:3px; text-transform:uppercase; color:rgba(255,255,255,.2); margin-bottom:20px; font-weight:700; }
+.ft-link { display:flex; align-items:flex-start; gap:10px; font-size:12px; color:rgba(255,255,255,.35); margin-bottom:13px; text-decoration:none; transition:color .2s; font-weight:300; line-height:1.4; }
+.ft-link:hover { color:rgba(255,255,255,.75); }
+.ft-link-ico { width:26px; height:26px; border-radius:7px; flex-shrink:0; background:var(--teal-dim); border:1px solid var(--teal-rim); display:flex; align-items:center; justify-content:center; font-size:10px; color:var(--teal); margin-top:1px; }
 
-.hours-box {
-  background: rgba(201,168,76,.04); border: 1px solid var(--rim);
-  border-radius: 12px; padding: 16px 18px; margin-top: 10px;
-}
-.hours-title { font-size: 9px; letter-spacing: 2.5px; color: var(--gold); text-transform: uppercase; font-weight: 600; margin-bottom: 10px; display:flex; align-items:center; gap:6px; }
-.hours-row { display: flex; justify-content: space-between; font-size: 11px; color: rgba(255,255,255,.32); margin-bottom: 5px; font-weight: 300; }
-.hours-row span { color: rgba(255,255,255,.55); }
+.hours-box { background:rgba(0,201,177,.04); border:1px solid var(--teal-rim); border-radius:12px; padding:16px 18px; margin-top:10px; }
+.hours-title { font-family:var(--ff); font-size:9px; letter-spacing:2.5px; color:var(--teal); text-transform:uppercase; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+.hours-row { display:flex; justify-content:space-between; font-size:11px; color:rgba(255,255,255,.28); margin-bottom:5px; font-weight:300; }
+.hours-row span { color:rgba(255,255,255,.55); }
 
-.footer-bar {
-  max-width: 1140px; margin: 0 auto; padding: 22px 0;
-  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+.ft-bar {
+  max-width:1140px; margin:0 auto; padding:22px 0;
+  display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
 }
-.footer-copy { font-size: 11px; color: rgba(255,255,255,.15); font-weight: 300; }
-.footer-links { display: flex; gap: 20px; }
-.footer-policy { font-size: 11px; color: rgba(255,255,255,.22); text-decoration: none; transition: color .2s; }
-.footer-policy:hover { color: var(--gold); }
+.ft-copy { font-size:11px; color:rgba(255,255,255,.14); font-weight:300; }
+.ft-links { display:flex; gap:18px; }
+.ft-policy { font-size:11px; color:rgba(255,255,255,.2); text-decoration:none; transition:color .2s; }
+.ft-policy:hover { color:var(--teal); }
 
-/* ═══════════════════════════════════════════════
+/* ══════════════════════════════════════
    AUTH MODAL
-═══════════════════════════════════════════════ */
+══════════════════════════════════════ */
 .modal-bg {
-  position: fixed; inset: 0; z-index: 600;
-  background: rgba(0,0,0,.75); backdrop-filter: blur(14px);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
-  opacity: 0; pointer-events: none; transition: opacity .3s;
+  position:fixed; inset:0; z-index:600;
+  background:rgba(0,0,0,.8); backdrop-filter:blur(14px);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .3s;
 }
-.modal-bg.open { opacity: 1; pointer-events: all; }
-
+.modal-bg.open { opacity:1; pointer-events:all; }
 .modal-box {
-  background: linear-gradient(155deg, #141822 0%, #0a0c13 100%);
-  border: 1px solid rgba(201,168,76,.25); border-radius: 24px;
-  padding: 40px 36px; max-width: 440px; width: 100%;
-  transform: scale(.93) translateY(18px);
-  transition: transform .4s var(--ease-spring);
-  position: relative;
+  background:linear-gradient(160deg,#111d2e 0%,#080e1a 100%);
+  border:1px solid rgba(0,201,177,.22); border-radius:24px;
+  padding:40px 36px; max-width:440px; width:100%;
+  transform:scale(.93) translateY(18px);
+  transition:transform .42s var(--spring); position:relative;
 }
-.modal-bg.open .modal-box { transform: scale(1) translateY(0); }
+.modal-bg.open .modal-box { transform:scale(1) translateY(0); }
 
-.modal-close {
-  position: absolute; top: 16px; right: 16px;
-  width: 32px; height: 32px; border-radius: 50%;
-  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
-  color: var(--muted); cursor: pointer; font-size: 12px;
-  display: flex; align-items: center; justify-content: center; transition: all .2s;
+.modal-x {
+  position:absolute; top:16px; right:16px;
+  width:32px; height:32px; border-radius:50%;
+  background:var(--white06); border:1px solid var(--border);
+  color:var(--white25); cursor:pointer; font-size:12px;
+  display:flex; align-items:center; justify-content:center; transition:all .2s;
 }
-.modal-close:hover { background: rgba(255,255,255,.12); color: #fff; }
+.modal-x:hover { background:var(--white10); color:#fff; }
 
-.modal-hd { text-align: center; margin-bottom: 28px; }
-.modal-logo { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px; font-family:var(--ff-display); font-size:15px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:#fff; }
-.modal-logo em { font-style:normal; color:var(--gold); }
-.modal-logo-ic { width:28px; height:28px; border-radius:7px; background:linear-gradient(135deg,var(--gold-dark),var(--gold)); display:flex; align-items:center; justify-content:center; font-size:12px; color:var(--obsidian); }
-.modal-title { font-family: var(--ff-display); font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 5px; }
-.modal-sub { font-size: 12px; color: var(--muted); font-weight: 300; }
+.modal-hd { text-align:center; margin-bottom:28px; }
+.modal-logo-row { display:flex; align-items:center; justify-content:center; gap:8px; margin-bottom:14px; font-family:var(--ff); font-size:14px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:#fff; }
+.modal-logo-row span { color:var(--teal); }
+.modal-logo-ic { width:28px; height:28px; border-radius:7px; background:linear-gradient(135deg,#0096ff,var(--teal)); display:flex; align-items:center; justify-content:center; font-size:12px; color:#fff; }
+.modal-title { font-family:var(--ff); font-size:22px; font-weight:700; color:#fff; margin-bottom:5px; }
+.modal-sub { font-size:12px; color:var(--white25); font-weight:300; }
 
-.modal-tabs {
-  display: flex; background: rgba(255,255,255,.04); border-radius: 12px; padding: 3px; margin-bottom: 24px;
-}
-.mtab {
-  flex: 1; padding: 10px; border-radius: 10px; text-align: center;
-  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
-  cursor: pointer; transition: all .25s; color: var(--muted); font-weight: 600;
-}
-.mtab.active { background: rgba(201,168,76,.13); color: var(--gold); }
+.modal-tabs { display:flex; background:rgba(255,255,255,.04); border-radius:12px; padding:3px; margin-bottom:24px; }
+.mtab { flex:1; padding:10px; border-radius:10px; text-align:center; font-family:var(--ff); font-size:10px; letter-spacing:2px; text-transform:uppercase; cursor:pointer; transition:all .25s; color:var(--white25); font-weight:700; }
+.mtab.on { background:var(--teal-dim); color:var(--teal); }
 
-.field { margin-bottom: 14px; }
-.field label { font-size: 9px; letter-spacing: 2.5px; color: rgba(255,255,255,.28); text-transform: uppercase; display: block; margin-bottom: 7px; font-weight: 600; }
+.field { margin-bottom:13px; }
+.field label { font-family:var(--ff); font-size:9px; letter-spacing:2.5px; color:rgba(255,255,255,.25); text-transform:uppercase; display:block; margin-bottom:7px; font-weight:700; }
 .field input {
-  width: 100%; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
-  border-radius: 11px; padding: 13px 16px; color: #fff; font-size: 14px;
-  font-family: var(--ff-body); outline: none; transition: border-color .25s, background .25s;
+  width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+  border-radius:11px; padding:13px 16px; color:#fff; font-size:14px;
+  font-family:var(--ff2); outline:none; transition:border-color .25s,background .25s;
 }
-.field input:focus { border-color: var(--rim-bright); background: rgba(201,168,76,.03); }
-.field input::placeholder { color: rgba(255,255,255,.16); }
+.field input:focus { border-color:var(--teal-bright); background:rgba(0,201,177,.03); }
+.field input::placeholder { color:rgba(255,255,255,.15); }
 
-.modal-submit {
-  width: 100%; padding: 15px; border-radius: 12px; border: none;
-  background: linear-gradient(135deg, var(--gold-dark), var(--gold));
-  color: var(--obsidian); font-family: var(--ff-body); font-size: 12px; font-weight: 700;
-  letter-spacing: 2.5px; text-transform: uppercase; cursor: pointer; transition: all .28s;
-  margin-top: 4px; box-shadow: 0 6px 22px rgba(201,168,76,.3);
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+.modal-btn {
+  width:100%; padding:15px; border-radius:12px; border:none;
+  background:linear-gradient(135deg,#0096ff,var(--teal));
+  color:#fff; font-family:var(--ff); font-size:11px; font-weight:700;
+  letter-spacing:2.5px; text-transform:uppercase; cursor:pointer; transition:all .28s;
+  margin-top:4px; box-shadow:0 6px 22px rgba(0,201,177,.28);
+  display:flex; align-items:center; justify-content:center; gap:8px;
 }
-.modal-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(201,168,76,.44); }
-.modal-submit:disabled { opacity: .6; pointer-events: none; }
+.modal-btn:hover { transform:translateY(-2px); box-shadow:0 12px 30px rgba(0,201,177,.44); }
+.modal-btn:disabled { opacity:.55; pointer-events:none; }
 
-.modal-or { text-align: center; font-size: 11px; color: var(--dim); margin: 16px 0; position: relative; }
-.modal-or::before, .modal-or::after { content: ''; position: absolute; top: 50%; width: calc(50% - 32px); height: 1px; background: rgba(255,255,255,.07); }
-.modal-or::before { left: 0; } .modal-or::after { right: 0; }
+.modal-or { text-align:center; font-size:11px; color:rgba(255,255,255,.15); margin:16px 0; position:relative; }
+.modal-or::before,.modal-or::after { content:''; position:absolute; top:50%; width:calc(50% - 32px); height:1px; background:rgba(255,255,255,.07); }
+.modal-or::before{left:0;} .modal-or::after{right:0;}
 
-.social-row-login { display: flex; gap: 9px; }
-.sl-btn {
-  flex: 1; padding: 11px 8px; border-radius: 11px;
-  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
-  color: var(--white55); font-size: 12px; cursor: pointer; transition: all .25s;
-  display: flex; align-items: center; justify-content: center; gap: 7px;
-  font-family: var(--ff-body);
+.social-login { display:flex; gap:9px; }
+.sl-btn { flex:1; padding:11px 8px; border-radius:11px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); color:var(--white50); font-size:12px; cursor:pointer; transition:all .25s; display:flex; align-items:center; justify-content:center; gap:7px; font-family:var(--ff2); }
+.sl-btn i { font-size:14px; }
+.sl-btn:hover { background:var(--white10); border-color:var(--white25); color:#fff; }
+
+#reg-extra { display:none; }
+#reg-extra.vis { display:block; }
+
+/* ══════════════════════════════════════
+   PAYMENT MODAL
+══════════════════════════════════════ */
+#pay-bg {
+  position:fixed; inset:0; z-index:650;
+  background:rgba(0,0,0,.85); backdrop-filter:blur(16px);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .3s;
 }
-.sl-btn:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.18); color: #fff; }
-.sl-btn i { font-size: 14px; }
+#pay-bg.open { opacity:1; pointer-events:all; }
 
-#reg-extra { display: none; }
-#reg-extra.show { display: block; }
-
-/* ═══════════════════════════════════════════════
-   PAYWALL MODAL
-═══════════════════════════════════════════════ */
-#paywall-bg {
-  position: fixed; inset: 0; z-index: 620;
-  background: rgba(0,0,0,.82); backdrop-filter: blur(16px);
-  display: flex; align-items: center; justify-content: center; padding: 20px;
-  opacity: 0; pointer-events: none; transition: opacity .3s;
+.pay-box {
+  background:linear-gradient(160deg,#111d2e 0%,#080e1a 100%);
+  border:1px solid rgba(0,201,177,.3); border-radius:26px;
+  padding:40px 36px; max-width:520px; width:100%;
+  position:relative; overflow:hidden;
+  transform:scale(.93) translateY(20px);
+  transition:transform .44s var(--spring);
 }
-#paywall-bg.open { opacity: 1; pointer-events: all; }
-
-.paywall-box {
-  background: linear-gradient(160deg, #16202e 0%, #090d13 100%);
-  border: 1px solid rgba(201,168,76,.3); border-radius: 26px;
-  padding: 52px 36px 38px; max-width: 500px; width: 100%;
-  text-align: center; position: relative; overflow: hidden;
-  transform: scale(.93) translateY(20px);
-  transition: transform .42s var(--ease-spring);
+#pay-bg.open .pay-box { transform:scale(1) translateY(0); }
+.pay-box::before {
+  content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%);
+  width:300px; height:300px; border-radius:50%;
+  background:radial-gradient(circle,rgba(0,201,177,.1) 0%,transparent 70%); pointer-events:none;
 }
-#paywall-bg.open .paywall-box { transform: scale(1) translateY(0); }
 
-.paywall-box::before {
-  content: ''; position: absolute; top: -80px; left: 50%; transform: translateX(-50%);
-  width: 280px; height: 280px; border-radius: 50%;
-  background: radial-gradient(circle, rgba(201,168,76,.12) 0%, transparent 70%);
-  pointer-events: none;
+.pay-x { position:absolute; top:16px; right:16px; width:30px; height:30px; border-radius:50%; background:var(--white06); border:1px solid var(--border); color:var(--white25); cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+.pay-x:hover { background:var(--white10); color:#fff; }
+
+.pay-hd { text-align:center; margin-bottom:30px; position:relative; z-index:1; }
+.pay-icon { width:68px; height:68px; border-radius:50%; margin:0 auto 18px; background:linear-gradient(135deg,#0096ff,var(--teal)); display:flex; align-items:center; justify-content:center; font-size:28px; color:#fff; box-shadow:0 0 40px rgba(0,201,177,.3); }
+.pay-title { font-family:var(--ff); font-size:22px; font-weight:800; color:#fff; text-transform:uppercase; margin-bottom:5px; }
+.pay-sub { font-size:13px; color:var(--white25); font-weight:300; }
+
+/* Plan selector tabs */
+.pay-plans { display:flex; gap:10px; margin-bottom:26px; }
+.pay-plan-tab {
+  flex:1; border-radius:12px; padding:14px 12px; cursor:pointer;
+  border:1px solid var(--border); background:var(--white06);
+  text-align:center; transition:all .25s;
 }
-.pw-close { position:absolute; top:16px; right:16px; width:30px; height:30px; border-radius:50%; background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.1); color:var(--muted); cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; transition:all .2s; }
-.pw-close:hover { background:rgba(255,255,255,.12); color:#fff; }
-
-.pw-crown {
-  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 22px;
-  background: linear-gradient(135deg, var(--gold-dark), var(--gold), var(--gold-light));
-  display: flex; align-items: center; justify-content: center;
-  font-size: 30px; color: var(--obsidian); position: relative; z-index: 1;
-  box-shadow: 0 0 40px rgba(201,168,76,.35), 0 0 80px rgba(201,168,76,.15);
+.pay-plan-tab.sel {
+  border-color:var(--teal-rim); background:var(--teal-dim);
 }
-.pw-title { font-family: var(--ff-display); font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px; z-index:1; position:relative; }
-.pw-sub { font-size: 14px; color: var(--muted); line-height: 1.75; margin-bottom: 28px; font-weight: 300; z-index:1; position:relative; font-family: var(--ff-serif); font-size:15px; }
+.ppt-name { font-family:var(--ff); font-size:11px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; color:var(--white50); margin-bottom:5px; }
+.pay-plan-tab.sel .ppt-name { color:var(--teal); }
+.ppt-price { font-family:var(--ff); font-size:20px; font-weight:800; color:#fff; }
+.ppt-period { font-size:10px; color:var(--white25); }
 
-.pw-dots { display:flex; gap:8px; justify-content:center; margin-bottom:30px; }
-.pw-dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.1); transition:all .3s; }
-.pw-dot.lit { background:var(--gold); border-color:var(--gold-dark); box-shadow:0 0 8px rgba(201,168,76,.5); }
-
-.pw-card {
-  background: rgba(201,168,76,.06); border: 1px solid var(--rim);
-  border-radius: 18px; padding: 24px; margin-bottom: 18px; text-align: left;
-  position: relative; z-index: 1;
-}
-.pw-card-top { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-.pw-plan-label { font-family: var(--ff-display); font-size: 18px; font-weight: 700; color: #fff; }
-.pw-price-block { text-align: right; }
-.pw-price { font-family: var(--ff-display); font-size: 36px; font-weight: 700; line-height: 1; }
-.pw-price sup { font-size: 18px; vertical-align:super; color:var(--gold); }
-.pw-price-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
-
-.pw-perks { list-style:none; display:flex; flex-direction:column; gap:8px; }
-.pw-perk { display:flex; align-items:center; gap:9px; font-size:12px; color:rgba(255,255,255,.55); font-weight:300; }
-.pw-perk i { color:var(--gold); font-size:10px; width:12px; }
-
-.pw-cta {
-  width:100%; padding:16px; border-radius:14px; border:none;
-  background:linear-gradient(135deg,var(--gold-dark),var(--gold),var(--gold-light));
-  background-size:200% auto;
-  color:var(--obsidian); font-family:var(--ff-body); font-size:13px; font-weight:700;
-  letter-spacing:2.5px; text-transform:uppercase; cursor:pointer; transition:all .32s;
-  display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:14px;
-  box-shadow:0 8px 26px rgba(201,168,76,.32);
+/* Summary row */
+.pay-summary {
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.07);
+  border-radius:14px; padding:18px 20px; margin-bottom:24px;
   position:relative; z-index:1;
 }
-.pw-cta:hover { transform:translateY(-3px); box-shadow:0 18px 40px rgba(201,168,76,.46); background-position:right center; }
+.pay-sum-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; color:var(--white25); margin-bottom:8px; font-weight:300; }
+.pay-sum-row:last-child { margin-bottom:0; padding-top:10px; border-top:1px solid rgba(255,255,255,.06); font-size:15px; font-weight:700; color:#fff; }
+.pay-sum-row span:last-child { color:var(--teal); font-family:var(--ff); }
 
-.pw-alt { font-size:11px; color:rgba(255,255,255,.25); position:relative; z-index:1; }
-.pw-alt a { color:rgba(255,255,255,.42); text-decoration:underline; cursor:pointer; }
+/* Card form */
+.pay-form { position:relative; z-index:1; }
+.pay-form-title { font-family:var(--ff); font-size:10px; letter-spacing:3px; color:var(--white25); text-transform:uppercase; font-weight:700; margin-bottom:16px; display:flex; align-items:center; gap:8px; }
+.pay-form-title::after { content:''; flex:1; height:1px; background:rgba(255,255,255,.07); }
 
-/* ═══════════════════════════════════════════════
-   TOAST
-═══════════════════════════════════════════════ */
-#toast {
-  position: fixed; bottom: 28px; right: 28px; z-index: 700;
-  background: rgba(16,19,28,.97); border: 1px solid var(--rim);
-  border-radius: 14px; padding: 15px 22px;
-  display: flex; align-items: center; gap: 13px;
-  font-size: 13px; color: #fff; max-width: 320px;
-  transform: translateX(140%); opacity: 0;
-  transition: all .45s var(--ease-spring);
-  box-shadow: 0 12px 40px rgba(0,0,0,.6);
+.pay-field { margin-bottom:13px; }
+.pay-field label { font-family:var(--ff); font-size:9px; letter-spacing:2px; color:rgba(255,255,255,.25); text-transform:uppercase; display:block; margin-bottom:7px; font-weight:700; }
+.pay-field input, .pay-field select {
+  width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.1);
+  border-radius:10px; padding:13px 16px; color:#fff; font-size:14px;
+  font-family:var(--ff2); outline:none; transition:border-color .25s,background .25s;
+  appearance:none;
 }
-#toast.show { transform: translateX(0); opacity: 1; }
-.toast-ic { font-size: 18px; color: var(--gold); flex-shrink: 0; }
+.pay-field input:focus, .pay-field select:focus { border-color:var(--teal-bright); background:rgba(0,201,177,.03); }
+.pay-field input::placeholder { color:rgba(255,255,255,.15); }
+.pay-field select option { background:#111d2e; }
 
-/* ═══════════════════════════════════════════════
-   SCROLL REVEAL
-═══════════════════════════════════════════════ */
-.reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s var(--ease-out), transform .7s var(--ease-out); }
-.reveal.visible { opacity: 1; transform: translateY(0); }
-.reveal-d1 { transition-delay: .1s; }
-.reveal-d2 { transition-delay: .2s; }
-.reveal-d3 { transition-delay: .3s; }
+.pay-field-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
-/* ═══════════════════════════════════════════════
+/* Card icon row */
+.card-icons { display:flex; gap:6px; margin-bottom:14px; }
+.ci { height:26px; width:42px; border-radius:5px; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.1); display:flex; align-items:center; justify-content:center; font-size:18px; color:var(--white25); transition:all .25s; }
+.ci.active { background:rgba(255,255,255,.14); border-color:rgba(255,255,255,.25); color:#fff; }
+
+/* Payment methods */
+.pay-methods { display:flex; gap:9px; margin-bottom:18px; }
+.pm-btn {
+  flex:1; padding:10px 6px; border-radius:9px; border:1px solid var(--border);
+  background:var(--white06); cursor:pointer; transition:all .25s;
+  display:flex; flex-direction:column; align-items:center; gap:5px; font-size:10px; color:var(--white25);
+}
+.pm-btn.active { border-color:var(--teal-rim); background:var(--teal-dim); color:var(--teal); }
+.pm-btn i { font-size:18px; }
+
+.pay-security { display:flex; align-items:center; justify-content:center; gap:7px; font-size:11px; color:rgba(255,255,255,.25); margin-bottom:18px; }
+.pay-security i { color:var(--teal); font-size:12px; }
+
+.pay-btn {
+  width:100%; padding:16px; border-radius:14px; border:none;
+  background:linear-gradient(135deg,#0096ff,var(--teal));
+  color:#fff; font-family:var(--ff); font-size:12px; font-weight:700;
+  letter-spacing:2.5px; text-transform:uppercase; cursor:pointer; transition:all .32s;
+  display:flex; align-items:center; justify-content:center; gap:10px;
+  box-shadow:0 8px 26px rgba(0,201,177,.3);
+  position:relative; z-index:1;
+}
+.pay-btn:hover { transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,201,177,.46); }
+.pay-btn:disabled { opacity:.6; pointer-events:none; }
+
+.pay-guarantee { display:flex; align-items:center; justify-content:center; gap:18px; margin-top:16px; padding-top:16px; border-top:1px solid rgba(255,255,255,.06); }
+.pg-item { display:flex; align-items:center; gap:5px; font-size:10px; color:rgba(255,255,255,.25); }
+.pg-item i { color:var(--teal); font-size:11px; }
+
+/* ══════════════════════════════════════
+   PAYWALL MODAL
+══════════════════════════════════════ */
+#paywall-bg {
+  position:fixed; inset:0; z-index:620;
+  background:rgba(0,0,0,.85); backdrop-filter:blur(16px);
+  display:flex; align-items:center; justify-content:center; padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .3s;
+}
+#paywall-bg.open { opacity:1; pointer-events:all; }
+
+.pw-box {
+  background:linear-gradient(160deg,#111d2e 0%,#080e1a 100%);
+  border:1px solid rgba(0,201,177,.28); border-radius:24px;
+  padding:48px 32px 36px; max-width:480px; width:100%;
+  text-align:center; position:relative; overflow:hidden;
+  transform:scale(.93) translateY(18px);
+  transition:transform .42s var(--spring);
+}
+#paywall-bg.open .pw-box { transform:scale(1) translateY(0); }
+.pw-box::before { content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%); width:280px; height:280px; border-radius:50%; background:radial-gradient(circle,rgba(0,201,177,.1) 0%,transparent 70%); pointer-events:none; }
+
+.pw-x { position:absolute; top:16px; right:16px; width:30px; height:30px; border-radius:50%; background:var(--white06); border:1px solid var(--border); color:var(--white25); cursor:pointer; font-size:12px; display:flex; align-items:center; justify-content:center; transition:all .2s; }
+.pw-x:hover { background:var(--white10); color:#fff; }
+
+.pw-crown-ic { width:68px; height:68px; border-radius:50%; margin:0 auto 20px; background:linear-gradient(135deg,#0096ff,var(--teal)); display:flex; align-items:center; justify-content:center; font-size:28px; color:#fff; position:relative; z-index:1; box-shadow:0 0 40px rgba(0,201,177,.3); }
+.pw-title { font-family:var(--ff); font-size:24px; font-weight:800; color:#fff; margin-bottom:8px; text-transform:uppercase; position:relative; z-index:1; }
+.pw-sub { font-size:13px; color:var(--white25); line-height:1.75; margin-bottom:28px; font-weight:300; position:relative; z-index:1; }
+
+.pw-dots { display:flex; gap:8px; justify-content:center; margin-bottom:28px; }
+.pw-dot { width:10px; height:10px; border-radius:50%; background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.1); transition:all .3s; }
+.pw-dot.lit { background:var(--teal); border-color:var(--teal); box-shadow:0 0 8px rgba(0,201,177,.5); }
+
+.pw-cards { display:flex; flex-direction:column; gap:12px; margin-bottom:20px; }
+.pw-card {
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+  border-radius:16px; padding:18px 20px; text-align:left; cursor:pointer;
+  transition:all .25s; position:relative; z-index:1;
+}
+.pw-card.sel { border-color:var(--teal-rim); background:var(--teal-dim); }
+.pw-card-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
+.pw-card-label { font-family:var(--ff); font-size:14px; font-weight:700; color:#fff; display:flex; align-items:center; gap:8px; }
+.pw-card-label i { font-size:12px; color:var(--teal); }
+.pw-card.sel .pw-card-label i { color:var(--teal); }
+.pw-card-price { font-family:var(--ff); font-size:24px; font-weight:800; color:var(--teal); }
+.pw-card-price-dia { color:#78b4ff; }
+.pw-perks { list-style:none; display:flex; flex-direction:column; gap:6px; }
+.pw-perk { display:flex; align-items:center; gap:8px; font-size:12px; color:var(--white25); font-weight:300; }
+.pw-perk i { color:var(--teal); font-size:9px; width:12px; }
+
+.pw-cta {
+  width:100%; padding:15px; border-radius:12px; border:none;
+  background:linear-gradient(135deg,#0096ff,var(--teal));
+  color:#fff; font-family:var(--ff); font-size:11px; font-weight:700;
+  letter-spacing:2.5px; text-transform:uppercase; cursor:pointer; transition:all .32s;
+  display:flex; align-items:center; justify-content:center; gap:9px; margin-bottom:14px;
+  box-shadow:0 8px 26px rgba(0,201,177,.3); position:relative; z-index:1;
+}
+.pw-cta:hover { transform:translateY(-3px); box-shadow:0 18px 40px rgba(0,201,177,.46); }
+.pw-alt { font-size:11px; color:rgba(255,255,255,.22); position:relative; z-index:1; }
+.pw-alt a { color:rgba(255,255,255,.4); text-decoration:underline; cursor:pointer; }
+
+/* ══════════════════════════════════════
+   TOAST
+══════════════════════════════════════ */
+#toast {
+  position:fixed; bottom:28px; right:28px; z-index:800;
+  background:rgba(14,22,38,.97); border:1px solid var(--teal-rim);
+  border-radius:14px; padding:15px 22px;
+  display:flex; align-items:center; gap:13px;
+  font-size:13px; color:#fff; max-width:320px;
+  transform:translateX(140%); opacity:0;
+  transition:all .45s var(--spring);
+  box-shadow:0 12px 40px rgba(0,0,0,.6);
+}
+#toast.show { transform:translateX(0); opacity:1; }
+.toast-ico { font-size:18px; color:var(--teal); flex-shrink:0; }
+
+/* ══════════════════════════════════════
    RESPONSIVE
-═══════════════════════════════════════════════ */
+══════════════════════════════════════ */
 @media(max-width:700px) {
   #navbar { padding:14px 20px; }
-  .navbar-scrolled { padding:10px 20px !important; }
-  .hero-stats { flex-direction:column; gap:0; }
-  .stat-cell { border-right:none; border-bottom:1px solid var(--rim); }
-  .stat-cell:last-child { border-bottom:none; }
-  .paywall-box { padding:44px 22px 32px; }
+  .nav-scrolled { padding:10px 20px !important; }
+  .hero-stats { flex-direction:column; }
+  .stat-box { border-right:none; border-bottom:1px solid rgba(255,255,255,.07); }
+  .stat-box:last-child { border-bottom:none; }
+  .pay-box { padding:36px 20px 28px; }
   .modal-box { padding:34px 22px; }
-  .footer-grid { grid-template-columns:1fr; gap:36px; }
-  .footer-bar { flex-direction:column; text-align:center; }
+  .pay-field-row { grid-template-columns:1fr; }
+  .pw-box { padding:40px 20px 30px; }
+  .pay-plans { flex-direction:column; }
+  .ft-bar { flex-direction:column; text-align:center; }
 }
 </style>
 </head>
@@ -903,62 +863,155 @@ body::before {
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 
-<!-- ══════════════════════════
-     PAYWALL MODAL
-══════════════════════════ -->
-<div id="paywall-bg" role="dialog" aria-modal="true">
-  <div class="paywall-box">
-    <button class="pw-close" onclick="closePaywall()"><i class="fa-solid fa-xmark"></i></button>
-    <div class="pw-crown"><i class="fa-solid fa-crown"></i></div>
-    <div class="pw-title">เลือกแพ็กเกจของคุณ</div>
-    <div class="pw-sub">ปลดล็อคปลายทาง VIP กว่า 200+ แห่ง<br>และสิทธิพิเศษที่หาไม่ได้จากที่ไหน</div>
-    <div class="pw-dots" id="pwDots"></div>
-
-    <!-- Gold plan card -->
-    <div class="pw-card" id="pwGoldCard">
-      <div class="pw-card-top">
-        <div class="pw-plan-label">⭐ Gold VIP</div>
-        <div class="pw-price-block">
-          <div class="pw-price gold-text"><sup>฿</sup>399</div>
-          <div class="pw-price-note">≈ 12 USD / เดือน</div>
-        </div>
-      </div>
-      <ul class="pw-perks">
-        <li class="pw-perk"><i class="fa-solid fa-check"></i>ปลายทาง VIP ไม่จำกัด 200+ แห่ง</li>
-        <li class="pw-perk"><i class="fa-solid fa-check"></i>แผนเดินทางเชิงลึก + Insider Tips</li>
-        <li class="pw-perk"><i class="fa-solid fa-check"></i>ส่วนลดโรงแรมพาร์ทเนอร์สูงสุด 35%</li>
-        <li class="pw-perk"><i class="fa-solid fa-check"></i>Flight Price Alerts แบบ Real-time</li>
-        <li class="pw-perk"><i class="fa-solid fa-check"></i>ยกเลิกได้ทุกเวลา ไม่มีสัญญา</li>
-      </ul>
+<!-- ══════════════════════
+     PAYMENT MODAL
+══════════════════════ -->
+<div id="pay-bg">
+  <div class="pay-box">
+    <button class="pay-x" onclick="closePay()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="pay-hd">
+      <div class="pay-icon"><i class="fa-solid fa-shield-halved"></i></div>
+      <div class="pay-title">ชำระเงิน</div>
+      <div class="pay-sub">ข้อมูลของคุณได้รับการเข้ารหัส SSL 256-bit</div>
     </div>
 
-    <div style="display:flex;gap:10px;margin-bottom:18px;">
-      <button class="pw-cta" style="flex:1" onclick="handleUpgrade('gold')">
-        <i class="fa-solid fa-crown"></i> Gold VIP — 399 ฿
+    <!-- Plan tabs -->
+    <div class="pay-plans">
+      <div class="pay-plan-tab sel" id="payTab-gold" onclick="selectPayPlan('gold')">
+        <div class="ppt-name"><i class="fa-solid fa-crown"></i> Gold VIP</div>
+        <div class="ppt-price">199<span style="font-size:13px;color:rgba(255,255,255,.4)"> ฿</span></div>
+        <div class="ppt-period">/ เดือน</div>
+      </div>
+      <div class="pay-plan-tab" id="payTab-diamond" onclick="selectPayPlan('diamond')">
+        <div class="ppt-name"><i class="fa-solid fa-gem"></i> Diamond</div>
+        <div class="ppt-price" style="color:#78b4ff">399<span style="font-size:13px;color:rgba(255,255,255,.4)"> ฿</span></div>
+        <div class="ppt-period">/ เดือน</div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="pay-summary">
+      <div class="pay-sum-row"><span id="paySumName">Globe VIP Gold</span><span id="paySumPrice">฿199 / เดือน</span></div>
+      <div class="pay-sum-row"><span>ส่วนลดสมัครครั้งแรก</span><span>- ฿0</span></div>
+      <div class="pay-sum-row"><span>รวมทั้งสิ้น</span><span id="paySumTotal">฿199</span></div>
+    </div>
+
+    <!-- Payment method -->
+    <div class="pay-form">
+      <div class="pay-form-title"><i class="fa-solid fa-credit-card" style="color:var(--teal)"></i> วิธีชำระเงิน</div>
+      <div class="pay-methods">
+        <div class="pm-btn active" id="pm-card" onclick="setPayMethod('card')">
+          <i class="fa-solid fa-credit-card"></i>
+          <span>บัตรเครดิต</span>
+        </div>
+        <div class="pm-btn" id="pm-qr" onclick="setPayMethod('qr')">
+          <i class="fa-solid fa-qrcode"></i>
+          <span>PromptPay</span>
+        </div>
+        <div class="pm-btn" id="pm-line" onclick="setPayMethod('line')">
+          <i class="fa-solid fa-comment-dots"></i>
+          <span>LINE Pay</span>
+        </div>
+      </div>
+
+      <!-- Card form -->
+      <div id="cardForm">
+        <div class="card-icons">
+          <div class="ci active"><i class="fa-brands fa-cc-visa"></i></div>
+          <div class="ci active"><i class="fa-brands fa-cc-mastercard"></i></div>
+          <div class="ci"><i class="fa-brands fa-cc-amex"></i></div>
+          <div class="ci"><i class="fa-brands fa-cc-jcb"></i></div>
+        </div>
+        <div class="pay-field">
+          <label><i class="fa-solid fa-user" style="font-size:8px"></i> ชื่อบนบัตร</label>
+          <input type="text" id="cardName" placeholder="FIRSTNAME LASTNAME">
+        </div>
+        <div class="pay-field">
+          <label><i class="fa-solid fa-credit-card" style="font-size:8px"></i> หมายเลขบัตร</label>
+          <input type="text" id="cardNum" placeholder="0000 0000 0000 0000" maxlength="19" oninput="fmtCard(this)">
+        </div>
+        <div class="pay-field-row">
+          <div class="pay-field">
+            <label><i class="fa-regular fa-calendar" style="font-size:8px"></i> วันหมดอายุ</label>
+            <input type="text" id="cardExp" placeholder="MM / YY" maxlength="7" oninput="fmtExp(this)">
+          </div>
+          <div class="pay-field">
+            <label><i class="fa-solid fa-lock" style="font-size:8px"></i> CVV</label>
+            <input type="text" id="cardCvv" placeholder="000" maxlength="4">
+          </div>
+        </div>
+      </div>
+
+      <!-- QR placeholder -->
+      <div id="qrForm" style="display:none; text-align:center; padding:24px 0;">
+        <i class="fa-solid fa-qrcode" style="font-size:64px; color:var(--teal); opacity:.6; display:block; margin-bottom:12px;"></i>
+        <p style="font-size:13px;color:var(--white25);">สแกน QR Code ด้วยแอปธนาคาร หรือ PromptPay</p>
+        <p style="font-size:11px;color:rgba(255,255,255,.15);margin-top:6px;">(Demo Mode — QR จะแสดงหลัง Integrate จริง)</p>
+      </div>
+
+      <!-- LINE Pay placeholder -->
+      <div id="lineForm" style="display:none; text-align:center; padding:24px 0;">
+        <i class="fa-solid fa-comment-dots" style="font-size:64px; color:var(--teal); opacity:.6; display:block; margin-bottom:12px;"></i>
+        <p style="font-size:13px;color:var(--white25);">กดปุ่มชำระเงินเพื่อเปิด LINE Pay</p>
+        <p style="font-size:11px;color:rgba(255,255,255,.15);margin-top:6px;">(Demo Mode)</p>
+      </div>
+
+      <div class="pay-security">
+        <i class="fa-solid fa-lock"></i>
+        <span>SSL Encrypted · PCI-DSS Compliant · ข้อมูลของคุณปลอดภัย 100%</span>
+      </div>
+
+      <button class="pay-btn" id="paySubmitBtn" onclick="handlePayment()">
+        <i class="fa-solid fa-lock"></i>
+        <span id="payBtnTxt">ชำระเงิน ฿199 / เดือน</span>
       </button>
-    </div>
 
-    <!-- Premium plan card -->
-    <div class="pw-card" id="pwDiamondCard" style="border-color:rgba(120,180,255,.25);background:rgba(120,180,255,.04);">
-      <div class="pw-card-top">
-        <div class="pw-plan-label">💎 Diamond VIP</div>
-        <div class="pw-price-block">
-          <div class="pw-price" style="color:#78b4ff;"><sup style="color:#78b4ff;">฿</sup>699</div>
-          <div class="pw-price-note">≈ 21 USD / เดือน</div>
-        </div>
+      <div class="pay-guarantee">
+        <div class="pg-item"><i class="fa-solid fa-rotate-left"></i> คืนเงินใน 30 วัน</div>
+        <div class="pg-item"><i class="fa-solid fa-shield-halved"></i> SSL 256-bit</div>
+        <div class="pg-item"><i class="fa-solid fa-ban"></i> ยกเลิกได้ทุกเมื่อ</div>
       </div>
-      <ul class="pw-perks">
-        <li class="pw-perk"><i class="fa-solid fa-check" style="color:#78b4ff"></i>ทุกอย่างใน Gold VIP</li>
-        <li class="pw-perk"><i class="fa-solid fa-check" style="color:#78b4ff"></i>Secret Destinations 500+ แห่ง</li>
-        <li class="pw-perk"><i class="fa-solid fa-check" style="color:#78b4ff"></i>Personal Concierge 24/7</li>
-        <li class="pw-perk"><i class="fa-solid fa-check" style="color:#78b4ff"></i>ส่วนลดโรงแรม 5 ดาวสูงสุด 55%</li>
-      </ul>
     </div>
+  </div>
+</div>
 
-    <button class="pw-cta" style="background:linear-gradient(135deg,#1a5fa6,#78b4ff);box-shadow:0 8px 26px rgba(120,180,255,.25);" onclick="handleUpgrade('diamond')">
-      <i class="fa-solid fa-gem"></i> Diamond VIP — 699 ฿
+<!-- ══════════════════════
+     PAYWALL MODAL
+══════════════════════ -->
+<div id="paywall-bg">
+  <div class="pw-box">
+    <button class="pw-x" onclick="closePaywall()"><i class="fa-solid fa-xmark"></i></button>
+    <div class="pw-crown-ic"><i class="fa-solid fa-crown"></i></div>
+    <div class="pw-title">อัปเกรดสมาชิก</div>
+    <div class="pw-sub">คุณใช้สิทธิ์ฟรีครบแล้ว เลือกแพ็กเกจ<br>เพื่อปลดล็อคปลายทาง VIP ทั้งหมด</div>
+    <div class="pw-dots" id="pwDots"></div>
+    <div class="pw-cards">
+      <div class="pw-card sel" id="pwc-gold" onclick="selectPw('gold')">
+        <div class="pw-card-head">
+          <div class="pw-card-label"><i class="fa-solid fa-crown"></i> Gold VIP</div>
+          <div class="pw-card-price">฿199<span style="font-size:13px;font-weight:400;color:var(--white25)">/เดือน</span></div>
+        </div>
+        <ul class="pw-perks">
+          <li class="pw-perk"><i class="fa-solid fa-check"></i>ปลายทาง VIP 200+ แห่ง</li>
+          <li class="pw-perk"><i class="fa-solid fa-check"></i>แผนเดินทางเชิงลึก + Insider Tips</li>
+          <li class="pw-perk"><i class="fa-solid fa-check"></i>ส่วนลดโรงแรมสูงสุด 35%</li>
+        </ul>
+      </div>
+      <div class="pw-card" id="pwc-diamond" onclick="selectPw('diamond')">
+        <div class="pw-card-head">
+          <div class="pw-card-label" style="color:#78b4ff"><i class="fa-solid fa-gem" style="color:#78b4ff"></i> Diamond VIP</div>
+          <div class="pw-card-price pw-card-price-dia">฿399<span style="font-size:13px;font-weight:400;color:var(--white25)">/เดือน</span></div>
+        </div>
+        <ul class="pw-perks">
+          <li class="pw-perk"><i class="fa-solid fa-check" style="color:#78b4ff"></i>ทุกอย่างใน Gold VIP</li>
+          <li class="pw-perk"><i class="fa-solid fa-check" style="color:#78b4ff"></i>Secret Destinations 500+ แห่ง</li>
+          <li class="pw-perk"><i class="fa-solid fa-check" style="color:#78b4ff"></i>Personal Concierge 24/7</li>
+        </ul>
+      </div>
+    </div>
+    <button class="pw-cta" onclick="proceedFromPaywall()">
+      <i class="fa-solid fa-credit-card"></i> ดำเนินการชำระเงิน
     </button>
-
     <div class="pw-alt">
       มีบัญชีอยู่แล้ว? <a onclick="closePaywall();openModal()">เข้าสู่ระบบ</a>
       &nbsp;·&nbsp; <a href="#plans">ดูแพ็กเกจทั้งหมด</a>
@@ -966,44 +1019,44 @@ body::before {
   </div>
 </div>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      AUTH MODAL
-══════════════════════════ -->
-<div id="auth-bg" class="modal-bg" role="dialog" aria-modal="true">
+══════════════════════ -->
+<div id="auth-bg" class="modal-bg">
   <div class="modal-box">
-    <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+    <button class="modal-x" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
     <div class="modal-hd">
-      <div class="modal-logo">
+      <div class="modal-logo-row">
         <div class="modal-logo-ic"><i class="fa-solid fa-globe"></i></div>
-        Globe <em>Express</em>
+        Globe <span>Express</span>
       </div>
-      <div class="modal-title" id="modalTitle">ยินดีต้อนรับกลับ</div>
-      <div class="modal-sub" id="modalSub">เข้าสู่ระบบเพื่อเริ่มการเดินทาง</div>
+      <div class="modal-title" id="mTitle">ยินดีต้อนรับกลับ</div>
+      <div class="modal-sub" id="mSub">เข้าสู่ระบบเพื่อเริ่มการเดินทาง</div>
     </div>
     <div class="modal-tabs">
-      <div class="mtab active" id="loginTab" onclick="switchTab('login')">เข้าสู่ระบบ</div>
-      <div class="mtab" id="regTab" onclick="switchTab('register')">สมัครสมาชิก</div>
+      <div class="mtab on" id="t-login" onclick="switchTab('login')">เข้าสู่ระบบ</div>
+      <div class="mtab" id="t-reg" onclick="switchTab('register')">สมัครสมาชิก</div>
     </div>
     <div class="field">
       <label>อีเมล</label>
-      <input type="email" id="authEmail" placeholder="your@email.com" autocomplete="email">
+      <input type="email" id="aEmail" placeholder="your@email.com" autocomplete="email">
     </div>
     <div class="field">
       <label>รหัสผ่าน</label>
-      <input type="password" id="authPass" placeholder="••••••••" autocomplete="current-password">
+      <input type="password" id="aPass" placeholder="••••••••" autocomplete="current-password">
     </div>
     <div id="reg-extra">
       <div class="field">
         <label>ชื่อ-นามสกุล</label>
-        <input type="text" id="authName" placeholder="กรอกชื่อของคุณ" autocomplete="name">
+        <input type="text" id="aName" placeholder="กรอกชื่อของคุณ">
       </div>
     </div>
-    <button class="modal-submit" id="authBtn" onclick="handleAuth()">
-      <i id="authBtnIco" class="fa-solid fa-arrow-right-to-bracket"></i>
-      <span id="authBtnTxt">เข้าสู่ระบบ</span>
+    <button class="modal-btn" id="authBtn" onclick="handleAuth()">
+      <i id="authIco" class="fa-solid fa-arrow-right-to-bracket"></i>
+      <span id="authTxt">เข้าสู่ระบบ</span>
     </button>
     <div class="modal-or">หรือเข้าสู่ระบบด้วย</div>
-    <div class="social-row-login">
+    <div class="social-login">
       <button class="sl-btn" onclick="socialLogin('Google')"><i class="fa-brands fa-google"></i> Google</button>
       <button class="sl-btn" onclick="socialLogin('Facebook')"><i class="fa-brands fa-facebook-f"></i> Facebook</button>
       <button class="sl-btn" onclick="socialLogin('Apple')"><i class="fa-brands fa-apple"></i> Apple</button>
@@ -1011,19 +1064,19 @@ body::before {
   </div>
 </div>
 
-<!-- ══ TOAST ══ -->
+<!-- Toast -->
 <div id="toast">
-  <div class="toast-ic"><i id="toastIco" class="fa-solid fa-circle-check"></i></div>
-  <span id="toastMsg">ยินดีต้อนรับ!</span>
+  <div class="toast-ico"><i id="toastIco" class="fa-solid fa-circle-check"></i></div>
+  <span id="toastMsg">สำเร็จ!</span>
 </div>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      NAVBAR
-══════════════════════════ -->
+══════════════════════ -->
 <nav id="navbar">
   <a href="index.html" class="nav-logo">
-    <div class="nav-logo-mark"><i class="fa-solid fa-globe"></i></div>
-    Globe <em>Express</em>
+    <div class="nav-logo-gem"><i class="fa-solid fa-globe"></i></div>
+    Globe <span>Express</span>
   </a>
   <div class="nav-right">
     <div class="nav-chip" id="userChip">
@@ -1035,295 +1088,301 @@ body::before {
   </div>
 </nav>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      HERO
-══════════════════════════ -->
+══════════════════════ -->
 <section id="hero">
-  <div class="hero-canvas">
-    <div class="hero-bg-img"></div>
-    <div class="hero-overlay"></div>
-    <div class="orb1 hero-orb"></div>
-    <div class="orb2 hero-orb"></div>
-    <div class="orb3 hero-orb"></div>
-  </div>
-  <div class="hero-lines">
-    <span></span><span></span><span></span>
-  </div>
+  <div class="hero-bg"></div>
+  <div class="hero-grad"></div>
+  <div class="orb orb-a"></div>
+  <div class="orb orb-b"></div>
+  <div class="hero-scanlines"></div>
+  <div class="hero-rule"></div>
+
   <div class="hero-inner">
-    <div class="hero-eyebrow">Globe Express · Membership 2025</div>
+    <div class="hero-badge"><i class="fa-solid fa-location-dot"></i> Globe Express · Membership 2025</div>
     <h1 class="hero-title">
-      <span class="t1">เที่ยวทั่วโลก</span>
-      <span class="t2 gold-text">VIP Access</span>
+      <span class="l1">สำรวจโลก</span>
+      <span class="l2">ไปกับ VIP</span>
     </h1>
-    <div class="hero-divider"></div>
     <p class="hero-sub">
-      ปลดล็อคปลายทางพิเศษกว่า 500+ สถานที่ทั่วโลก รีวิวเชิงลึก<br>
-      แผนเดินทางสุดเอกซ์คลูซีฟ และสิทธิพิเศษที่หาไม่ได้จากที่ไหน
+      ปลดล็อคปลายทางสุดพิเศษกว่า 500+ สถานที่ทั่วโลก<br>
+      Hidden Gems · Luxury Resorts · Secret Islands ที่หาไม่ได้จากที่ไหน
     </p>
     <div class="hero-stats">
+      <div class="stat-box" data-aos="zoom-in-up" data-aos-delay="100">
+        <div class="stat-num">500+</div>
+        <div class="stat-lbl">สถานที่ VIP</div>
+      </div>
+      <div class="stat-box" data-aos="zoom-in-up" data-aos-delay="180">
+        <div class="stat-num">48</div>
+        <div class="stat-lbl">ประเทศ</div>
+      </div>
+      <div class="stat-box" data-aos="zoom-in-up" data-aos-delay="260">
+        <div class="stat-num">120K+</div>
+        <div class="stat-lbl">สมาชิก</div>
+      </div>
+      <div class="stat-box" data-aos="zoom-in-up" data-aos-delay="340">
+        <div class="stat-num">4.9</div>
+        <div class="stat-lbl">คะแนนรีวิว</div>
+      </div>
     </div>
     <div class="hero-cta">
-      <button class="btn-prime" onclick="openModal()">
+      <button class="btn-primary" onclick="openModal()">
         <i class="fa-solid fa-crown"></i> สมัครสมาชิก VIP
       </button>
-      <a href="#plans" class="btn-outline">
+      <a href="#plans" class="btn-ghost">
         ดูแพ็กเกจ <i class="fa-solid fa-arrow-down"></i>
       </a>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      PLANS
-══════════════════════════ -->
+══════════════════════ -->
 <section id="plans" class="section">
-  <div class="section-inner">
-    <div class="section-head reveal">
-      <div class="eyebrow">เลือกแพ็กเกจของคุณ</div>
-      <h2 class="section-title">Membership Plans</h2>
-      <p class="section-sub">เริ่มต้นฟรี ไม่ต้องสมัคร · อัปเกรดได้ตลอดเวลา · ยกเลิกได้ทุกเมื่อ</p>
+  <div class="wrap">
+    <div class="sec-head" data-aos="zoom-in-up">
+      <div class="sec-tag">เลือกแพ็กเกจของคุณ</div>
+      <h2 class="sec-title">Membership Plans</h2>
+      <p class="sec-sub">เริ่มต้นฟรี ไม่ต้องสมัคร · อัปเกรดได้ตลอดเวลา · ยกเลิกได้ทุกเมื่อ</p>
     </div>
-    <div class="plans-grid">
+    <div class="plans-row">
 
       <!-- FREE -->
-      <div class="plan-card plan-free reveal reveal-d1">
+      <div class="plan" data-aos="zoom-in-up" data-aos-delay="0">
         <div class="plan-body">
-          <div class="plan-tier-row">
-            <div class="plan-icon pi-free"><i class="fa-solid fa-earth-asia"></i></div>
+          <div class="plan-icon-row">
+            <div class="plan-ico ico-free"><i class="fa-solid fa-earth-asia"></i></div>
             <div class="plan-tier">Explorer · ฟรี</div>
           </div>
           <div class="plan-price-row">
-            <span class="plan-price" style="color:#fff;">ฟรี</span>
+            <span class="plan-price plan-price-free">ฟรี</span>
           </div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:22px;">ตลอดชีพ · ไม่ต้องสมัคร</div>
+          <div style="font-size:12px;color:var(--white25);margin-bottom:20px;">ตลอดชีพ · ไม่ต้องสมัคร</div>
           <div class="plan-desc">เริ่มต้นสำรวจปลายทางพื้นฐานได้ฟรี ไม่ต้องใส่บัตรเครดิต</div>
-          <ul class="plan-perks">
-            <li class="perk"><div class="perk-ic ok-free"><i class="fa-solid fa-check"></i></div>สำรวจปลายทางได้ 3 แห่งฟรี</li>
-            <li class="perk"><div class="perk-ic ok-free"><i class="fa-solid fa-check"></i></div>รูปภาพ HD ทุกสถานที่</li>
-            <li class="perk"><div class="perk-ic ok-free"><i class="fa-solid fa-check"></i></div>รีวิวจากนักท่องเที่ยว</li>
-            <li class="perk off"><div class="perk-ic ok-free"><i class="fa-solid fa-lock"></i></div>ปลายทาง VIP พิเศษ</li>
-            <li class="perk off"><div class="perk-ic ok-free"><i class="fa-solid fa-lock"></i></div>แผนเดินทางเชิงลึก</li>
-            <li class="perk off"><div class="perk-ic ok-free"><i class="fa-solid fa-lock"></i></div>ส่วนลดโรงแรม</li>
+          <ul class="plan-list">
+            <li class="pl-item"><div class="pl-check chk-free"><i class="fa-solid fa-check"></i></div>สำรวจปลายทางได้ 3 แห่งฟรี</li>
+            <li class="pl-item"><div class="pl-check chk-free"><i class="fa-solid fa-check"></i></div>รูปภาพ HD ทุกสถานที่</li>
+            <li class="pl-item"><div class="pl-check chk-free"><i class="fa-solid fa-check"></i></div>รีวิวจากนักท่องเที่ยว</li>
+            <li class="pl-item dim"><div class="pl-check chk-free"><i class="fa-solid fa-lock"></i></div>ปลายทาง VIP พิเศษ</li>
+            <li class="pl-item dim"><div class="pl-check chk-free"><i class="fa-solid fa-lock"></i></div>แผนเดินทางเชิงลึก</li>
+            <li class="pl-item dim"><div class="pl-check chk-free"><i class="fa-solid fa-lock"></i></div>ส่วนลดโรงแรม</li>
           </ul>
-          <button class="plan-cta cta-free" onclick="handleFreeSignup()">
+          <button class="plan-btn pbtn-free" onclick="handleFreeSignup()">
             <i class="fa-regular fa-circle-play"></i> เริ่มใช้งานฟรี
           </button>
         </div>
       </div>
 
-      <!-- GOLD VIP (featured) -->
-      <div class="plan-card plan-featured plan-gold reveal reveal-d2">
-        <div class="plan-badge"><i class="fa-solid fa-fire"></i> ยอดนิยมที่สุด</div>
-        <div class="plan-body plan-body-pt">
-          <div class="plan-tier-row">
-            <div class="plan-icon pi-gold"><i class="fa-solid fa-crown"></i></div>
+      <!-- GOLD VIP -->
+      <div class="plan plan-hot" data-aos="zoom-in-up" data-aos-delay="120">
+        <div class="plan-ribbon"><i class="fa-solid fa-fire"></i> ยอดนิยมที่สุด</div>
+        <div class="plan-body plan-body-push">
+          <div class="plan-icon-row">
+            <div class="plan-ico ico-gold"><i class="fa-solid fa-crown"></i></div>
             <div class="plan-tier">Gold VIP</div>
           </div>
           <div class="plan-price-row">
-            <span class="plan-currency">฿</span>
-            <span class="plan-price gold-text">399</span>
+            <span class="plan-unit">฿</span>
+            <span class="plan-price plan-price-gold">199</span>
             <span class="plan-period">/ เดือน</span>
           </div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:22px;">หรือ 3,490฿/ปี (ประหยัด 1,298฿)</div>
+          <div class="plan-save"><i class="fa-solid fa-tag"></i> ราคาพิเศษ เดิม 399฿ ประหยัด 50%</div>
           <div class="plan-desc">สำหรับนักเดินทางที่ต้องการประสบการณ์ที่ดีที่สุด</div>
-          <ul class="plan-perks">
-            <li class="perk"><div class="perk-ic ok-gold"><i class="fa-solid fa-check"></i></div>ปลายทาง VIP ไม่จำกัด 200+ แห่ง</li>
-            <li class="perk"><div class="perk-ic ok-gold"><i class="fa-solid fa-check"></i></div>แผนเดินทางเชิงลึกครบครัน</li>
-            <li class="perk"><div class="perk-ic ok-gold"><i class="fa-solid fa-check"></i></div>ส่วนลดโรงแรมสูงสุด 35%</li>
-            <li class="perk"><div class="perk-ic ok-gold"><i class="fa-solid fa-check"></i></div>Flight Price Alerts แบบ Real-time</li>
-            <li class="perk"><div class="perk-ic ok-gold"><i class="fa-solid fa-check"></i></div>Chat Travel Expert 24/7</li>
-            <li class="perk off"><div class="perk-ic ok-gold"><i class="fa-solid fa-lock"></i></div>Secret Destinations</li>
+          <ul class="plan-list">
+            <li class="pl-item"><div class="pl-check chk-gold"><i class="fa-solid fa-check"></i></div>ปลายทาง VIP ไม่จำกัด 200+ แห่ง</li>
+            <li class="pl-item"><div class="pl-check chk-gold"><i class="fa-solid fa-check"></i></div>แผนเดินทางเชิงลึกครบครัน</li>
+            <li class="pl-item"><div class="pl-check chk-gold"><i class="fa-solid fa-check"></i></div>ส่วนลดโรงแรมสูงสุด 35%</li>
+            <li class="pl-item"><div class="pl-check chk-gold"><i class="fa-solid fa-check"></i></div>Flight Price Alerts Real-time</li>
+            <li class="pl-item"><div class="pl-check chk-gold"><i class="fa-solid fa-check"></i></div>Chat Travel Expert 24/7</li>
+            <li class="pl-item dim"><div class="pl-check chk-gold"><i class="fa-solid fa-lock"></i></div>Secret Destinations</li>
           </ul>
-          <button class="plan-cta cta-gold" onclick="handlePaidSignup('gold')">
+          <button class="plan-btn pbtn-gold" onclick="handlePaidSignup('gold')">
             <i class="fa-solid fa-crown"></i> สมัคร Gold VIP
           </button>
         </div>
       </div>
 
       <!-- DIAMOND VIP -->
-      <div class="plan-card plan-diamond reveal reveal-d3">
+      <div class="plan" data-aos="zoom-in-up" data-aos-delay="240">
         <div class="plan-body">
-          <div class="plan-tier-row">
-            <div class="plan-icon pi-diamond"><i class="fa-solid fa-gem"></i></div>
+          <div class="plan-icon-row">
+            <div class="plan-ico ico-diamond"><i class="fa-solid fa-gem"></i></div>
             <div class="plan-tier">Diamond VIP</div>
           </div>
           <div class="plan-price-row">
-            <span class="plan-currency" style="color:#78b4ff">฿</span>
-            <span class="plan-price" style="color:#78b4ff">699</span>
+            <span class="plan-unit" style="color:#78b4ff">฿</span>
+            <span class="plan-price plan-price-dia">399</span>
             <span class="plan-period">/ เดือน</span>
           </div>
-          <div style="font-size:12px;color:var(--muted);margin-bottom:22px;">หรือ 5,990฿/ปี (ประหยัด 2,398฿)</div>
+          <div class="plan-save" style="color:#78b4ff"><i class="fa-solid fa-tag"></i> ราคาพิเศษ เดิม 699฿ ประหยัด 43%</div>
           <div class="plan-desc">สิทธิพิเศษระดับสูงสุด ไม่มีขีดจำกัดใดๆ</div>
-          <ul class="plan-perks">
-            <li class="perk"><div class="perk-ic ok-diamond"><i class="fa-solid fa-check"></i></div>ปลายทาง VIP ทั้งหมด 500+ แห่ง</li>
-            <li class="perk"><div class="perk-ic ok-diamond"><i class="fa-solid fa-check"></i></div>Secret Destinations เฉพาะสมาชิก</li>
-            <li class="perk"><div class="perk-ic ok-diamond"><i class="fa-solid fa-check"></i></div>Personal Concierge Service ส่วนตัว</li>
-            <li class="perk"><div class="perk-ic ok-diamond"><i class="fa-solid fa-check"></i></div>ส่วนลดโรงแรม 5 ดาวสูงสุด 55%</li>
-            <li class="perk"><div class="perk-ic ok-diamond"><i class="fa-solid fa-check"></i></div>VIP Events Access ทั่วโลก</li>
-            <li class="perk"><div class="perk-ic ok-diamond"><i class="fa-solid fa-check"></i></div>ของขวัญต้อนรับมูลค่า 1,500฿</li>
+          <ul class="plan-list">
+            <li class="pl-item"><div class="pl-check chk-diamond"><i class="fa-solid fa-check"></i></div>ปลายทาง VIP ทั้งหมด 500+ แห่ง</li>
+            <li class="pl-item"><div class="pl-check chk-diamond"><i class="fa-solid fa-check"></i></div>Secret Destinations เฉพาะสมาชิก</li>
+            <li class="pl-item"><div class="pl-check chk-diamond"><i class="fa-solid fa-check"></i></div>Personal Concierge ส่วนตัว</li>
+            <li class="pl-item"><div class="pl-check chk-diamond"><i class="fa-solid fa-check"></i></div>ส่วนลดโรงแรม 5 ดาวสูงสุด 55%</li>
+            <li class="pl-item"><div class="pl-check chk-diamond"><i class="fa-solid fa-check"></i></div>VIP Events Access ทั่วโลก</li>
+            <li class="pl-item"><div class="pl-check chk-diamond"><i class="fa-solid fa-check"></i></div>ของขวัญต้อนรับมูลค่า 1,500฿</li>
           </ul>
-          <button class="plan-cta cta-diamond" onclick="handlePaidSignup('diamond')">
+          <button class="plan-btn pbtn-diamond" onclick="handlePaidSignup('diamond')">
             <i class="fa-solid fa-gem"></i> สมัคร Diamond VIP
           </button>
         </div>
       </div>
 
     </div>
-    <div class="plans-note reveal">
+    <div class="plans-footnote" data-aos="zoom-in-up" data-aos-delay="100">
       ต้องการแพ็กเกจองค์กร 10+ คน?
       <a href="#footer">ติดต่อทีม Corporate Sales <i class="fa-solid fa-arrow-right"></i></a>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      DESTINATIONS
-══════════════════════════ -->
+══════════════════════ -->
 <section id="destinations" class="section" style="padding-top:0">
-  <div class="section-inner">
-    <div class="section-head reveal">
-      <div class="eyebrow">เฉพาะสมาชิก VIP เท่านั้น</div>
-      <h2 class="section-title">Exclusive Destinations</h2>
+  <div class="wrap">
+    <div class="sec-head" data-aos="zoom-in-up">
+      <div class="sec-tag">เฉพาะสมาชิก VIP เท่านั้น</div>
+      <h2 class="sec-title">Exclusive Destinations</h2>
     </div>
 
-    <!-- Freemium bar (free users) -->
-    <div class="freemium-bar reveal" id="fbBar">
-      <div class="fb-label"><i class="fa-solid fa-eye"></i> สิทธิ์สำรวจฟรี</div>
-      <div class="fb-track"><div class="fb-fill" id="fbFill" style="width:100%"></div></div>
-      <div class="fb-count" id="fbCount">เหลือ 3 / 3 แห่ง</div>
-      <button class="fb-upgrade-btn" onclick="openPaywall()"><i class="fa-solid fa-unlock"></i> อัปเกรด 399฿</button>
+    <div class="status-bar" id="sbBar" data-aos="zoom-in-up">
+      <div class="sb-label"><i class="fa-solid fa-eye"></i> สิทธิ์สำรวจฟรี</div>
+      <div class="sb-track"><div class="sb-fill" id="sbFill" style="width:100%"></div></div>
+      <div class="sb-count" id="sbCount">เหลือ 3 / 3 แห่ง</div>
+      <button class="sb-upbtn" onclick="openPaywall()"><i class="fa-solid fa-unlock"></i> อัปเกรด 199฿</button>
     </div>
-    <!-- VIP pill (paid users) -->
-    <div class="fb-vip-pill" id="fbVip" style="max-width:1140px;margin:0 auto 44px">
+    <div class="vip-strip" id="vipStrip" style="max-width:1140px;margin:0 auto 44px">
       <i class="fa-solid fa-crown"></i>
       <span>คุณเป็นสมาชิก VIP — เข้าถึงปลายทางทุกแห่งได้ไม่จำกัด</span>
     </div>
 
-    <!-- Unlock banner -->
-    <div class="unlock-strip reveal" id="unlockStrip">
-      <div class="us-icon"><i class="fa-solid fa-key"></i></div>
-      <div class="us-text">
-        <div class="us-title">ปลดล็อคปลายทางสุดเอกซ์คลูซีฟ 200+ แห่ง</div>
-        <div class="us-sub">Secret Islands · Hidden Gems · Luxury Resorts · Off-the-beaten-path ที่หาไม่ได้จากที่ไหน</div>
+    <div class="unlock-banner" id="unlockBanner" data-aos="zoom-in-up">
+      <div class="ub-icon"><i class="fa-solid fa-key"></i></div>
+      <div class="ub-text">
+        <div class="ub-title">ปลดล็อคปลายทางสุดเอกซ์คลูซีฟ 200+ แห่ง</div>
+        <div class="ub-sub">Secret Islands · Hidden Gems · Luxury Resorts · Off-the-beaten-path ที่หาไม่ได้จากที่ไหน</div>
       </div>
-      <button class="btn-prime" onclick="openPaywall()" style="padding:12px 26px;font-size:11px;">
+      <button class="btn-primary" onclick="openPaywall()" style="padding:12px 26px;font-size:10px;letter-spacing:2px;">
         <i class="fa-solid fa-crown"></i> สมัครเลย
       </button>
     </div>
 
-    <!-- Grid -->
-    <div class="dest-grid" id="destGrid">
+    <div class="dest-grid">
 
-      <!-- Open cards -->
-      <div class="dest-card open reveal">
-        <div class="dest-img" style="background-image:url('https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=600&q=80')"></div>
-        <div class="dest-overlay"></div>
-        <div class="dest-tier tier-g">VIP</div>
-        <div class="dest-lock-ic"><i class="fa-solid fa-check"></i></div>
-        <div class="dest-info">
-          <div class="dest-region">Maldives · Asia</div>
-          <div class="dest-name">Secret Islands</div>
-          <div class="dest-meta"><i class="fa-solid fa-location-dot"></i> 32 สถานที่</div>
+      <div class="dest-card d-open" data-aos="zoom-in-up">
+        <div class="di" style="background-image:url('https://images.unsplash.com/photo-1573843981267-be1999ff37cd?w=600&q=80')"></div>
+        <div class="d-overlay"></div>
+        <div class="d-tier t-vip">VIP</div>
+        <div class="d-lock-dot"><i class="fa-solid fa-check"></i></div>
+        <div class="d-info">
+          <div class="d-region">Maldives · Asia</div>
+          <div class="d-name">Secret Islands</div>
+          <div class="d-meta"><i class="fa-solid fa-location-dot"></i> 32 สถานที่</div>
         </div>
       </div>
 
-      <div class="dest-card open reveal reveal-d1">
-        <div class="dest-img" style="background-image:url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&q=80')"></div>
-        <div class="dest-overlay"></div>
-        <div class="dest-tier tier-g">VIP</div>
-        <div class="dest-lock-ic"><i class="fa-solid fa-check"></i></div>
-        <div class="dest-info">
-          <div class="dest-region">Europe · Luxury</div>
-          <div class="dest-name">Luxury Resorts</div>
-          <div class="dest-meta"><i class="fa-solid fa-location-dot"></i> 58 สถานที่</div>
+      <div class="dest-card d-open" data-aos="zoom-in-up" data-aos-delay="60">
+        <div class="di" style="background-image:url('https://images.unsplash.com/photo-1571896349842-33c89424de2d?w=600&q=80')"></div>
+        <div class="d-overlay"></div>
+        <div class="d-tier t-vip">VIP</div>
+        <div class="d-lock-dot"><i class="fa-solid fa-check"></i></div>
+        <div class="d-info">
+          <div class="d-region">Europe · Luxury</div>
+          <div class="d-name">Luxury Resorts</div>
+          <div class="d-meta"><i class="fa-solid fa-location-dot"></i> 58 สถานที่</div>
         </div>
       </div>
 
-      <div class="dest-card open reveal reveal-d2">
-        <div class="dest-img" style="background-image:url('https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?w=600&q=80')"></div>
-        <div class="dest-overlay"></div>
-        <div class="dest-tier tier-g">VIP</div>
-        <div class="dest-lock-ic"><i class="fa-solid fa-check"></i></div>
-        <div class="dest-info">
-          <div class="dest-region">Global · Hidden</div>
-          <div class="dest-name">Hidden Gems</div>
-          <div class="dest-meta"><i class="fa-solid fa-location-dot"></i> 76 สถานที่</div>
+      <div class="dest-card d-open" data-aos="zoom-in-up" data-aos-delay="120">
+        <div class="di" style="background-image:url('https://images.unsplash.com/photo-1506197603052-3cc9c3a201bd?w=600&q=80')"></div>
+        <div class="d-overlay"></div>
+        <div class="d-tier t-vip">VIP</div>
+        <div class="d-lock-dot"><i class="fa-solid fa-check"></i></div>
+        <div class="d-info">
+          <div class="d-region">Global · Hidden</div>
+          <div class="d-name">Hidden Gems</div>
+          <div class="d-meta"><i class="fa-solid fa-location-dot"></i> 76 สถานที่</div>
         </div>
       </div>
 
-      <!-- Locked cards -->
-      <div class="dest-card locked-d reveal reveal-d3" onclick="handleLockedClick()">
-        <div class="dest-img" style="background-image:url('https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80')"></div>
-        <div class="dest-overlay"></div>
-        <div class="dest-tier tier-d">DIAMOND</div>
-        <div class="dest-lock-ic"><i class="fa-solid fa-gem"></i></div>
-        <div class="dest-lock-overlay">
+      <div class="dest-card d-locked" onclick="handleLockedClick()" data-aos="zoom-in-up" data-aos-delay="60">
+        <div class="di" style="background-image:url('https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=600&q=80')"></div>
+        <div class="d-overlay"></div>
+        <div class="d-tier t-dia">DIAMOND</div>
+        <div class="d-lock-dot"><i class="fa-solid fa-gem"></i></div>
+        <div class="d-lock-overlay">
           <div class="lock-chip"><i class="fa-solid fa-unlock"></i> อัปเกรด Diamond</div>
         </div>
-        <div class="dest-info">
-          <div class="dest-region">Arctic · Extreme</div>
-          <div class="dest-name">Northern Lights</div>
-          <div class="dest-meta"><i class="fa-solid fa-route"></i> 14 เส้นทาง</div>
+        <div class="d-info">
+          <div class="d-region">Arctic · Extreme</div>
+          <div class="d-name">Northern Lights</div>
+          <div class="d-meta"><i class="fa-solid fa-route"></i> 14 เส้นทาง</div>
         </div>
       </div>
 
-      <div class="dest-card locked-d reveal" onclick="handleLockedClick()">
-        <div class="dest-img" style="background-image:url('https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=600&q=80')"></div>
-        <div class="dest-overlay"></div>
-        <div class="dest-tier tier-g">VIP</div>
-        <div class="dest-lock-ic"><i class="fa-solid fa-lock"></i></div>
-        <div class="dest-lock-overlay">
+      <div class="dest-card d-locked" onclick="handleLockedClick()" data-aos="zoom-in-up" data-aos-delay="120">
+        <div class="di" style="background-image:url('https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=600&q=80')"></div>
+        <div class="d-overlay"></div>
+        <div class="d-tier t-vip">VIP</div>
+        <div class="d-lock-dot"><i class="fa-solid fa-lock"></i></div>
+        <div class="d-lock-overlay">
           <div class="lock-chip"><i class="fa-solid fa-unlock"></i> ปลดล็อค</div>
         </div>
-        <div class="dest-info">
-          <div class="dest-region">Southeast Asia</div>
-          <div class="dest-name">Private Villas</div>
-          <div class="dest-meta"><i class="fa-solid fa-location-dot"></i> 44 วิลล่า</div>
+        <div class="d-info">
+          <div class="d-region">Southeast Asia</div>
+          <div class="d-name">Private Villas</div>
+          <div class="d-meta"><i class="fa-solid fa-location-dot"></i> 44 วิลล่า</div>
         </div>
       </div>
 
-      <div class="dest-card locked-d reveal reveal-d1" onclick="handleLockedClick()">
-        <div class="dest-img" style="background-image:url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&q=80')"></div>
-        <div class="dest-overlay"></div>
-        <div class="dest-tier tier-g">VIP</div>
-        <div class="dest-lock-ic"><i class="fa-solid fa-lock"></i></div>
-        <div class="dest-lock-overlay">
+      <div class="dest-card d-locked" onclick="handleLockedClick()" data-aos="zoom-in-up" data-aos-delay="180">
+        <div class="di" style="background-image:url('https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=600&q=80')"></div>
+        <div class="d-overlay"></div>
+        <div class="d-tier t-vip">VIP</div>
+        <div class="d-lock-dot"><i class="fa-solid fa-lock"></i></div>
+        <div class="d-lock-overlay">
           <div class="lock-chip"><i class="fa-solid fa-unlock"></i> ปลดล็อค</div>
         </div>
-        <div class="dest-info">
-          <div class="dest-region">Pacific · Ocean</div>
-          <div class="dest-name">Underwater Wonders</div>
-          <div class="dest-meta"><i class="fa-solid fa-water"></i> 38 จุดดำน้ำ</div>
+        <div class="d-info">
+          <div class="d-region">Pacific · Ocean</div>
+          <div class="d-name">Underwater Wonders</div>
+          <div class="d-meta"><i class="fa-solid fa-water"></i> 38 จุดดำน้ำ</div>
         </div>
       </div>
 
-      <div class="dest-card locked-d reveal reveal-d2" onclick="handleLockedClick()">
-        <div class="dest-img" style="background-image:url('https://images.unsplash.com/photo-1598887141928-2bc6e9d20b3e?w=600&q=80')"></div>
-        <div class="dest-overlay"></div>
-        <div class="dest-tier tier-g">VIP</div>
-        <div class="dest-lock-ic"><i class="fa-solid fa-lock"></i></div>
-        <div class="dest-lock-overlay">
+      <div class="dest-card d-locked" onclick="handleLockedClick()" data-aos="zoom-in-up" data-aos-delay="60">
+        <div class="di" style="background-image:url('https://images.unsplash.com/photo-1598887141928-2bc6e9d20b3e?w=600&q=80')"></div>
+        <div class="d-overlay"></div>
+        <div class="d-tier t-vip">VIP</div>
+        <div class="d-lock-dot"><i class="fa-solid fa-lock"></i></div>
+        <div class="d-lock-overlay">
           <div class="lock-chip"><i class="fa-solid fa-unlock"></i> ปลดล็อค</div>
         </div>
-        <div class="dest-info">
-          <div class="dest-region">Global · Culture</div>
-          <div class="dest-name">Food &amp; Wine Journeys</div>
-          <div class="dest-meta"><i class="fa-solid fa-route"></i> 65 เส้นทาง</div>
+        <div class="d-info">
+          <div class="d-region">Global · Culture</div>
+          <div class="d-name">Food and Wine Journeys</div>
+          <div class="d-meta"><i class="fa-solid fa-route"></i> 65 เส้นทาง</div>
         </div>
       </div>
 
-      <div class="dest-card locked-d reveal reveal-d3" onclick="handleLockedClick()">
-        <div class="dest-img" style="background-image:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80')"></div>
-        <div class="dest-overlay"></div>
-        <div class="dest-tier tier-d">DIAMOND</div>
-        <div class="dest-lock-ic"><i class="fa-solid fa-gem"></i></div>
-        <div class="dest-lock-overlay">
+      <div class="dest-card d-locked" onclick="handleLockedClick()" data-aos="zoom-in-up" data-aos-delay="120">
+        <div class="di" style="background-image:url('https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&q=80')"></div>
+        <div class="d-overlay"></div>
+        <div class="d-tier t-dia">DIAMOND</div>
+        <div class="d-lock-dot"><i class="fa-solid fa-gem"></i></div>
+        <div class="d-lock-overlay">
           <div class="lock-chip"><i class="fa-solid fa-unlock"></i> อัปเกรด Diamond</div>
         </div>
-        <div class="dest-info">
-          <div class="dest-region">Alps · Patagonia</div>
-          <div class="dest-name">Adventure Expeditions</div>
-          <div class="dest-meta"><i class="fa-solid fa-route"></i> 22 การผจญภัย</div>
+        <div class="d-info">
+          <div class="d-region">Alps · Patagonia</div>
+          <div class="d-name">Adventure Expeditions</div>
+          <div class="d-meta"><i class="fa-solid fa-route"></i> 22 การผจญภัย</div>
         </div>
       </div>
 
@@ -1331,71 +1390,69 @@ body::before {
   </div>
 </section>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      FEATURES
-══════════════════════════ -->
+══════════════════════ -->
 <section id="features" class="section">
-  <div class="section-inner">
-    <div class="section-head reveal">
-      <div class="eyebrow">ทำไมต้อง Globe Express VIP</div>
-      <h2 class="section-title">สิทธิประโยชน์</h2>
+  <div class="wrap">
+    <div class="sec-head" data-aos="zoom-in-up">
+      <div class="sec-tag">ทำไมต้อง Globe Express VIP</div>
+      <h2 class="sec-title">สิทธิประโยชน์</h2>
     </div>
     <div class="feat-grid">
-      <div class="feat-card reveal">
-        <div class="feat-ico"><i class="fa-solid fa-map-location-dot"></i></div>
-        <div class="feat-name">Interactive Travel Maps</div>
+      <div class="feat-card" data-aos="zoom-in-up">
+        <div class="feat-ico-box"><i class="fa-solid fa-map-location-dot"></i></div>
+        <div class="feat-title">Interactive Travel Maps</div>
         <div class="feat-text">แผนที่โต้ตอบพร้อม Pinpoints ปลายทาง 500+ แห่ง ดูเส้นทาง วางแผนทริปได้ในคลิกเดียว</div>
-        <span class="feat-tag">ทุกแพ็กเกจ VIP</span>
+        <span class="feat-badge">ทุกแพ็กเกจ VIP</span>
       </div>
-      <div class="feat-card reveal reveal-d1">
-        <div class="feat-ico"><i class="fa-solid fa-plane-departure"></i></div>
-        <div class="feat-name">Flight Price Alerts</div>
+      <div class="feat-card" data-aos="zoom-in-up" data-aos-delay="80">
+        <div class="feat-ico-box"><i class="fa-solid fa-plane-departure"></i></div>
+        <div class="feat-title">Flight Price Alerts</div>
         <div class="feat-text">แจ้งเตือนราคาตั๋วเครื่องบินถูกสุด เปรียบเทียบทุกสายการบิน รับแจ้งเตือนทันทีที่ราคาลด</div>
-        <span class="feat-tag">Gold &amp; Diamond</span>
+        <span class="feat-badge">Gold &amp; Diamond</span>
       </div>
-      <div class="feat-card reveal reveal-d2">
-        <div class="feat-ico"><i class="fa-solid fa-user-tie"></i></div>
-        <div class="feat-name">Personal Concierge</div>
+      <div class="feat-card" data-aos="zoom-in-up" data-aos-delay="160">
+        <div class="feat-ico-box"><i class="fa-solid fa-user-tie"></i></div>
+        <div class="feat-title">Personal Concierge</div>
         <div class="feat-text">ที่ปรึกษาการท่องเที่ยวส่วนตัว ตอบคำถาม วางแผนทริป และแนะนำเส้นทางพิเศษเฉพาะคุณ</div>
-        <span class="feat-tag">Diamond Only</span>
+        <span class="feat-badge">Diamond Only</span>
       </div>
-      <div class="feat-card reveal reveal-d1">
-        <div class="feat-ico"><i class="fa-solid fa-hotel"></i></div>
-        <div class="feat-name">Hotel Deal Access</div>
+      <div class="feat-card" data-aos="zoom-in-up" data-aos-delay="80">
+        <div class="feat-ico-box"><i class="fa-solid fa-hotel"></i></div>
+        <div class="feat-title">Hotel Deal Access</div>
         <div class="feat-text">ส่วนลดโรงแรมพาร์ทเนอร์กว่า 3,000 แห่ง อัปเกรดห้องฟรี Early Check-in / Late Check-out</div>
-        <span class="feat-tag">สูงสุด 55% ออฟ</span>
+        <span class="feat-badge">สูงสุด 55% ออฟ</span>
       </div>
-      <div class="feat-card reveal reveal-d2">
-        <div class="feat-ico"><i class="fa-solid fa-mobile-screen"></i></div>
-        <div class="feat-name">Offline Travel Guide</div>
+      <div class="feat-card" data-aos="zoom-in-up" data-aos-delay="160">
+        <div class="feat-ico-box"><i class="fa-solid fa-mobile-screen"></i></div>
+        <div class="feat-title">Offline Travel Guide</div>
         <div class="feat-text">ดาวน์โหลดคู่มือท่องเที่ยวแบบ Offline ใช้งานได้โดยไม่ต้องมีอินเทอร์เน็ต สะดวกทุกที่</div>
-        <span class="feat-tag">Gold &amp; Diamond</span>
+        <span class="feat-badge">Gold &amp; Diamond</span>
       </div>
-      <div class="feat-card reveal reveal-d3">
-        <div class="feat-ico"><i class="fa-solid fa-ticket"></i></div>
-        <div class="feat-name">VIP Events Access</div>
+      <div class="feat-card" data-aos="zoom-in-up" data-aos-delay="240">
+        <div class="feat-ico-box"><i class="fa-solid fa-ticket"></i></div>
+        <div class="feat-title">VIP Events Access</div>
         <div class="feat-text">สิทธิ์เข้าร่วม Travel Meetup, Exclusive Tours และกิจกรรมพิเศษที่จัดขึ้นทั่วโลกทุกปี</div>
-        <span class="feat-tag">Diamond Exclusive</span>
+        <span class="feat-badge">Diamond Exclusive</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      TESTIMONIALS
-══════════════════════════ -->
+══════════════════════ -->
 <section id="testimonials" class="section">
-  <div class="section-inner">
-    <div class="section-head reveal">
-      <div class="eyebrow">สมาชิกพูดถึงเรา</div>
-      <h2 class="section-title">รีวิวจากสมาชิก</h2>
+  <div class="wrap">
+    <div class="sec-head" data-aos="zoom-in-up">
+      <div class="sec-tag">สมาชิกพูดถึงเรา</div>
+      <h2 class="sec-title">รีวิวจากสมาชิก</h2>
     </div>
     <div class="testi-grid">
-      <div class="testi-card reveal">
-        <div class="testi-stars">
-          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-        </div>
-        <div class="testi-quote-ic"><i class="fa-solid fa-quote-left"></i></div>
+      <div class="testi-card" data-aos="zoom-in-up">
+        <div class="testi-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+        <div class="testi-q"><i class="fa-solid fa-quote-left"></i></div>
         <div class="testi-body">สมัคร Gold VIP แล้วไม่ผิดหวังเลย ได้ไปสถานที่ที่หากูเกิ้ลไม่เจอเลย ทีมงานแนะนำ Hidden Beach ที่ Palawan ที่นักท่องเที่ยวทั่วไปยังไม่รู้จัก ประทับใจมากๆ</div>
         <div class="testi-foot">
           <div class="testi-av" style="background-image:url('https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80')"></div>
@@ -1405,11 +1462,9 @@ body::before {
           </div>
         </div>
       </div>
-      <div class="testi-card reveal reveal-d1">
-        <div class="testi-stars">
-          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-        </div>
-        <div class="testi-quote-ic"><i class="fa-solid fa-quote-left"></i></div>
+      <div class="testi-card" data-aos="zoom-in-up" data-aos-delay="100">
+        <div class="testi-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+        <div class="testi-q"><i class="fa-solid fa-quote-left"></i></div>
         <div class="testi-body">Diamond VIP คุ้มค่ามากครับ Concierge ช่วยจองทุกอย่างให้ตั้งแต่ตั๋วจนถึงโรงแรม เที่ยว Iceland ได้ Northern Lights ด้วยความช่วยเหลือจากทีมงาน สุดยอด</div>
         <div class="testi-foot">
           <div class="testi-av" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80')"></div>
@@ -1419,12 +1474,10 @@ body::before {
           </div>
         </div>
       </div>
-      <div class="testi-card reveal reveal-d2">
-        <div class="testi-stars">
-          <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
-        </div>
-        <div class="testi-quote-ic"><i class="fa-solid fa-quote-left"></i></div>
-        <div class="testi-body">ชอบฟีเจอร์ Flight Alert มากเลยค่ะ ซื้อตั๋ว Tokyo ได้ราคาถูกกว่าปกติเกือบ 40% เพราะระบบแจ้งเตือนทันทีที่ราคาลด ประหยัดไปได้เยอะมาก คุ้มค่ามาก</div>
+      <div class="testi-card" data-aos="zoom-in-up" data-aos-delay="200">
+        <div class="testi-stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+        <div class="testi-q"><i class="fa-solid fa-quote-left"></i></div>
+        <div class="testi-body">ชอบฟีเจอร์ Flight Alert มากเลยค่ะ ซื้อตั๋ว Tokyo ได้ราคาถูกกว่าปกติเกือบ 40% เพราะระบบแจ้งเตือนทันทีที่ราคาลด ประหยัดไปได้เยอะมาก คุ้มค่า</div>
         <div class="testi-foot">
           <div class="testi-av" style="background-image:url('https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80')"></div>
           <div>
@@ -1437,497 +1490,428 @@ body::before {
   </div>
 </section>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      FAQ
-══════════════════════════ -->
+══════════════════════ -->
 <section id="faq" class="section">
-  <div class="section-inner">
-    <div class="section-head reveal">
-      <div class="eyebrow">คำถามที่พบบ่อย</div>
-      <h2 class="section-title">FAQ</h2>
+  <div class="wrap">
+    <div class="sec-head" data-aos="zoom-in-up">
+      <div class="sec-tag">คำถามที่พบบ่อย</div>
+      <h2 class="sec-title">FAQ</h2>
     </div>
-    <div class="faq-list">
-      <div class="faq-item open reveal">
-        <div class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-qt">ผู้ใช้ฟรีดูสถานที่ได้กี่แห่ง?</span>
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-ans">ผู้ใช้ฟรีสามารถสำรวจปลายทางได้ 3 สถานที่โดยไม่ต้องสมัครบัญชี สถานที่ที่เหลือจะถูกล็อคไว้ หากต้องการเข้าถึงทั้งหมดต้องอัปเกรดเป็น VIP ในราคา 399฿/เดือน</div>
+    <div class="faq-wrap">
+      <div class="faq-item on" data-aos="zoom-in-up">
+        <div class="faq-q" onclick="toggleFaq(this)"><span class="faq-qt">ผู้ใช้ฟรีดูสถานที่ได้กี่แห่ง?</span><div class="faq-ic"><i class="fa-solid fa-plus"></i></div></div>
+        <div class="faq-a">ผู้ใช้ฟรีสามารถสำรวจปลายทางได้ 3 สถานที่โดยไม่ต้องสมัครบัญชี สถานที่ที่เหลือจะถูกล็อคไว้ หากต้องการเข้าถึงทั้งหมดต้องอัปเกรดเป็น VIP ในราคา 199฿/เดือน</div>
       </div>
-      <div class="faq-item reveal">
-        <div class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-qt">สมัครสมาชิก VIP แล้วได้สิทธิ์ทันทีไหม?</span>
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-ans">ได้ทันทีเลยครับ หลังชำระเงินเสร็จ ระบบจะอัปเดตสถานะ VIP ของคุณภายใน 5 นาที และคุณจะสามารถเข้าถึงปลายทางพิเศษทั้งหมดได้ทันที</div>
+      <div class="faq-item" data-aos="zoom-in-up" data-aos-delay="60">
+        <div class="faq-q" onclick="toggleFaq(this)"><span class="faq-qt">สมัครสมาชิก VIP แล้วได้สิทธิ์ทันทีไหม?</span><div class="faq-ic"><i class="fa-solid fa-plus"></i></div></div>
+        <div class="faq-a">ได้ทันทีเลยครับ หลังชำระเงินเสร็จ ระบบจะอัปเดตสถานะ VIP ของคุณภายใน 5 นาที และคุณจะสามารถเข้าถึงปลายทางพิเศษทั้งหมดได้ทันที</div>
       </div>
-      <div class="faq-item reveal">
-        <div class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-qt">สามารถยกเลิกได้ตลอดเวลาไหม?</span>
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-ans">ได้เลย ไม่มีสัญญาผูกมัด คุณสามารถยกเลิกได้ตลอดเวลาผ่านหน้า Account Settings และสมาชิกภาพจะหมดสิ้นเมื่อครบรอบชำระเงินถัดไป</div>
+      <div class="faq-item" data-aos="zoom-in-up" data-aos-delay="100">
+        <div class="faq-q" onclick="toggleFaq(this)"><span class="faq-qt">สามารถยกเลิกได้ตลอดเวลาไหม?</span><div class="faq-ic"><i class="fa-solid fa-plus"></i></div></div>
+        <div class="faq-a">ได้เลย ไม่มีสัญญาผูกมัด คุณสามารถยกเลิกได้ตลอดเวลาผ่านหน้า Account Settings และสมาชิกภาพจะหมดสิ้นเมื่อครบรอบชำระเงินถัดไป</div>
       </div>
-      <div class="faq-item reveal">
-        <div class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-qt">ชำระเงินผ่านช่องทางไหนได้บ้าง?</span>
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-ans">รองรับทุกช่องทาง: บัตรเครดิต/เดบิต (Visa, Mastercard, Amex), PromptPay QR, TrueMoney Wallet, Rabbit LINE Pay และ Bank Transfer ทุกธนาคาร</div>
+      <div class="faq-item" data-aos="zoom-in-up" data-aos-delay="140">
+        <div class="faq-q" onclick="toggleFaq(this)"><span class="faq-qt">ชำระเงินผ่านช่องทางไหนได้บ้าง?</span><div class="faq-ic"><i class="fa-solid fa-plus"></i></div></div>
+        <div class="faq-a">รองรับทุกช่องทาง: บัตรเครดิต/เดบิต (Visa, Mastercard, Amex, JCB), PromptPay QR, TrueMoney Wallet, Rabbit LINE Pay และ Bank Transfer ทุกธนาคาร</div>
       </div>
-      <div class="faq-item reveal">
-        <div class="faq-q" onclick="toggleFaq(this)">
-          <span class="faq-qt">Gold VIP กับ Diamond VIP ต่างกันอย่างไร?</span>
-          <div class="faq-icon"><i class="fa-solid fa-plus"></i></div>
-        </div>
-        <div class="faq-ans">Gold VIP เข้าถึงปลายทาง 200+ แห่ง, แผนเดินทาง และส่วนลดโรงแรม 35% ส่วน Diamond VIP ได้ทุกอย่างของ Gold บวก Secret Destinations, Personal Concierge, ส่วนลดสูงสุด 55% และ VIP Events Access</div>
+      <div class="faq-item" data-aos="zoom-in-up" data-aos-delay="180">
+        <div class="faq-q" onclick="toggleFaq(this)"><span class="faq-qt">Gold VIP กับ Diamond VIP ต่างกันอย่างไร?</span><div class="faq-ic"><i class="fa-solid fa-plus"></i></div></div>
+        <div class="faq-a">Gold VIP 199฿ เข้าถึงปลายทาง 200+ แห่ง, แผนเดินทาง และส่วนลดโรงแรม 35% ส่วน Diamond VIP 399฿ ได้ทุกอย่างของ Gold บวก Secret Destinations, Personal Concierge, ส่วนลดสูงสุด 55% และ VIP Events Access</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════
+<!-- ══════════════════════
      FOOTER
-══════════════════════════ -->
+══════════════════════ -->
 <footer id="footer">
-  <div class="section-inner" style="text-align:center;padding-bottom:60px;">
-    <div class="eyebrow" style="justify-content:center;margin-bottom:14px;">ติดต่อเรา</div>
-    <h2 class="section-title reveal">Contact Admin</h2>
+  <div class="wrap" style="text-align:center;padding-bottom:60px;">
+    <div class="sec-tag" style="justify-content:center;margin-bottom:14px;" data-aos="zoom-in-up">ติดต่อเรา</div>
+    <h2 class="sec-title" data-aos="zoom-in-up">Contact Admin</h2>
   </div>
   <div class="footer-grid">
-    <div class="reveal">
-      <div class="footer-brand">
-        <div class="footer-brand-ic"><i class="fa-solid fa-globe"></i></div>
-        Globe <em>Express</em>
-      </div>
-      <div class="footer-desc">แพลตฟอร์มสำรวจปลายทางท่องเที่ยวระดับโลก คัดสรรสถานที่พิเศษกว่า 500 แห่งใน 48 ประเทศ พร้อมสิทธิพิเศษ VIP สำหรับนักเดินทางตัวจริง</div>
-      <div class="social-row">
-        <a class="soc-btn" href="#"><i class="fa-brands fa-facebook-f"></i></a>
-        <a class="soc-btn" href="#"><i class="fa-brands fa-instagram"></i></a>
-        <a class="soc-btn" href="#"><i class="fa-solid fa-comment-dots"></i></a>
-        <a class="soc-btn" href="#"><i class="fa-brands fa-youtube"></i></a>
-        <a class="soc-btn" href="#"><i class="fa-brands fa-tiktok"></i></a>
-        <a class="soc-btn" href="#"><i class="fa-brands fa-x-twitter"></i></a>
+    <div data-aos="zoom-in-up">
+      <div class="ft-brand"><div class="ft-brand-ic"><i class="fa-solid fa-globe"></i></div> Globe <span>Express</span></div>
+      <div class="ft-desc">แพลตฟอร์มสำรวจปลายทางท่องเที่ยวระดับโลก คัดสรรสถานที่พิเศษกว่า 500 แห่งใน 48 ประเทศ พร้อมสิทธิพิเศษ VIP สำหรับนักเดินทางตัวจริง</div>
+      <div class="soc-row">
+        <a class="soc-ico" href="#"><i class="fa-brands fa-facebook-f"></i></a>
+        <a class="soc-ico" href="#"><i class="fa-brands fa-instagram"></i></a>
+        <a class="soc-ico" href="#"><i class="fa-solid fa-comment-dots"></i></a>
+        <a class="soc-ico" href="#"><i class="fa-brands fa-youtube"></i></a>
+        <a class="soc-ico" href="#"><i class="fa-brands fa-tiktok"></i></a>
+        <a class="soc-ico" href="#"><i class="fa-brands fa-x-twitter"></i></a>
       </div>
     </div>
-    <div class="reveal reveal-d1">
-      <div class="footer-col-title">ติดต่อแอดมิน</div>
-      <a class="footer-link" href="mailto:admin@globeexpress.co">
-        <div class="footer-link-ic"><i class="fa-solid fa-envelope"></i></div>
-        <div><div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:2px;">อีเมล</div>admin@globeexpress.co</div>
-      </a>
-      <a class="footer-link" href="tel:+66800000000">
-        <div class="footer-link-ic"><i class="fa-solid fa-phone"></i></div>
-        <div><div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:2px;">โทรศัพท์</div>080-000-0000</div>
-      </a>
-      <a class="footer-link" href="#">
-        <div class="footer-link-ic"><i class="fa-solid fa-message"></i></div>
-        <div><div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:2px;">LINE Official</div>@GlobeExpressVIP</div>
-      </a>
-      <a class="footer-link" href="#">
-        <div class="footer-link-ic"><i class="fa-solid fa-gem"></i></div>
-        <div><div style="font-size:10px;color:rgba(255,255,255,.3);margin-bottom:2px;">VIP Hotline</div>090-000-0000</div>
-      </a>
+    <div data-aos="zoom-in-up" data-aos-delay="100">
+      <div class="ft-col-title">ติดต่อแอดมิน</div>
+      <a class="ft-link" href="mailto:admin@globeexpress.co"><div class="ft-link-ico"><i class="fa-solid fa-envelope"></i></div><div><div style="font-size:10px;color:rgba(255,255,255,.25);margin-bottom:2px;">อีเมล</div>admin@globeexpress.co</div></a>
+      <a class="ft-link" href="tel:+66800000000"><div class="ft-link-ico"><i class="fa-solid fa-phone"></i></div><div><div style="font-size:10px;color:rgba(255,255,255,.25);margin-bottom:2px;">โทรศัพท์</div>080-000-0000</div></a>
+      <a class="ft-link" href="#"><div class="ft-link-ico"><i class="fa-solid fa-message"></i></div><div><div style="font-size:10px;color:rgba(255,255,255,.25);margin-bottom:2px;">LINE Official</div>@GlobeExpressVIP</div></a>
+      <a class="ft-link" href="#"><div class="ft-link-ico"><i class="fa-solid fa-gem"></i></div><div><div style="font-size:10px;color:rgba(255,255,255,.25);margin-bottom:2px;">VIP Hotline</div>090-000-0000</div></a>
       <div class="hours-box">
         <div class="hours-title"><i class="fa-regular fa-clock"></i> เวลาทำการ</div>
         <div class="hours-row">จันทร์ – ศุกร์<span>09:00 – 20:00</span></div>
         <div class="hours-row">เสาร์ – อาทิตย์<span>10:00 – 18:00</span></div>
-        <div class="hours-row" style="color:var(--gold);margin-top:5px;">Diamond 24/7<span style="color:var(--gold)">ตลอดเวลา</span></div>
+        <div class="hours-row" style="color:var(--teal);margin-top:5px;">Diamond 24/7<span style="color:var(--teal)">ตลอดเวลา</span></div>
       </div>
     </div>
-    <div class="reveal reveal-d2">
-      <div class="footer-col-title">ข้อมูลทั่วไป</div>
-      <a class="footer-link" href="#"><div class="footer-link-ic"><i class="fa-solid fa-circle-info"></i></div><div>เกี่ยวกับ Globe Express</div></a>
-      <a class="footer-link" href="#"><div class="footer-link-ic"><i class="fa-solid fa-shield-halved"></i></div><div>นโยบายความเป็นส่วนตัว</div></a>
-      <a class="footer-link" href="#"><div class="footer-link-ic"><i class="fa-solid fa-file-contract"></i></div><div>ข้อกำหนดการใช้งาน</div></a>
-      <a class="footer-link" href="#"><div class="footer-link-ic"><i class="fa-solid fa-rotate-left"></i></div><div>นโยบายการคืนเงิน</div></a>
-      <a class="footer-link" href="#"><div class="footer-link-ic"><i class="fa-solid fa-handshake"></i></div><div>พาร์ทเนอร์กับเรา</div></a>
-      <a class="footer-link" href="#faq"><div class="footer-link-ic"><i class="fa-solid fa-circle-question"></i></div><div>คำถามที่พบบ่อย</div></a>
+    <div data-aos="zoom-in-up" data-aos-delay="200">
+      <div class="ft-col-title">ข้อมูลทั่วไป</div>
+      <a class="ft-link" href="#"><div class="ft-link-ico"><i class="fa-solid fa-circle-info"></i></div><div>เกี่ยวกับ Globe Express</div></a>
+      <a class="ft-link" href="#"><div class="ft-link-ico"><i class="fa-solid fa-shield-halved"></i></div><div>นโยบายความเป็นส่วนตัว</div></a>
+      <a class="ft-link" href="#"><div class="ft-link-ico"><i class="fa-solid fa-file-contract"></i></div><div>ข้อกำหนดการใช้งาน</div></a>
+      <a class="ft-link" href="#"><div class="ft-link-ico"><i class="fa-solid fa-rotate-left"></i></div><div>นโยบายการคืนเงิน</div></a>
+      <a class="ft-link" href="#"><div class="ft-link-ico"><i class="fa-solid fa-handshake"></i></div><div>พาร์ทเนอร์กับเรา</div></a>
+      <a class="ft-link" href="#faq"><div class="ft-link-ico"><i class="fa-solid fa-circle-question"></i></div><div>คำถามที่พบบ่อย</div></a>
     </div>
   </div>
-  <div class="footer-bar">
-    <div class="footer-copy">© 2025 Globe Express Co., Ltd. · ลิขสิทธิ์ทุกประการ · เลขที่ภาษี 0105565000000</div>
-    <div class="footer-links">
-      <a class="footer-policy" href="#">Privacy</a>
-      <a class="footer-policy" href="#">Terms</a>
-      <a class="footer-policy" href="#">Cookies</a>
-      <a class="footer-policy" href="#">Sitemap</a>
+  <div class="ft-bar">
+    <div class="ft-copy">© 2025 Globe Express Co., Ltd. · ลิขสิทธิ์ทุกประการ · เลขที่ภาษี 0105565000000</div>
+    <div class="ft-links">
+      <a class="ft-policy" href="#">Privacy</a>
+      <a class="ft-policy" href="#">Terms</a>
+      <a class="ft-policy" href="#">Cookies</a>
+      <a class="ft-policy" href="#">Sitemap</a>
     </div>
   </div>
 </footer>
 
-<!-- ══════════════════════════
-     JAVASCRIPT
-══════════════════════════ -->
+<!-- AOS -->
+<script src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+
 <script>
-/* ──────────────────────────────
-   FIREBASE INIT
-────────────────────────────── */
-const firebaseConfig = {
-  apiKey: "AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",
-  authDomain: "greencat-c40c6.firebaseapp.com",
-  databaseURL: "https://greencat-c40c6-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "greencat-c40c6",
-  storageBucket: "greencat-c40c6.firebasestorage.app",
-  messagingSenderId: "574032692697",
-  appId: "1:574032692697:web:2778aaf8d0c5a07c15c5c8"
+/* ──────────────
+   FIREBASE
+────────────── */
+const fbCfg = {
+  apiKey:"AIzaSyCpqWtEIqNk3lsV8NXO6yD2cWpZYZKYjio",
+  authDomain:"greencat-c40c6.firebaseapp.com",
+  databaseURL:"https://greencat-c40c6-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId:"greencat-c40c6",
+  storageBucket:"greencat-c40c6.firebasestorage.app",
+  messagingSenderId:"574032692697",
+  appId:"1:574032692697:web:2778aaf8d0c5a07c15c5c8"
 };
-firebase.initializeApp(firebaseConfig);
-const db   = firebase.database();
+firebase.initializeApp(fbCfg);
+const db = firebase.database();
 const auth = firebase.auth();
 
-/* ──────────────────────────────
+/* ──────────────
+   AOS
+────────────── */
+AOS.init({ duration:700, easing:'ease-out-cubic', once:true, offset:60 });
+
+/* ──────────────
    STATE
-────────────────────────────── */
+────────────── */
 const FREE_LIMIT = 3;
-let   currentUser  = null;
-let   membership   = 'free';   // 'free' | 'gold' | 'diamond'
-let   pendingPlan  = null;     // plan to upgrade after login
+let currentUser = null;
+let membership  = 'free';
+let pendingPlan = null;
+let pwSelected  = 'gold';   // paywall selected plan
+let payPlan     = 'gold';   // payment modal plan
+let payMethod   = 'card';
 
-/* ──────────────────────────────
-   REDIRECT LOGIC
-   - Free signup  → index1.html
-   - Gold (399฿)  → index2.html
-   - Diamond      → index3.html
-────────────────────────────── */
-const REDIRECT = { free: 'index1.html', gold: 'index2.html', diamond: 'index3.html' };
+const PRICES = { gold:199, diamond:399 };
+const REDIRECT = { free:'index1.html', gold:'index2.html', diamond:'index3.html' };
 
+/* ──────────────
+   REDIRECT
+────────────── */
 function redirectTo(plan) {
-  showToast('check', getRedirectMsg(plan));
-  setTimeout(() => { window.location.href = REDIRECT[plan]; }, 1400);
+  showToast('check', plan==='free'?'สมัครสำเร็จ! กำลังพาไปยังหน้าหลัก…':
+    plan==='gold'?'อัปเกรด Gold VIP สำเร็จ! กำลังเปิดใช้งาน…':'อัปเกรด Diamond VIP สำเร็จ! กำลังเปิดใช้งาน…');
+  setTimeout(()=>{ window.location.href = REDIRECT[plan]; }, 1500);
 }
 
-function getRedirectMsg(plan) {
-  if (plan === 'free')    return 'สมัครสมาชิกสำเร็จ! กำลังพาไปยังหน้าหลัก…';
-  if (plan === 'gold')    return 'อัปเกรด Gold VIP สำเร็จ! กำลังเปิดใช้งาน…';
-  if (plan === 'diamond') return 'อัปเกรด Diamond VIP สำเร็จ! กำลังเปิดใช้งาน…';
-  return 'สำเร็จ!';
-}
-
-/* ──────────────────────────────
+/* ──────────────
    FREEMIUM UI
-────────────────────────────── */
-function getViews()   { return parseInt(localStorage.getItem('ge_views') || '0'); }
-function setViews(n)  { localStorage.setItem('ge_views', Math.min(n, FREE_LIMIT)); }
+────────────── */
+function getViews()  { return parseInt(localStorage.getItem('ge_v')||'0'); }
 
 function refreshUI() {
-  const views     = getViews();
-  const remaining = Math.max(0, FREE_LIMIT - views);
-  const pct       = (remaining / FREE_LIMIT) * 100;
+  const views = getViews();
+  const rem   = Math.max(0, FREE_LIMIT - views);
+  const pct   = (rem/FREE_LIMIT)*100;
 
-  const fbBar     = document.getElementById('fbBar');
-  const fbVip     = document.getElementById('fbVip');
-  const fbFill    = document.getElementById('fbFill');
-  const fbCount   = document.getElementById('fbCount');
-  const unlStrip  = document.getElementById('unlockStrip');
-  const chip      = document.getElementById('userChip');
-  const chipTxt   = document.getElementById('chipTxt');
+  const sbBar  = document.getElementById('sbBar');
+  const vipSt  = document.getElementById('vipStrip');
+  const sbFill = document.getElementById('sbFill');
+  const sbCnt  = document.getElementById('sbCount');
+  const uBanner= document.getElementById('unlockBanner');
+  const chip   = document.getElementById('userChip');
+  const chipT  = document.getElementById('chipTxt');
 
   if (membership !== 'free') {
-    // VIP
-    if (fbBar)    fbBar.style.display    = 'none';
-    if (unlStrip) unlStrip.style.display = 'none';
-    if (fbVip)    fbVip.classList.add('vis');
-    if (chip)     { chip.classList.add('vis'); chipTxt.textContent = membership === 'diamond' ? '💎 Diamond VIP' : '⭐ Gold VIP'; }
-    // unlock all locked cards
-    document.querySelectorAll('.dest-card.locked-d').forEach(c => {
-      c.classList.remove('locked-d');
-      c.classList.add('open');
-      const lo = c.querySelector('.dest-lock-overlay');
-      if (lo) lo.style.display = 'none';
-      const li = c.querySelector('.dest-lock-ic');
-      if (li) li.innerHTML = '<i class="fa-solid fa-check"></i>';
-      const img = c.querySelector('.dest-img');
-      if (img) { img.style.filter = ''; img.style.transform = ''; }
+    if (sbBar)   sbBar.style.display   = 'none';
+    if (uBanner) uBanner.style.display = 'none';
+    if (vipSt)   vipSt.classList.add('vis');
+    if (chip)    { chip.classList.add('vis'); chipT.textContent = membership==='diamond'?'Diamond VIP':'Gold VIP'; }
+    document.querySelectorAll('.dest-card.d-locked').forEach(c=>{
+      c.classList.remove('d-locked'); c.classList.add('d-open');
+      const lo = c.querySelector('.d-lock-overlay'); if (lo) lo.style.display='none';
+      const ld = c.querySelector('.d-lock-dot'); if (ld) ld.innerHTML='<i class="fa-solid fa-check"></i>';
+      const di = c.querySelector('.di'); if (di) { di.style.filter=''; }
     });
     return;
   }
-
-  // Free
-  if (fbVip)    fbVip.classList.remove('vis');
-  if (fbFill)   { fbFill.style.width = pct + '%'; fbFill.style.background = remaining <= 1 ? 'linear-gradient(90deg,#b22222,#e05050)' : ''; }
-  if (fbCount)  fbCount.textContent = `เหลือ ${remaining} / ${FREE_LIMIT} แห่ง`;
+  if (vipSt)  vipSt.classList.remove('vis');
+  if (sbFill) {
+    sbFill.style.width = pct+'%';
+    sbFill.style.background = rem<=1 ? 'linear-gradient(90deg,#c0392b,#e74c3c)' : '';
+  }
+  if (sbCnt)  sbCnt.textContent = `เหลือ ${rem} / ${FREE_LIMIT} แห่ง`;
   renderDots(views);
 }
 
 function renderDots(used) {
-  const c = document.getElementById('pwDots');
-  if (!c) return;
+  const c = document.getElementById('pwDots'); if (!c) return;
   c.innerHTML = '';
-  for (let i = 0; i < FREE_LIMIT; i++) {
-    const d = document.createElement('div');
-    d.className = 'pw-dot' + (i < used ? ' lit' : '');
+  for (let i=0;i<FREE_LIMIT;i++) {
+    const d=document.createElement('div');
+    d.className='pw-dot'+(i<used?' lit':'');
     c.appendChild(d);
   }
 }
 
-/* ──────────────────────────────
-   AUTH STATE LISTENER
-────────────────────────────── */
-auth.onAuthStateChanged(user => {
-  currentUser = user;
-  const authBtn = document.getElementById('navAuthBtn');
-  const chip    = document.getElementById('userChip');
-  const chipTxt = document.getElementById('chipTxt');
-
+/* ──────────────
+   AUTH LISTENER
+────────────── */
+auth.onAuthStateChanged(user=>{
+  currentUser=user;
+  const btn = document.getElementById('navAuthBtn');
+  const chip= document.getElementById('userChip');
+  const cTxt= document.getElementById('chipTxt');
   if (user) {
-    db.ref('users/' + user.uid + '/membership').get()
-      .then(snap => { membership = snap.val() || 'free'; localStorage.setItem('ge_ms', membership); })
-      .catch(() => { membership = localStorage.getItem('ge_ms') || 'free'; })
-      .finally(() => refreshUI());
-
-    if (authBtn) {
-      authBtn.innerHTML = '<i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ';
-      authBtn.onclick = signOut;
-    }
-    if (chip) { chip.classList.add('vis'); chipTxt.textContent = user.displayName || user.email.split('@')[0]; }
+    db.ref('users/'+user.uid+'/membership').get()
+      .then(s=>{ membership=s.val()||'free'; localStorage.setItem('ge_ms',membership); })
+      .catch(()=>{ membership=localStorage.getItem('ge_ms')||'free'; })
+      .finally(refreshUI);
+    if (btn) { btn.innerHTML='<i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ'; btn.onclick=signOut; }
+    if (chip) { chip.classList.add('vis'); cTxt.textContent=user.displayName||user.email.split('@')[0]; }
   } else {
-    membership = localStorage.getItem('ge_ms') || 'free';
+    membership=localStorage.getItem('ge_ms')||'free';
     refreshUI();
-    if (authBtn) { authBtn.innerHTML = '<i class="fa-regular fa-user"></i> เข้าสู่ระบบ'; authBtn.onclick = openModal; }
-    if (chip)    chip.classList.remove('vis');
+    if (btn) { btn.innerHTML='<i class="fa-regular fa-user"></i> เข้าสู่ระบบ'; btn.onclick=openModal; }
+    if (chip) chip.classList.remove('vis');
   }
 });
 
 function signOut() {
-  auth.signOut().then(() => {
-    membership = 'free';
-    localStorage.removeItem('ge_ms');
-    refreshUI();
-    showToast('info', 'ออกจากระบบเรียบร้อยแล้ว');
-  });
+  auth.signOut().then(()=>{ membership='free'; localStorage.removeItem('ge_ms'); refreshUI(); showToast('info','ออกจากระบบแล้ว'); });
 }
 
-/* ──────────────────────────────
-   MODAL LOGIC
-────────────────────────────── */
-let authTab = 'login';
+/* ──────────────
+   MODALS
+────────────── */
+function openModal()   { document.getElementById('auth-bg').classList.add('open'); }
+function closeModal()  { document.getElementById('auth-bg').classList.remove('open'); pendingPlan=null; }
+function openPaywall() { renderDots(getViews()); document.getElementById('paywall-bg').classList.add('open'); }
+function closePaywall(){ document.getElementById('paywall-bg').classList.remove('open'); }
+function openPay(plan) { payPlan=plan||'gold'; setPayPlan(payPlan); document.getElementById('pay-bg').classList.add('open'); }
+function closePay()    { document.getElementById('pay-bg').classList.remove('open'); }
 
-function openModal()  { document.getElementById('auth-bg').classList.add('open'); }
-function closeModal() { document.getElementById('auth-bg').classList.remove('open'); pendingPlan = null; }
-function openPaywall() {
-  renderDots(getViews());
-  document.getElementById('paywall-bg').classList.add('open');
-}
-function closePaywall() { document.getElementById('paywall-bg').classList.remove('open'); }
+['auth-bg','paywall-bg','pay-bg'].forEach(id=>{
+  document.getElementById(id).addEventListener('click',e=>{ if(e.target===e.currentTarget){ if(id==='auth-bg')closeModal(); else if(id==='paywall-bg')closePaywall(); else closePay(); }});
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ closeModal(); closePaywall(); closePay(); }});
 
-// Click outside to close
-document.getElementById('auth-bg').addEventListener('click', e => { if (e.target === e.currentTarget) closeModal(); });
-document.getElementById('paywall-bg').addEventListener('click', e => { if (e.target === e.currentTarget) closePaywall(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closePaywall(); } });
-
+/* ──────────────
+   AUTH TABS
+────────────── */
+let authTab='login';
 function switchTab(t) {
-  authTab = t;
-  document.getElementById('loginTab').classList.toggle('active', t === 'login');
-  document.getElementById('regTab').classList.toggle('active', t === 'register');
-  const extra = document.getElementById('reg-extra');
-  const ico   = document.getElementById('authBtnIco');
-  const txt   = document.getElementById('authBtnTxt');
-  const title = document.getElementById('modalTitle');
-  const sub   = document.getElementById('modalSub');
-  if (t === 'register') {
-    extra.classList.add('show');
-    if (ico) ico.className = 'fa-solid fa-user-plus';
-    if (txt) txt.textContent = 'สมัครสมาชิก';
-    title.textContent = 'สร้างบัญชีใหม่';
-    sub.textContent   = 'เริ่มการเดินทางสู่โลกที่ไม่มีขีดจำกัด';
+  authTab=t;
+  document.getElementById('t-login').classList.toggle('on',t==='login');
+  document.getElementById('t-reg').classList.toggle('on',t==='register');
+  const ex=document.getElementById('reg-extra');
+  const ico=document.getElementById('authIco');
+  const txt=document.getElementById('authTxt');
+  const ttl=document.getElementById('mTitle');
+  const sub=document.getElementById('mSub');
+  if (t==='register') {
+    ex.classList.add('vis');
+    if (ico) ico.className='fa-solid fa-user-plus';
+    if (txt) txt.textContent='สมัครสมาชิก';
+    ttl.textContent='สร้างบัญชีใหม่';
+    sub.textContent='เริ่มการเดินทางสู่โลกที่ไม่มีขีดจำกัด';
   } else {
-    extra.classList.remove('show');
-    if (ico) ico.className = 'fa-solid fa-arrow-right-to-bracket';
-    if (txt) txt.textContent = 'เข้าสู่ระบบ';
-    title.textContent = 'ยินดีต้อนรับกลับ';
-    sub.textContent   = 'เข้าสู่ระบบเพื่อเริ่มการเดินทาง';
+    ex.classList.remove('vis');
+    if (ico) ico.className='fa-solid fa-arrow-right-to-bracket';
+    if (txt) txt.textContent='เข้าสู่ระบบ';
+    ttl.textContent='ยินดีต้อนรับกลับ';
+    sub.textContent='เข้าสู่ระบบเพื่อเริ่มการเดินทาง';
   }
 }
 
-/* ──────────────────────────────
+/* ──────────────
    HANDLE AUTH
-────────────────────────────── */
+────────────── */
 function handleAuth() {
-  const email = document.getElementById('authEmail').value.trim();
-  const pass  = document.getElementById('authPass').value;
-  if (!email || !pass) { showToast('warn', 'กรุณากรอกอีเมลและรหัสผ่าน'); return; }
+  const email=document.getElementById('aEmail').value.trim();
+  const pass=document.getElementById('aPass').value;
+  if (!email||!pass) { showToast('warn','กรุณากรอกอีเมลและรหัสผ่าน'); return; }
+  const btn=document.getElementById('authBtn'); btn.disabled=true;
 
-  const btn = document.getElementById('authBtn');
-  btn.disabled = true;
-
-  if (authTab === 'register') {
-    const name = document.getElementById('authName')?.value.trim() || '';
-    auth.createUserWithEmailAndPassword(email, pass)
-      .then(cred => {
-        // Write user to DB (always free on signup)
-        return db.ref('users/' + cred.user.uid).set({
-          membership: 'free', email, displayName: name, createdAt: Date.now()
-        }).then(() => {
-          if (name) return cred.user.updateProfile({ displayName: name });
-        }).then(() => {
-          btn.disabled = false;
-          closeModal();
-          membership = 'free';
-          refreshUI();
-          // If there's a pending paid plan, trigger upgrade
-          if (pendingPlan && pendingPlan !== 'free') {
-            upgradeUser(cred.user, pendingPlan);
-          } else {
-            redirectTo('free');
-          }
-        });
+  if (authTab==='register') {
+    const name=document.getElementById('aName')?.value.trim()||'';
+    auth.createUserWithEmailAndPassword(email,pass)
+      .then(cr=>{
+        return db.ref('users/'+cr.user.uid).set({ membership:'free',email,displayName:name,createdAt:Date.now() })
+          .then(()=>{ if(name) return cr.user.updateProfile({displayName:name}); })
+          .then(()=>{
+            btn.disabled=false; closeModal(); membership='free'; refreshUI();
+            if (pendingPlan && pendingPlan!=='free') upgradeUser(cr.user,pendingPlan);
+            else redirectTo('free');
+          });
       })
-      .catch(err => {
-        btn.disabled = false;
-        const msgs = {
-          'auth/email-already-in-use': 'อีเมลนี้ถูกใช้แล้ว ลองเข้าสู่ระบบแทน',
-          'auth/weak-password': 'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร',
-          'auth/invalid-email': 'รูปแบบอีเมลไม่ถูกต้อง'
-        };
-        showToast('warn', msgs[err.code] || err.message);
+      .catch(err=>{
+        btn.disabled=false;
+        const m={'auth/email-already-in-use':'อีเมลนี้ถูกใช้แล้ว','auth/weak-password':'รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร','auth/invalid-email':'รูปแบบอีเมลไม่ถูกต้อง'};
+        showToast('warn',m[err.code]||err.message);
       });
   } else {
-    auth.signInWithEmailAndPassword(email, pass)
-      .then(cred => {
-        btn.disabled = false;
-        closeModal();
-        // If there's a pending plan, upgrade after login
-        if (pendingPlan && pendingPlan !== 'free') {
-          upgradeUser(cred.user, pendingPlan);
-        } else {
-          showToast('check', 'เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับกลับมา');
-        }
+    auth.signInWithEmailAndPassword(email,pass)
+      .then(cr=>{
+        btn.disabled=false; closeModal();
+        if (pendingPlan && pendingPlan!=='free') upgradeUser(cr.user,pendingPlan);
+        else showToast('check','เข้าสู่ระบบสำเร็จ! ยินดีต้อนรับกลับมา');
       })
-      .catch(() => {
-        btn.disabled = false;
-        showToast('warn', 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
-      });
+      .catch(()=>{ btn.disabled=false; showToast('warn','อีเมลหรือรหัสผ่านไม่ถูกต้อง'); });
   }
 }
+function socialLogin(p) { closeModal(); showToast('info',`เข้าสู่ระบบด้วย ${p} (Demo Mode)`); }
 
-function socialLogin(p) {
-  closeModal();
-  showToast('info', `เข้าสู่ระบบด้วย ${p} (Demo Mode)`);
-}
-
-/* ──────────────────────────────
-   UPGRADE LOGIC
-────────────────────────────── */
-// Called from plan CTA buttons
+/* ──────────────
+   SIGNUP HANDLERS
+────────────── */
 function handleFreeSignup() {
-  // If already logged in → redirect directly
   if (currentUser) { redirectTo('free'); return; }
-  pendingPlan = 'free';
-  switchTab('register');
-  openModal();
+  pendingPlan='free'; switchTab('register'); openModal();
 }
-
 function handlePaidSignup(plan) {
-  // plan = 'gold' | 'diamond'
-  if (!currentUser) {
-    pendingPlan = plan;
-    switchTab('register');
-    openModal();
-    showToast('info', 'สมัครบัญชีก่อน แล้วระบบจะอัปเกรดให้อัตโนมัติ');
-    return;
-  }
-  upgradeUser(currentUser, plan);
+  if (!currentUser) { pendingPlan=plan; switchTab('register'); openModal(); showToast('info','สมัครบัญชีก่อน ระบบจะอัปเกรดให้อัตโนมัติ'); return; }
+  openPay(plan);
 }
-
-function handleUpgrade(plan) {
-  // Called from paywall modal
-  closePaywall();
-  if (!currentUser) {
-    pendingPlan = plan;
-    switchTab('register');
-    openModal();
-    showToast('info', 'สมัครบัญชีก่อน แล้วระบบจะอัปเกรดให้อัตโนมัติ');
-    return;
-  }
-  upgradeUser(currentUser, plan);
-}
-
-function upgradeUser(user, plan) {
-  db.ref('users/' + user.uid).update({
-    membership: plan,
-    upgradedAt: Date.now(),
-    upgradePlan: plan
-  })
-  .then(() => {
-    membership = plan;
-    localStorage.setItem('ge_ms', plan);
-    pendingPlan = null;
-    refreshUI();
-    redirectTo(plan);
-  })
-  .catch(() => {
-    // Offline fallback — still redirect
-    membership = plan;
-    localStorage.setItem('ge_ms', plan);
-    pendingPlan = null;
-    refreshUI();
-    redirectTo(plan);
-  });
-}
-
 function handleLockedClick() { openPaywall(); }
 
-/* ──────────────────────────────
-   FAQ
-────────────────────────────── */
-function toggleFaq(el) {
-  const item   = el.parentElement;
-  const isOpen = item.classList.contains('open');
-  document.querySelectorAll('.faq-item').forEach(f => f.classList.remove('open'));
-  if (!isOpen) item.classList.add('open');
+/* ──────────────
+   PAYWALL
+────────────── */
+function selectPw(plan) {
+  pwSelected=plan;
+  ['gold','diamond'].forEach(p=>{ document.getElementById('pwc-'+p).classList.toggle('sel',p===plan); });
+}
+function proceedFromPaywall() {
+  closePaywall();
+  if (!currentUser) { pendingPlan=pwSelected; switchTab('register'); openModal(); showToast('info','สมัครบัญชีก่อน ระบบจะนำไปชำระเงินอัตโนมัติ'); return; }
+  openPay(pwSelected);
 }
 
-/* ──────────────────────────────
+/* ──────────────
+   PAYMENT MODAL
+────────────── */
+function selectPayPlan(plan) {
+  payPlan=plan; setPayPlan(plan);
+}
+function setPayPlan(plan) {
+  ['gold','diamond'].forEach(p=>{ document.getElementById('payTab-'+p).classList.toggle('sel',p===plan); });
+  const price=PRICES[plan];
+  document.getElementById('paySumName').textContent=plan==='gold'?'Globe VIP Gold':'Globe Diamond VIP';
+  document.getElementById('paySumPrice').textContent=`฿${price} / เดือน`;
+  document.getElementById('paySumTotal').textContent=`฿${price}`;
+  document.getElementById('payBtnTxt').textContent=`ชำระเงิน ฿${price} / เดือน`;
+}
+
+function setPayMethod(m) {
+  payMethod=m;
+  ['card','qr','line'].forEach(x=>{ document.getElementById('pm-'+x).classList.toggle('active',x===m); });
+  document.getElementById('cardForm').style.display=m==='card'?'block':'none';
+  document.getElementById('qrForm').style.display=m==='qr'?'block':'none';
+  document.getElementById('lineForm').style.display=m==='line'?'block':'none';
+}
+
+function fmtCard(el) {
+  let v=el.value.replace(/\D/g,'').substring(0,16);
+  el.value=v.replace(/(.{4})/g,'$1 ').trim();
+}
+function fmtExp(el) {
+  let v=el.value.replace(/\D/g,'').substring(0,4);
+  if (v.length>=3) v=v.substring(0,2)+' / '+v.substring(2);
+  el.value=v;
+}
+
+function handlePayment() {
+  if (!currentUser) { closePay(); pendingPlan=payPlan; switchTab('register'); openModal(); return; }
+
+  // Basic card validation
+  if (payMethod==='card') {
+    const num=document.getElementById('cardNum').value.replace(/\s/g,'');
+    const exp=document.getElementById('cardExp').value;
+    const cvv=document.getElementById('cardCvv').value;
+    if (num.length<16) { showToast('warn','กรุณากรอกหมายเลขบัตรให้ครบ'); return; }
+    if (!exp.includes('/')) { showToast('warn','กรุณากรอกวันหมดอายุบัตร'); return; }
+    if (cvv.length<3) { showToast('warn','กรุณากรอก CVV ให้ครบ'); return; }
+  }
+
+  const btn=document.getElementById('paySubmitBtn'); btn.disabled=true;
+  btn.innerHTML='<i class="fa-solid fa-spinner fa-spin"></i> กำลังดำเนินการ…';
+
+  // Simulate payment processing
+  setTimeout(()=>{
+    upgradeUser(currentUser, payPlan);
+    closePay();
+  }, 2200);
+}
+
+/* ──────────────
+   UPGRADE
+────────────── */
+function upgradeUser(user, plan) {
+  db.ref('users/'+user.uid).update({ membership:plan, upgradedAt:Date.now(), plan })
+    .then(()=>{ membership=plan; localStorage.setItem('ge_ms',plan); pendingPlan=null; refreshUI(); redirectTo(plan); })
+    .catch(()=>{ membership=plan; localStorage.setItem('ge_ms',plan); pendingPlan=null; refreshUI(); redirectTo(plan); });
+}
+
+/* ──────────────
+   FAQ
+────────────── */
+function toggleFaq(el) {
+  const item=el.parentElement;
+  const was=item.classList.contains('on');
+  document.querySelectorAll('.faq-item').forEach(f=>f.classList.remove('on'));
+  if (!was) item.classList.add('on');
+}
+
+/* ──────────────
    TOAST
-────────────────────────────── */
-const toastIcons = {
-  check : 'fa-solid fa-circle-check',
-  warn  : 'fa-solid fa-triangle-exclamation',
-  info  : 'fa-solid fa-circle-info',
-  crown : 'fa-solid fa-crown',
-};
+────────────── */
+const TICONS = { check:'fa-solid fa-circle-check', warn:'fa-solid fa-triangle-exclamation', info:'fa-solid fa-circle-info', crown:'fa-solid fa-crown' };
 let toastTm;
-function showToast(type, msg) {
-  const el  = document.getElementById('toast');
-  const ico = document.getElementById('toastIco');
-  const txt = document.getElementById('toastMsg');
-  ico.className     = toastIcons[type] || toastIcons.check;
-  txt.textContent   = msg;
+function showToast(type,msg) {
+  const el=document.getElementById('toast');
+  document.getElementById('toastIco').className=TICONS[type]||TICONS.check;
+  document.getElementById('toastMsg').textContent=msg;
   el.classList.add('show');
   clearTimeout(toastTm);
-  toastTm = setTimeout(() => el.classList.remove('show'), 4500);
+  toastTm=setTimeout(()=>el.classList.remove('show'),4500);
 }
 
-/* ──────────────────────────────
-   SCROLL REVEAL (IntersectionObserver)
-────────────────────────────── */
-const revealObs = new IntersectionObserver((entries) => {
-  entries.forEach(e => {
-    if (e.isIntersecting) {
-      e.target.classList.add('visible');
-      revealObs.unobserve(e.target);
-    }
-  });
-}, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
-
-document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
-
-/* ──────────────────────────────
-   NAVBAR SCROLL STATE
-────────────────────────────── */
-window.addEventListener('scroll', () => {
-  document.getElementById('navbar').classList.toggle('navbar-scrolled', window.scrollY > 60);
+/* ──────────────
+   NAVBAR SCROLL
+────────────── */
+window.addEventListener('scroll',()=>{
+  document.getElementById('navbar').classList.toggle('nav-scrolled',scrollY>60);
 });
 
-/* ──────────────────────────────
+/* ──────────────
    INIT
-────────────────────────────── */
+────────────── */
 refreshUI();
+setPayPlan('gold');
 </script>
-   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-   <script>
-  AOS.init();
-   </script>
 </body>
 </html>
