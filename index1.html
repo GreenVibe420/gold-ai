@@ -3,292 +3,392 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Globe Express FREE — Destinations</title>
+<title>Globe Express Free — Explore Destinations</title>
 <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@200;300;400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-:root{
-  --blue:#38bdf8;--blue-dim:#0ea5e9;--blue-dark:#0369a1;
-  --cyan:#67e8f9;--teal:#2dd4bf;
-  --glass:rgba(14,30,54,.72);--glass-bdr:rgba(56,189,248,.18);
-  --card-bdr:rgba(56,189,248,.22);
-  --locked:rgba(255,255,255,.06);
-}
-html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:#04090f;}
+:root{--blue:#38bdf8;--blue2:#0ea5e9;--blue3:#0369a1;--cyan:#67e8f9;--bg:#04090f;}
+html,body{width:100%;font-family:'Inter',sans-serif;background:var(--bg);color:#fff;}
 
-/* BG */
-#bg-wrap{position:fixed;inset:0;z-index:0;overflow:hidden;}
+#hero{position:relative;width:100%;height:100vh;overflow:hidden;}
+#bg-wrap{position:absolute;inset:0;z-index:0;overflow:hidden;}
 .bg-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transform:scale(1.07);will-change:transform,opacity;}
 .bg-slide.active{opacity:1;transform:scale(1);}
-#bg-wrap::after{
-  content:'';position:absolute;inset:0;z-index:2;
-  background:
-    linear-gradient(to right,rgba(4,9,15,.88) 0%,rgba(4,9,15,.42) 55%,rgba(4,9,15,.18) 100%),
-    linear-gradient(to top,rgba(4,9,15,.82) 0%,transparent 40%),
-    linear-gradient(to bottom,rgba(4,9,15,.55) 0%,transparent 28%);
-  pointer-events:none;
-}
-/* Blue grid overlay */
-.grid-ol{position:fixed;inset:0;z-index:1;pointer-events:none;
-  background-image:linear-gradient(rgba(56,189,248,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.04) 1px,transparent 1px);
-  background-size:50px 50px;}
-
-#prog-line{position:fixed;top:0;left:0;height:2px;width:0%;background:linear-gradient(to right,var(--blue-dim),var(--cyan));z-index:999;}
+#bg-wrap::after{content:'';position:absolute;inset:0;z-index:2;background:linear-gradient(to right,rgba(4,9,15,.88) 0%,rgba(4,9,15,.42) 55%,rgba(4,9,15,.18) 100%),linear-gradient(to top,rgba(4,9,15,.82) 0%,transparent 40%),linear-gradient(to bottom,rgba(4,9,15,.55) 0%,transparent 28%);pointer-events:none;}
+.grid-ol{position:absolute;inset:0;z-index:1;pointer-events:none;background-image:linear-gradient(rgba(56,189,248,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.04) 1px,transparent 1px);background-size:52px 52px;}
+#prog-line{position:absolute;top:0;left:0;height:2px;width:0%;background:linear-gradient(to right,var(--blue2),var(--cyan));z-index:10;}
 
 /* FREE BADGE */
-#free-badge{
-  position:fixed;top:18px;left:50%;transform:translateX(-50%);z-index:80;
-  background:linear-gradient(135deg,rgba(14,165,233,.25),rgba(103,232,249,.15));
-  border:1px solid rgba(56,189,248,.35);border-radius:999px;
-  padding:6px 20px;display:flex;align-items:center;gap:8px;
-  backdrop-filter:blur(12px);
-  font-size:11px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;font-weight:600;
-}
-.free-dot{width:6px;height:6px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite;}
+#free-badge{position:absolute;top:18px;left:50%;transform:translateX(-50%);z-index:80;background:linear-gradient(135deg,rgba(14,165,233,.22),rgba(103,232,249,.12));border:1px solid rgba(56,189,248,.35);border-radius:999px;padding:6px 22px;display:flex;align-items:center;gap:10px;backdrop-filter:blur(12px);white-space:nowrap;}
+.free-dot{width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite;}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(103,232,249,.5)}50%{box-shadow:0 0 0 6px rgba(103,232,249,0)}}
+.free-label{font-size:10px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;font-weight:700;}
 
-/* NAVBAR */
-#navbar{position:fixed;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:18px 44px;}
-.nav-logo{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:5px;color:var(--blue);text-transform:uppercase;text-shadow:0 0 20px rgba(56,189,248,.4);}
-.nav-logo span{color:rgba(255,255,255,.4);font-size:10px;letter-spacing:3px;display:block;margin-top:2px;}
-.nav-pills{display:flex;align-items:center;gap:5px;background:rgba(4,9,15,.55);backdrop-filter:blur(10px);border:1px solid var(--card-bdr);border-radius:999px;padding:5px 8px;}
-.nav-pill{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:5px 14px;border-radius:999px;cursor:pointer;transition:all .25s;white-space:nowrap;}
-.nav-pill.active{background:linear-gradient(135deg,var(--blue-dim),var(--teal));color:#fff;font-weight:600;box-shadow:0 0 14px rgba(56,189,248,.3);}
+#navbar{position:absolute;top:0;left:0;right:0;z-index:60;display:flex;align-items:center;justify-content:space-between;padding:20px 48px;}
+.nav-logo{font-family:'Oswald',sans-serif;font-size:15px;font-weight:700;letter-spacing:6px;color:var(--blue);text-transform:uppercase;text-shadow:0 0 20px rgba(56,189,248,.35);}
+.nav-logo span{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:3px;display:block;margin-top:2px;}
+.nav-pills{display:flex;align-items:center;gap:4px;background:rgba(4,9,15,.55);backdrop-filter:blur(12px);border:1px solid rgba(56,189,248,.18);border-radius:999px;padding:5px 8px;}
+.nav-pill{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.35);padding:6px 16px;border-radius:999px;cursor:pointer;transition:all .25s;white-space:nowrap;}
+.nav-pill.active{background:linear-gradient(135deg,var(--blue2),#2dd4bf);color:#fff;font-weight:700;box-shadow:0 0 14px rgba(56,189,248,.3);}
 .nav-pill:hover:not(.active){color:var(--blue);background:rgba(56,189,248,.08);}
 .nav-right{display:flex;align-items:center;gap:10px;}
-.btn-upgrade{
-  background:linear-gradient(135deg,var(--blue-dark),var(--blue-dim));
-  border:1px solid var(--blue);color:#fff;font-size:11px;letter-spacing:2px;
-  text-transform:uppercase;padding:9px 18px;border-radius:6px;cursor:pointer;
-  text-decoration:none;transition:all .25s;font-weight:600;
-  box-shadow:0 0 18px rgba(56,189,248,.25);
-}
+.btn-upgrade{background:linear-gradient(135deg,var(--blue3),var(--blue2));border:1px solid var(--blue);color:#fff;font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:9px 20px;border-radius:6px;cursor:pointer;text-decoration:none;transition:all .25s;font-weight:700;box-shadow:0 0 18px rgba(56,189,248,.22);}
 .btn-upgrade:hover{box-shadow:0 0 28px rgba(56,189,248,.5);transform:translateY(-1px);}
-.nav-signin{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.7);font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:9px 16px;border-radius:6px;cursor:pointer;text-decoration:none;transition:all .25s;}
+.nav-signin{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.13);color:rgba(255,255,255,.65);font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:9px 18px;border-radius:6px;cursor:pointer;text-decoration:none;transition:all .25s;}
 .nav-signin:hover{background:rgba(255,255,255,.12);color:#fff;}
 
-/* LEFT PANEL */
-#left-panel{position:fixed;left:44px;top:50%;transform:translateY(-50%);z-index:40;max-width:420px;}
-.dest-region{font-size:10px;letter-spacing:4px;color:rgba(103,232,249,.6);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:10px;}
-.dest-region::before{content:'';width:24px;height:1px;background:rgba(56,189,248,.4);}
-.dest-title{font-family:'Oswald',sans-serif;font-size:clamp(38px,5vw,66px);font-weight:700;line-height:.92;text-transform:uppercase;color:#fff;letter-spacing:-1px;margin-bottom:14px;text-shadow:0 0 40px rgba(56,189,248,.2);}
-.dest-desc{font-size:13px;line-height:1.75;color:rgba(255,255,255,.5);max-width:340px;margin-bottom:22px;font-weight:300;}
-.btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
-.btn-map{display:inline-flex;align-items:center;gap:10px;background:linear-gradient(135deg,var(--blue-dark),var(--blue-dim));color:#fff;font-size:11px;font-weight:600;letter-spacing:3px;text-transform:uppercase;padding:12px 24px;border:none;cursor:pointer;border-radius:4px;transition:all .25s;text-decoration:none;box-shadow:0 0 18px rgba(56,189,248,.25);}
-.btn-map:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(56,189,248,.5);}
-.btn-map svg{width:12px;transition:transform .2s;}
-.btn-map:hover svg{transform:translateX(4px);}
-.badges{display:flex;gap:6px;margin-top:14px;flex-wrap:wrap;}
-.badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:4px;border:1px solid rgba(56,189,248,.2);color:rgba(56,189,248,.6);}
+#left-panel{position:absolute;left:48px;top:50%;transform:translateY(-50%);z-index:40;max-width:420px;}
+.dest-region{font-size:10px;letter-spacing:5px;color:rgba(103,232,249,.6);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:10px;}
+.dest-region::before{content:'';width:28px;height:1px;background:rgba(56,189,248,.4);}
+.dest-title{font-family:'Oswald',sans-serif;font-size:clamp(42px,5.5vw,72px);font-weight:700;line-height:.9;text-transform:uppercase;color:#fff;letter-spacing:-1px;margin-bottom:16px;text-shadow:0 0 40px rgba(56,189,248,.18);}
+.dest-desc{font-size:13px;line-height:1.8;color:rgba(255,255,255,.5);max-width:340px;margin-bottom:24px;font-weight:300;}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;}
+.btn-map{display:inline-flex;align-items:center;gap:8px;background:linear-gradient(135deg,var(--blue3),var(--blue2));color:#fff;font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:13px 26px;border:none;cursor:pointer;border-radius:4px;transition:all .25s;text-decoration:none;box-shadow:0 0 18px rgba(56,189,248,.2);}
+.btn-map:hover{transform:translateY(-2px);box-shadow:0 0 28px rgba(56,189,248,.45);}
+.badges{display:flex;gap:6px;margin-top:16px;flex-wrap:wrap;}
+.badge{font-size:9px;letter-spacing:2px;text-transform:uppercase;padding:4px 10px;border-radius:3px;border:1px solid rgba(56,189,248,.2);color:rgba(56,189,248,.6);}
 .badge.hot{border-color:rgba(103,232,249,.5);color:var(--cyan);}
 
-/* FREE LIMIT BANNER */
-#free-limit{
-  display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;
-  background:rgba(4,9,15,.95);backdrop-filter:blur(24px);
-  border:1px solid rgba(56,189,248,.3);border-radius:20px;
-  padding:40px;text-align:center;max-width:380px;width:calc(100% - 40px);
-  box-shadow:0 0 60px rgba(56,189,248,.15),0 20px 60px rgba(0,0,0,.6);
-}
-#free-limit.show{display:block;}
-.fl-icon{font-size:48px;margin-bottom:16px;}
-.fl-title{font-family:'Oswald',sans-serif;font-size:22px;color:#fff;letter-spacing:2px;margin-bottom:10px;}
-.fl-sub{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:24px;}
-.fl-btn{display:block;background:linear-gradient(135deg,var(--blue-dark),var(--blue-dim),var(--cyan));color:#fff;font-weight:700;font-size:13px;letter-spacing:3px;text-transform:uppercase;padding:14px;border-radius:10px;text-decoration:none;transition:all .3s;margin-bottom:10px;border:none;cursor:pointer;width:100%;box-shadow:0 0 24px rgba(56,189,248,.3);}
-.fl-btn:hover{box-shadow:0 0 40px rgba(56,189,248,.5);transform:translateY(-2px);}
-.fl-close{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);font-size:12px;letter-spacing:2px;text-transform:uppercase;padding:10px;border-radius:8px;cursor:pointer;width:100%;transition:all .2s;}
-.fl-close:hover{border-color:rgba(255,255,255,.3);color:#fff;}
-#fl-overlay{display:none;position:fixed;inset:0;z-index:199;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);}
+/* FREE LIMIT MODAL */
+#fl-overlay{display:none;position:fixed;inset:0;z-index:299;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);}
 #fl-overlay.show{display:block;}
+#free-limit{display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;background:rgba(4,9,15,.97);backdrop-filter:blur(24px);border:1px solid rgba(56,189,248,.3);border-radius:20px;padding:44px 40px;text-align:center;max-width:380px;width:calc(100% - 40px);box-shadow:0 0 60px rgba(56,189,248,.12),0 20px 60px rgba(0,0,0,.6);}
+#free-limit.show{display:block;}
+.fl-line{width:36px;height:3px;background:var(--blue2);border-radius:2px;margin:0 auto 22px;}
+.fl-title{font-family:'Oswald',sans-serif;font-size:24px;color:#fff;letter-spacing:2px;margin-bottom:12px;text-transform:uppercase;}
+.fl-sub{font-size:13px;color:rgba(255,255,255,.48);line-height:1.65;margin-bottom:28px;}
+.fl-btn{display:block;background:linear-gradient(135deg,var(--blue3),var(--blue2),var(--cyan));color:#fff;font-weight:700;font-size:12px;letter-spacing:3px;text-transform:uppercase;padding:15px;border-radius:10px;text-decoration:none;transition:all .3s;margin-bottom:12px;border:none;cursor:pointer;width:100%;box-shadow:0 0 24px rgba(56,189,248,.25);}
+.fl-btn:hover{box-shadow:0 0 40px rgba(56,189,248,.5);}
+.fl-close{background:none;border:1px solid rgba(255,255,255,.14);color:rgba(255,255,255,.38);font-size:11px;letter-spacing:2px;text-transform:uppercase;padding:11px;border-radius:8px;cursor:pointer;width:100%;transition:all .2s;}
+.fl-close:hover{border-color:rgba(255,255,255,.3);color:#fff;}
 
-/* LOCATION BADGE */
-#loc-badge{position:fixed;left:44px;bottom:310px;z-index:50;display:flex;align-items:stretch;background:rgba(4,9,15,.65);backdrop-filter:blur(14px);border:1px solid var(--card-bdr);border-radius:10px;overflow:hidden;}
-.loc-pin{padding:11px 13px;border-right:1px solid rgba(56,189,248,.15);font-size:17px;background:rgba(56,189,248,.08);display:flex;align-items:center;}
-.loc-info{padding:9px 13px;}
+#loc-badge{position:absolute;left:48px;bottom:312px;z-index:50;display:flex;align-items:stretch;background:rgba(4,9,15,.65);backdrop-filter:blur(16px);border:1px solid rgba(56,189,248,.2);border-radius:10px;overflow:hidden;}
+.loc-pin-box{padding:12px 14px;border-right:1px solid rgba(56,189,248,.15);background:rgba(56,189,248,.07);display:flex;align-items:center;justify-content:center;}
+.loc-pin-dot{width:10px;height:10px;border-radius:50%;background:var(--blue2);box-shadow:0 0 8px rgba(56,189,248,.6);}
+.loc-info{padding:10px 14px;}
 .loc-city{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;color:#fff;letter-spacing:.5px;text-transform:uppercase;line-height:1;}
-.loc-prov{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1px;margin-top:2px;text-transform:uppercase;}
-.loc-ctry{font-size:10px;color:var(--cyan);letter-spacing:2px;margin-top:2px;}
-.loc-map-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;border-left:1px solid rgba(56,189,248,.15);background:rgba(56,189,248,.08);color:var(--blue);text-decoration:none;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:600;transition:all .25s;white-space:nowrap;}
-.loc-map-btn:hover{background:var(--blue-dim);color:#fff;}
-.loc-map-btn svg{width:11px;}
+.loc-prov{font-size:10px;color:rgba(255,255,255,.4);letter-spacing:1px;margin-top:3px;text-transform:uppercase;}
+.loc-ctry{font-size:10px;color:var(--cyan);letter-spacing:2px;margin-top:3px;}
+.loc-map-a{display:flex;align-items:center;padding:10px 16px;border-left:1px solid rgba(56,189,248,.15);background:rgba(56,189,248,.07);color:var(--blue);text-decoration:none;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;transition:all .25s;white-space:nowrap;}
+.loc-map-a:hover{background:var(--blue2);color:#fff;}
 
-/* COUNTER + ARROWS */
-#slide-counter{position:fixed;right:28px;bottom:322px;z-index:60;text-align:center;}
-#slide-counter strong{font-family:'Oswald',sans-serif;font-size:20px;color:#fff;display:block;line-height:1;}
-#slide-counter span{font-size:11px;color:rgba(255,255,255,.3);letter-spacing:2px;}
-#nav-arrows{position:fixed;right:26px;bottom:270px;z-index:60;display:flex;gap:8px;}
-.nav-arr{width:36px;height:36px;border-radius:50%;border:1px solid var(--card-bdr);background:rgba(4,9,15,.5);backdrop-filter:blur(8px);color:var(--blue);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;}
-.nav-arr:hover{background:var(--blue-dim);border-color:var(--blue-dim);color:#fff;}
+#slide-counter{position:absolute;right:30px;bottom:322px;z-index:60;text-align:center;}
+#slide-counter strong{font-family:'Oswald',sans-serif;font-size:22px;color:#fff;display:block;line-height:1;}
+#slide-counter span{font-size:11px;color:rgba(255,255,255,.28);letter-spacing:2px;}
+#nav-arrows{position:absolute;right:28px;bottom:270px;z-index:60;display:flex;gap:8px;}
+.nav-arr{width:38px;height:38px;border-radius:50%;border:1px solid rgba(56,189,248,.22);background:rgba(4,9,15,.5);backdrop-filter:blur(8px);color:var(--blue);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .25s;font-family:'Oswald',sans-serif;font-weight:700;}
+.nav-arr:hover{background:var(--blue2);border-color:var(--blue2);color:#fff;}
 
-/* BOTTOM PANEL */
-#bottom-panel{position:fixed;bottom:0;left:0;right:0;z-index:50;}
-
-/* DEST STRIP */
-#dest-section{padding:0 24px;background:linear-gradient(to top,rgba(4,9,15,.92) 0%,rgba(4,9,15,.65) 100%);backdrop-filter:blur(4px);max-height:0;overflow:hidden;transition:max-height .55s cubic-bezier(.77,0,.18,1),padding .4s ease;}
-#dest-section.open{max-height:210px;padding:12px 24px 14px;}
+#bottom-fixed{position:absolute;bottom:0;left:0;right:0;z-index:50;}
+#dest-section{padding:0 24px;background:linear-gradient(to top,rgba(4,9,15,.94) 0%,rgba(4,9,15,.62) 100%);backdrop-filter:blur(4px);max-height:0;overflow:hidden;transition:max-height .55s cubic-bezier(.77,0,.18,1),padding .4s ease;}
+#dest-section.open{max-height:215px;padding:12px 24px 14px;}
 .ds-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
 .ds-country-name{font-family:'Oswald',sans-serif;font-size:13px;font-weight:600;color:#fff;letter-spacing:2px;text-transform:uppercase;display:flex;align-items:center;gap:8px;}
-.ds-country-name em{font-size:18px;font-style:normal;}
-.ds-free-tag{font-size:9px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);padding:3px 10px;border-radius:999px;}
+.ds-tag{font-size:9px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);padding:3px 12px;border-radius:999px;}
 #dest-strip{display:flex;gap:9px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;touch-action:pan-x;}
 #dest-strip::-webkit-scrollbar{display:none;}
-
-/* DEST CARD */
-.dest-card{flex-shrink:0;position:relative;width:110px;height:130px;border-radius:9px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .3s,transform .3s,box-shadow .3s;}
-.dest-card.active{border-color:var(--blue);box-shadow:0 0 0 1px rgba(56,189,248,.2),0 6px 20px rgba(0,0,0,.5),0 0 20px rgba(56,189,248,.15);}
-.dest-card:hover:not(.active):not(.locked-card){transform:translateY(-2px);border-color:rgba(56,189,248,.3);}
+.dest-card{flex-shrink:0;position:relative;width:112px;height:132px;border-radius:9px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .3s,transform .3s,box-shadow .3s;}
+.dest-card.active{border-color:var(--blue);box-shadow:0 0 0 1px rgba(56,189,248,.2),0 6px 20px rgba(0,0,0,.5),0 0 20px rgba(56,189,248,.14);}
+.dest-card:hover:not(.active):not(.locked){transform:translateY(-2px);border-color:rgba(56,189,248,.3);}
 .dc-img{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.62);transform:scale(1);transition:filter .4s,transform .6s;}
-.dest-card.active .dc-img,.dest-card:hover:not(.locked-card) .dc-img{filter:brightness(.88);transform:scale(1.06);}
+.dest-card.active .dc-img,.dest-card:hover:not(.locked) .dc-img{filter:brightness(.88);transform:scale(1.06);}
 .dc-over{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.82) 0%,transparent 55%);z-index:2;}
-.dc-prog{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(to right,var(--blue-dim),var(--cyan));width:0%;z-index:6;}
-.dc-hot{position:absolute;top:6px;right:6px;z-index:4;font-size:8px;background:rgba(255,60,60,.88);color:#fff;padding:2px 5px;border-radius:3px;font-weight:700;letter-spacing:.5px;}
+.dc-prog{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(to right,var(--blue2),var(--cyan));width:0%;z-index:6;}
+.dc-hot{position:absolute;top:6px;right:6px;z-index:4;font-size:8px;background:rgba(239,68,68,.9);color:#fff;padding:2px 6px;border-radius:3px;font-weight:700;letter-spacing:1px;font-family:'Oswald',sans-serif;}
 .dc-info{position:absolute;bottom:0;left:0;right:0;padding:8px;z-index:3;}
 .dc-name{font-family:'Oswald',sans-serif;font-size:11px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:.8px;line-height:1.2;}
 .dc-sub{font-size:9px;color:rgba(255,255,255,.42);margin-top:2px;}
-/* LOCKED CARD */
-.locked-card{cursor:pointer;filter:none;}
-.locked-card .dc-img{filter:brightness(.25) blur(2px);}
-.lock-overlay{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;background:rgba(4,9,15,.5);}
-.lock-icon{font-size:20px;}
-.lock-label{font-size:8px;letter-spacing:2px;color:var(--blue);text-transform:uppercase;font-weight:600;}
-.lock-cnt{font-size:8px;letter-spacing:1px;color:rgba(255,255,255,.4);text-transform:uppercase;}
+/* LOCKED */
+.locked .dc-img{filter:brightness(.2) blur(3px);}
+.lock-over{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:rgba(4,9,15,.5);}
+.lock-bar{width:18px;height:2px;background:var(--blue);border-radius:2px;}
+.lock-text{font-size:8px;letter-spacing:2px;color:var(--blue);text-transform:uppercase;font-weight:700;}
+.lock-cnt{font-size:8px;color:rgba(255,255,255,.35);letter-spacing:1px;}
 
-/* FREE COUNT BANNER */
-.free-count-strip{position:fixed;bottom:0;left:0;right:0;height:4px;background:linear-gradient(to right,var(--blue-dark) 0%,var(--cyan) 50%,transparent 50%);z-index:100;opacity:.6;}
-
-/* COUNTRY STRIP */
-#country-section{padding:12px 24px 16px;border-top:1px solid rgba(56,189,248,.07);background:linear-gradient(to top,rgba(4,9,15,.9) 0%,rgba(4,9,15,.65) 100%);backdrop-filter:blur(4px);}
-.sec-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:rgba(56,189,248,.35);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
-.sec-label::after{content:'';flex:1;height:1px;background:rgba(56,189,248,.1);}
+#country-section{padding:12px 24px 16px;border-top:1px solid rgba(56,189,248,.07);background:linear-gradient(to top,rgba(4,9,15,.92) 0%,rgba(4,9,15,.64) 100%);backdrop-filter:blur(4px);}
+.sec-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:rgba(56,189,248,.35);margin-bottom:10px;}
 #country-strip{display:flex;gap:10px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none;touch-action:pan-x;}
 #country-strip::-webkit-scrollbar{display:none;}
-
-/* COUNTRY CARD */
-.cc{flex-shrink:0;position:relative;width:102px;height:148px;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .3s,transform .3s,box-shadow .3s;}
-.cc.active{border-color:var(--blue);box-shadow:0 0 0 1px rgba(56,189,248,.2),0 8px 24px rgba(0,0,0,.5),0 0 24px rgba(56,189,248,.2);}
+.cc{flex-shrink:0;position:relative;width:104px;height:150px;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:border-color .3s,transform .3s,box-shadow .3s;}
+.cc.active{border-color:var(--blue);box-shadow:0 0 0 1px rgba(56,189,248,.2),0 8px 24px rgba(0,0,0,.5),0 0 24px rgba(56,189,248,.2);transform:translateY(-4px);}
 .cc:hover:not(.active){transform:translateY(-2px);border-color:rgba(56,189,248,.25);}
 .cc-img{position:absolute;inset:0;background-size:cover;background-position:center;filter:brightness(.55);transform:scale(1);transition:filter .4s,transform .6s;}
 .cc.active .cc-img,.cc:hover .cc-img{filter:brightness(.8);transform:scale(1.05);}
 .cc-over{position:absolute;inset:0;background:linear-gradient(to top,rgba(4,9,15,.88) 0%,transparent 55%);z-index:2;}
-.cc-flag{position:absolute;top:8px;left:8px;z-index:3;font-size:18px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.7));}
-.cc-rank{position:absolute;top:7px;right:7px;z-index:3;background:linear-gradient(135deg,var(--blue-dark),var(--blue-dim));color:#fff;font-size:8px;font-weight:700;letter-spacing:.5px;padding:2px 5px;border-radius:3px;}
-.cc-dot{position:absolute;bottom:32px;right:8px;z-index:4;width:6px;height:6px;border-radius:50%;background:var(--cyan);opacity:0;transform:scale(0);transition:all .3s;}
+.cc-flag{position:absolute;top:8px;left:8px;z-index:3;width:26px;height:19px;border-radius:2px;object-fit:cover;box-shadow:0 1px 4px rgba(0,0,0,.6);}
+.cc-rank{position:absolute;top:7px;right:7px;z-index:3;background:linear-gradient(135deg,var(--blue3),var(--blue2));color:#fff;font-size:8px;font-weight:700;letter-spacing:.5px;padding:2px 6px;border-radius:3px;font-family:'Oswald',sans-serif;}
+.cc-dot{position:absolute;bottom:34px;right:8px;z-index:4;width:6px;height:6px;border-radius:50%;background:var(--cyan);opacity:0;transform:scale(0);transition:all .3s;}
 .cc.active .cc-dot{opacity:1;transform:scale(1);}
+.cc-vis{position:absolute;bottom:27px;left:8px;z-index:3;font-size:9px;color:rgba(255,255,255,.36);letter-spacing:1px;}
 .cc-name{position:absolute;bottom:8px;left:8px;right:8px;z-index:3;font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.8px;line-height:1.2;}
-.cc-vis{position:absolute;bottom:26px;left:8px;z-index:3;font-size:9px;color:rgba(255,255,255,.38);letter-spacing:1px;}
-.free-lock-cc{position:absolute;top:0;left:0;right:0;bottom:0;z-index:10;background:rgba(4,9,15,.01);}/* just to capture clicks */
 
-/* COOKIE */
-#cookie-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(90px);z-index:999;background:rgba(4,9,15,.95);backdrop-filter:blur(18px);border:1px solid var(--card-bdr);border-radius:14px;padding:14px 18px 14px 16px;display:flex;align-items:center;gap:12px;max-width:380px;width:calc(100% - 40px);box-shadow:0 8px 36px rgba(0,0,0,.6),0 0 40px rgba(56,189,248,.08);opacity:0;transition:transform .5s cubic-bezier(.34,1.3,.64,1),opacity .4s;}
+/* MAIN */
+#main{background:var(--bg);position:relative;z-index:10;}
+.divider{width:100%;height:1px;background:linear-gradient(to right,transparent,rgba(56,189,248,.15),transparent);}
+.s-hdr{padding:44px 48px 22px;display:flex;align-items:flex-end;justify-content:space-between;}
+.s-hdr-l{display:flex;flex-direction:column;gap:5px;}
+.s-tag{font-size:10px;letter-spacing:5px;text-transform:uppercase;color:var(--blue);}
+.s-title{font-family:'Oswald',sans-serif;font-size:28px;font-weight:700;color:#fff;letter-spacing:1px;text-transform:uppercase;}
+.s-hdr-r{display:flex;gap:8px;}
+.filter-btn{padding:8px 16px;border-radius:6px;border:1px solid rgba(56,189,248,.15);background:transparent;color:rgba(255,255,255,.4);font-size:10px;letter-spacing:2px;text-transform:uppercase;cursor:pointer;transition:all .25s;font-family:'Inter',sans-serif;}
+.filter-btn.active,.filter-btn:hover{background:linear-gradient(135deg,var(--blue3),var(--blue2));border-color:var(--blue2);color:#fff;font-weight:600;}
+
+#grid-wrap{padding:0 48px 50px;}
+.dest-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:18px;}
+.dg-card{border-radius:12px;overflow:hidden;background:#080d14;border:1px solid rgba(255,255,255,.07);cursor:pointer;transition:transform .3s,box-shadow .3s,border-color .3s;position:relative;}
+.dg-card.locked-card{opacity:.55;cursor:pointer;}
+.dg-card:hover:not(.locked-card){transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,.55);border-color:rgba(56,189,248,.3);}
+.dg-img-wrap{overflow:hidden;position:relative;aspect-ratio:4/3;}
+.dg-img{width:100%;height:100%;background-size:cover;background-position:center;filter:brightness(.68);transition:filter .4s,transform .5s;}
+.dg-card:not(.locked-card):hover .dg-img{filter:brightness(.9);transform:scale(1.05);}
+.locked-card .dg-img{filter:brightness(.25) blur(4px);}
+.dg-hot{position:absolute;top:10px;right:10px;z-index:3;background:rgba(239,68,68,.9);color:#fff;font-size:8px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px;border-radius:4px;font-family:'Oswald',sans-serif;}
+.dg-lock-over{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(4,9,15,.6);}
+.dg-lock-bar{width:28px;height:3px;background:var(--blue2);border-radius:2px;}
+.dg-lock-txt{font-size:9px;letter-spacing:3px;color:var(--blue);text-transform:uppercase;font-weight:700;}
+.dg-body{padding:14px 16px 16px;}
+.dg-name{font-family:'Oswald',sans-serif;font-size:16px;font-weight:600;color:#fff;text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px;}
+.dg-sub{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.dg-meta{display:flex;align-items:center;justify-content:space-between;}
+.dg-badges{display:flex;gap:4px;flex-wrap:wrap;}
+.dg-badge{font-size:8px;letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid rgba(56,189,248,.18);color:rgba(56,189,248,.55);}
+.dg-map-a{color:var(--blue);font-size:10px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-weight:700;white-space:nowrap;transition:opacity .2s;}
+.dg-map-a:hover{opacity:.7;}
+.dg-upgrade-a{color:var(--cyan);font-size:9px;letter-spacing:2px;text-transform:uppercase;text-decoration:none;font-weight:700;white-space:nowrap;border:1px solid rgba(103,232,249,.3);padding:4px 10px;border-radius:4px;transition:all .2s;}
+.dg-upgrade-a:hover{background:rgba(103,232,249,.1);}
+
+/* ADS */
+#ads-section{margin:0 48px 50px;border-radius:16px;overflow:hidden;border:1px solid rgba(56,189,248,.12);background:#080d14;}
+.ads-top{padding:20px 28px;background:rgba(56,189,248,.03);border-bottom:1px solid rgba(56,189,248,.08);display:flex;align-items:center;justify-content:space-between;}
+.ads-top-l{display:flex;flex-direction:column;gap:3px;}
+.ads-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:rgba(56,189,248,.4);}
+.ads-title{font-family:'Oswald',sans-serif;font-size:18px;font-weight:600;color:#fff;letter-spacing:1px;}
+.ads-contact-link{color:var(--blue);text-decoration:none;font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;border:1px solid rgba(56,189,248,.35);padding:8px 16px;border-radius:6px;transition:all .25s;}
+.ads-contact-link:hover{background:var(--blue2);color:#fff;}
+.ads-grid{display:grid;grid-template-columns:repeat(3,1fr);}
+.ad-slot{padding:28px;border-right:1px solid rgba(56,189,248,.06);min-height:200px;display:flex;flex-direction:column;justify-content:space-between;transition:background .25s;}
+.ad-slot:last-child{border-right:none;}
+.ad-slot:hover{background:rgba(56,189,248,.025);}
+.ad-slot.featured{background:rgba(56,189,248,.03);}
+.ad-slot-rule{width:32px;height:2px;background:var(--blue2);margin-bottom:12px;opacity:.6;border-radius:2px;}
+.ad-slot-type{font-size:9px;letter-spacing:3px;text-transform:uppercase;color:rgba(56,189,248,.45);margin-bottom:8px;}
+.ad-slot-title{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;color:#fff;letter-spacing:.5px;margin-bottom:8px;}
+.ad-slot-desc{font-size:12px;color:rgba(255,255,255,.42);line-height:1.6;}
+.ad-cta{display:inline-flex;align-items:center;color:var(--blue);font-size:10px;letter-spacing:2px;text-transform:uppercase;font-weight:700;text-decoration:none;border:1px solid rgba(56,189,248,.3);padding:8px 16px;border-radius:5px;transition:all .25s;margin-top:16px;width:fit-content;}
+.ad-cta:hover{background:var(--blue2);color:#fff;}
+
+/* CONTACT */
+#contact-section{margin:0 48px 50px;}
+.contact-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.acc-card,.admin-card{background:#080d14;border:1px solid rgba(255,255,255,.07);border-radius:16px;overflow:hidden;}
+.acc-card-hdr{padding:22px 28px;background:rgba(56,189,248,.04);border-bottom:1px solid rgba(56,189,248,.1);}
+.acc-card-tag{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--blue);margin-bottom:5px;}
+.acc-card-title{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;color:#fff;letter-spacing:1px;}
+.acc-body{padding:4px 0;}
+.acc-row{display:flex;align-items:flex-start;gap:14px;padding:16px 28px;border-bottom:1px solid rgba(255,255,255,.04);}
+.acc-row:last-child{border-bottom:none;}
+.acc-row-label{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:4px;min-width:80px;}
+.acc-row-val{font-size:13px;color:#fff;font-weight:500;line-height:1.5;}
+.acc-row-val a{color:var(--blue);text-decoration:none;}
+.acc-row-val a:hover{text-decoration:underline;}
+.admin-card-hdr{padding:22px 28px;background:rgba(56,189,248,.04);border-bottom:1px solid rgba(56,189,248,.1);}
+.admin-card-tag{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:var(--blue);margin-bottom:5px;}
+.admin-card-title{font-family:'Oswald',sans-serif;font-size:20px;font-weight:600;color:#fff;letter-spacing:1px;}
+.admin-body{padding:22px 28px;}
+.channel-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;}
+.channel-card{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:10px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.02);text-decoration:none;transition:all .25s;}
+.channel-card:hover{border-color:rgba(255,255,255,.16);background:rgba(255,255,255,.06);}
+.channel-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.channel-dot.line{background:#06C755;}
+.channel-dot.fb{background:#1877f2;}
+.channel-dot.ig{background:#E1306C;}
+.channel-dot.tel{background:#229ED9;}
+.channel-name{font-size:12px;font-weight:600;color:#fff;display:block;margin-bottom:2px;}
+.channel-handle{font-size:10px;color:rgba(255,255,255,.35);display:block;}
+.hours-box{display:flex;align-items:flex-start;gap:14px;padding:14px 16px;border-radius:10px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.05);}
+.hours-line{width:2px;height:40px;background:var(--blue2);border-radius:2px;flex-shrink:0;margin-top:2px;opacity:.6;}
+.hours-text{font-size:12px;color:rgba(255,255,255,.48);line-height:1.6;}
+.hours-text strong{color:#fff;display:block;margin-bottom:3px;font-size:13px;}
+
+#footer{padding:28px 48px;border-top:1px solid rgba(56,189,248,.08);background:#030609;display:flex;align-items:center;justify-content:space-between;}
+.footer-name{font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;letter-spacing:5px;color:rgba(56,189,248,.4);text-transform:uppercase;}
+.footer-copy{font-size:11px;color:rgba(255,255,255,.16);letter-spacing:1px;}
+
+#cookie-toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(90px);z-index:999;background:rgba(4,9,15,.97);backdrop-filter:blur(20px);border:1px solid rgba(56,189,248,.18);border-radius:14px;padding:16px 20px;display:flex;align-items:center;gap:14px;max-width:400px;width:calc(100% - 40px);box-shadow:0 8px 40px rgba(0,0,0,.6),0 0 40px rgba(56,189,248,.06);opacity:0;transition:transform .5s cubic-bezier(.34,1.3,.64,1),opacity .4s;}
 #cookie-toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-.ck-text{flex:1;font-size:12px;color:rgba(255,255,255,.7);line-height:1.5;}
-.ck-text strong{color:var(--blue);}
-.ck-btns{display:flex;gap:7px;flex-shrink:0;}
-.ck-ok{background:linear-gradient(135deg,var(--blue-dark),var(--blue-dim));color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:11px;font-weight:600;cursor:pointer;}
-.ck-no{background:rgba(255,255,255,.07);color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.14);border-radius:7px;padding:7px 10px;font-size:11px;cursor:pointer;}
+.ck-bar{width:3px;height:36px;background:var(--blue2);border-radius:2px;flex-shrink:0;}
+.ck-text{flex:1;font-size:12px;color:rgba(255,255,255,.68);line-height:1.5;}
+.ck-text strong{color:var(--blue);display:block;margin-bottom:2px;}
+.ck-btns{display:flex;gap:8px;flex-shrink:0;}
+.ck-ok{background:linear-gradient(135deg,var(--blue3),var(--blue2));color:#fff;border:none;border-radius:7px;padding:8px 16px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:1px;text-transform:uppercase;}
+.ck-no{background:transparent;color:rgba(255,255,255,.35);border:1px solid rgba(255,255,255,.13);border-radius:7px;padding:8px 12px;font-size:11px;cursor:pointer;}
 
+@media(max-width:1100px){.dest-grid{grid-template-columns:repeat(3,1fr);}}
 @media(max-width:768px){
-  #navbar{padding:14px 18px;}
-  .nav-pills{display:none;}
-  #left-panel{left:18px;right:18px;max-width:100%;top:auto;transform:none;bottom:460px;}
-  .dest-desc{display:none;}
-  .dest-title{font-size:30px;}
-  #loc-badge{left:18px;bottom:465px;}
+  #navbar{padding:14px 18px;} .nav-pills{display:none;}
+  #left-panel{left:18px;right:18px;max-width:100%;top:auto;transform:none;bottom:458px;}
+  .dest-desc{display:none;} .dest-title{font-size:34px;}
+  #loc-badge{left:18px;bottom:462px;}
   #slide-counter,#nav-arrows{display:none;}
-  .cc{width:88px;height:128px;}
-  .dest-card{width:95px;height:118px;}
-  #free-badge{font-size:9px;padding:5px 14px;}
+  .cc{width:88px;height:130px;} .dest-card{width:96px;height:120px;}
+  .s-hdr{padding:28px 18px 18px;flex-direction:column;gap:14px;}
+  #grid-wrap{padding:0 18px 32px;} .dest-grid{grid-template-columns:repeat(2,1fr);}
+  #ads-section,#contact-section{margin:0 18px 32px;}
+  .ads-grid{grid-template-columns:1fr;} .ad-slot{border-right:none;border-bottom:1px solid rgba(56,189,248,.06);}
+  .contact-grid{grid-template-columns:1fr;} .channel-grid{grid-template-columns:1fr 1fr;}
+  #footer{padding:20px 18px;flex-direction:column;gap:8px;text-align:center;}
 }
 </style>
 </head>
 <body>
-<div id="bg-wrap"></div>
-<div class="grid-ol"></div>
-<div id="prog-line"></div>
-
-<!-- FREE BADGE -->
-<div id="free-badge"><div class="free-dot"></div> Free Plan · 3 Destinations / Country</div>
-
-<!-- NAVBAR -->
-<nav id="navbar">
-  <div class="nav-logo">Globe Express<span>Free Edition</span></div>
-  <div class="nav-pills">
-    <div class="nav-pill active" data-cat="all">🌍 All</div>
-    <div class="nav-pill" data-cat="asia">🌏 Asia</div>
-    <div class="nav-pill" data-cat="europe">🏰 Europe</div>
-    <div class="nav-pill" data-cat="americas">🗽 Americas</div>
-    <div class="nav-pill" data-cat="oceania">🦘 Oceania</div>
-  </div>
-  <div class="nav-right">
-    <a href="auth-login.html" class="nav-signin">Sign In</a>
-    <a href="travel-vip.html" class="btn-upgrade">💎 Upgrade VIP</a>
-  </div>
-</nav>
-
-<!-- LEFT PANEL -->
-<div id="left-panel">
-  <div class="dest-region" id="dest-region">Loading...</div>
-  <h1 class="dest-title" id="dest-title">—</h1>
-  <p class="dest-desc" id="dest-desc"></p>
-  <div class="btn-row">
-    <a class="btn-map" id="btn-discover" href="#" target="_blank" rel="noopener">
-      View on Map
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-    </a>
-  </div>
-  <div class="badges" id="dest-badges"></div>
-</div>
-
-<!-- LOCATION BADGE -->
-<div id="loc-badge">
-  <div class="loc-pin">📍</div>
-  <div class="loc-info">
-    <div class="loc-city" id="loc-city"></div>
-    <div class="loc-prov" id="loc-prov"></div>
-    <div class="loc-ctry" id="loc-ctry"></div>
-  </div>
-  <a class="loc-map-btn" id="loc-map" href="#" target="_blank" rel="noopener">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/><circle cx="12" cy="9" r="2.5"/></svg>
-    Google Maps
-  </a>
-</div>
-
-<div id="slide-counter"><strong id="cur-num">01</strong><span id="tot-num">/03</span></div>
-<div id="nav-arrows">
-  <button class="nav-arr" id="btn-prev">←</button>
-  <button class="nav-arr" id="btn-next">→</button>
-</div>
-
-<!-- BOTTOM PANEL -->
-<div id="bottom-panel">
-  <div id="dest-section">
-    <div class="ds-header">
-      <div class="ds-country-name"><em id="ds-flag"></em><span id="ds-name"></span></div>
-      <div class="ds-free-tag">🔓 Free · 3 Places</div>
-    </div>
-    <div id="dest-strip"></div>
-  </div>
-  <div id="country-section">
-    <div class="sec-label">เลือกประเทศปลายทาง</div>
-    <div id="country-strip"></div>
-  </div>
-</div>
-
-<!-- FREE LIMIT MODAL -->
 <div id="fl-overlay" onclick="closeModal()"></div>
 <div id="free-limit">
-  <div class="fl-icon">🔒</div>
+  <div class="fl-line"></div>
   <div class="fl-title">ต้องการดูเพิ่มเติม?</div>
-  <div class="fl-sub">แผน Free ให้ดูได้ประเทศละ <strong>3 สถานที่</strong> เท่านั้น<br>อัปเกรดเป็น <strong>💎 VIP Diamond</strong> เพื่อดู <strong>80+ สถานที่</strong> พร้อมรูปภาพ 3 รูปต่อที่ และ Fullscreen Gallery</div>
-  <a href="travel-vip.html" class="fl-btn">💎 Upgrade to VIP Diamond</a>
+  <div class="fl-sub">แผน Free ให้ดูได้ประเทศละ <strong style="color:#fff">3 สถานที่</strong> เท่านั้น<br>อัปเกรดเพื่อดู <strong style="color:#fff">80+ สถานที่</strong> พร้อมรูป Gallery เต็มจอ</div>
+  <a href="travel-vip.html" class="fl-btn">Upgrade to VIP Diamond</a>
   <button class="fl-close" onclick="closeModal()">ดูต่อในแผน Free</button>
 </div>
 
-<!-- COOKIE -->
+<div id="hero">
+  <div id="bg-wrap"></div>
+  <div class="grid-ol"></div>
+  <div id="prog-line"></div>
+
+  <div id="free-badge"><div class="free-dot"></div><div class="free-label">Free Plan &mdash; 3 Destinations / Country</div></div>
+
+  <nav id="navbar">
+    <div class="nav-logo">Globe Express<span>Free Edition</span></div>
+    <div class="nav-pills">
+      <div class="nav-pill active" data-cat="all">All</div>
+      <div class="nav-pill" data-cat="asia">Asia</div>
+      <div class="nav-pill" data-cat="europe">Europe</div>
+      <div class="nav-pill" data-cat="americas">Americas</div>
+      <div class="nav-pill" data-cat="oceania">Oceania</div>
+    </div>
+    <div class="nav-right">
+      <a href="auth-login.html" class="nav-signin">Sign In</a>
+      <a href="travel-vip.html" class="btn-upgrade">Upgrade VIP</a>
+    </div>
+  </nav>
+
+  <div id="left-panel">
+    <div class="dest-region" id="dest-region">Loading...</div>
+    <h1 class="dest-title" id="dest-title">—</h1>
+    <p class="dest-desc" id="dest-desc"></p>
+    <div class="btn-row">
+      <a class="btn-map" id="btn-discover" href="#" target="_blank" rel="noopener">View on Map</a>
+    </div>
+    <div class="badges" id="dest-badges"></div>
+  </div>
+
+  <div id="loc-badge">
+    <div class="loc-pin-box"><div class="loc-pin-dot"></div></div>
+    <div class="loc-info">
+      <div class="loc-city" id="loc-city"></div>
+      <div class="loc-prov" id="loc-prov"></div>
+      <div class="loc-ctry" id="loc-ctry"></div>
+    </div>
+    <a class="loc-map-a" id="loc-map" href="#" target="_blank" rel="noopener">Google Maps</a>
+  </div>
+
+  <div id="slide-counter"><strong id="cur-num">01</strong><span id="tot-num">/03</span></div>
+  <div id="nav-arrows">
+    <button class="nav-arr" id="btn-prev">&#8592;</button>
+    <button class="nav-arr" id="btn-next">&#8594;</button>
+  </div>
+
+  <div id="bottom-fixed">
+    <div id="dest-section">
+      <div class="ds-header">
+        <div class="ds-country-name" id="ds-name-wrap"></div>
+        <div class="ds-tag">Free Preview &mdash; 3 Places</div>
+      </div>
+      <div id="dest-strip"></div>
+    </div>
+    <div id="country-section">
+      <div class="sec-label">Select Destination Country</div>
+      <div id="country-strip"></div>
+    </div>
+  </div>
+</div>
+
+<div id="main">
+  <div class="divider"></div>
+  <div class="s-hdr">
+    <div class="s-hdr-l">
+      <div class="s-tag">Top Destinations 2025</div>
+      <div class="s-title" id="grid-title">Destinations</div>
+    </div>
+    <div class="s-hdr-r" id="cat-btns"></div>
+  </div>
+  <div id="grid-wrap"><div class="dest-grid" id="dest-grid"></div></div>
+  <div class="divider"></div>
+
+  <div id="ads-section">
+    <div class="ads-top">
+      <div class="ads-top-l">
+        <div class="ads-label">Advertisement Space</div>
+        <div class="ads-title">พื้นที่โฆษณาและพันธมิตร</div>
+      </div>
+      <a href="mailto:ads@globeexpress.com" class="ads-contact-link">ติดต่อลงโฆษณา</a>
+    </div>
+    <div class="ads-grid">
+      <div class="ad-slot featured">
+        <div><div class="ad-slot-rule"></div><div class="ad-slot-type">ที่พัก / Hotel &amp; Resort</div><div class="ad-slot-title">พื้นที่โฆษณาที่พัก</div><div class="ad-slot-desc">ลงโฆษณาที่พัก โรงแรม รีสอร์ท หรือ Airbnb ของคุณ เข้าถึงนักท่องเที่ยวกว่า 50,000 คน/เดือน</div></div>
+        <a href="mailto:ads@globeexpress.com" class="ad-cta">ลงโฆษณาที่นี่</a>
+      </div>
+      <div class="ad-slot">
+        <div><div class="ad-slot-rule"></div><div class="ad-slot-type">ทัวร์ / Tour Package</div><div class="ad-slot-title">โปรโมทแพ็คเกจทัวร์</div><div class="ad-slot-desc">ประกาศแพ็คเกจท่องเที่ยว ทัวร์กรุ๊ป Private Tour ให้ถึงกลุ่มเป้าหมาย</div></div>
+        <a href="mailto:ads@globeexpress.com" class="ad-cta">ติดต่อลงโฆษณา</a>
+      </div>
+      <div class="ad-slot">
+        <div><div class="ad-slot-rule"></div><div class="ad-slot-type">กิจกรรม / Experience</div><div class="ad-slot-title">โปรโมทกิจกรรม</div><div class="ad-slot-desc">ดำน้ำ ปีนเขา เวิร์คชอป Local Experience สุดพิเศษที่คุณต้องการโปรโมท</div></div>
+        <a href="mailto:ads@globeexpress.com" class="ad-cta">ติดต่อลงโฆษณา</a>
+      </div>
+    </div>
+  </div>
+
+  <div id="contact-section">
+    <div class="s-hdr" style="padding:0 0 22px;">
+      <div class="s-hdr-l"><div class="s-tag">Contact &amp; Support</div><div class="s-title">ข้อมูลติดต่อ</div></div>
+    </div>
+    <div class="contact-grid">
+      <div class="acc-card">
+        <div class="acc-card-hdr"><div class="acc-card-tag">ที่พัก / Accommodation Booking</div><div class="acc-card-title">Globe Express Travel</div></div>
+        <div class="acc-body">
+          <div class="acc-row"><div><div class="acc-row-label">ที่อยู่</div><div class="acc-row-val">123 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพฯ 10110</div></div></div>
+          <div class="acc-row"><div><div class="acc-row-label">โทรศัพท์</div><div class="acc-row-val"><a href="tel:+6621234567">+66 2-123-4567</a></div></div></div>
+          <div class="acc-row"><div><div class="acc-row-label">อีเมล</div><div class="acc-row-val"><a href="mailto:booking@globeexpress.com">booking@globeexpress.com</a></div></div></div>
+          <div class="acc-row"><div><div class="acc-row-label">เวลาทำการ</div><div class="acc-row-val">จันทร์ – ศุกร์ 09:00 – 18:00<br>เสาร์ – อาทิตย์ 10:00 – 16:00</div></div></div>
+          <div class="acc-row"><div><div class="acc-row-label">ชำระเงิน</div><div class="acc-row-val">โอนธนาคาร · PromptPay · Credit Card · QR Code</div></div></div>
+        </div>
+      </div>
+      <div class="admin-card">
+        <div class="admin-card-hdr"><div class="admin-card-tag">Admin Support / ทีมงาน</div><div class="admin-card-title">ติดต่อทีมงาน</div></div>
+        <div class="admin-body">
+          <div class="channel-grid">
+            <a href="https://line.me/ti/p/~@globeexpress" target="_blank" rel="noopener" class="channel-card"><div class="channel-dot line"></div><div><span class="channel-name">LINE Official</span><span class="channel-handle">@globeexpress</span></div></a>
+            <a href="https://fb.com/globeexpress" target="_blank" rel="noopener" class="channel-card"><div class="channel-dot fb"></div><div><span class="channel-name">Facebook</span><span class="channel-handle">Globe Express</span></div></a>
+            <a href="https://instagram.com/globeexpress" target="_blank" rel="noopener" class="channel-card"><div class="channel-dot ig"></div><div><span class="channel-name">Instagram</span><span class="channel-handle">@globeexpress</span></div></a>
+            <a href="https://t.me/globeexpress" target="_blank" rel="noopener" class="channel-card"><div class="channel-dot tel"></div><div><span class="channel-name">Telegram</span><span class="channel-handle">@globeexpress</span></div></a>
+          </div>
+          <div class="hours-box"><div class="hours-line"></div><div class="hours-text"><strong>ระยะเวลาตอบกลับ</strong>ทุกวัน 08:00 – 22:00 น. ภายใน 30 นาทีในเวลาทำการ</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer">
+    <div class="footer-name">Globe Express &mdash; Free</div>
+    <div class="footer-copy">&copy; 2025 Globe Express &middot; All Rights Reserved</div>
+  </div>
+</div>
+
 <div id="cookie-toast">
-  <div style="font-size:20px;flex-shrink:0">🍪</div>
-  <div class="ck-text"><strong>เว็บไซต์นี้ใช้คุกกี้</strong><br>เราบันทึกสถานที่โปรดและการตั้งค่า</div>
+  <div class="ck-bar"></div>
+  <div class="ck-text"><strong>เว็บไซต์นี้ใช้คุกกี้</strong>เราบันทึกสถานที่โปรดและการตั้งค่า</div>
   <div class="ck-btns">
     <button class="ck-ok" onclick="acceptCookies()">ยอมรับ</button>
     <button class="ck-no" onclick="declineCookies()">ปฏิเสธ</button>
@@ -296,56 +396,52 @@ html,body{width:100%;height:100%;overflow:hidden;font-family:'Inter',sans-serif;
 </div>
 
 <script>
-const FREE_LIMIT = 3;
+const FREE_LIMIT=3;
+const FLAGS={jp:'https://flagcdn.com/w40/jp.png',th:'https://flagcdn.com/w40/th.png',it:'https://flagcdn.com/w40/it.png',fr:'https://flagcdn.com/w40/fr.png',us:'https://flagcdn.com/w40/us.png',au:'https://flagcdn.com/w40/au.png'};
+const CATS={all:'All',asia:'Asia',europe:'Europe',americas:'Americas',oceania:'Oceania'};
 
 const COUNTRIES=[
-  {id:'jp',flag:'🇯🇵',name:'Japan',nameLocal:'ญี่ปุ่น',continent:'asia',rank:'#1',visitors:'31.9M/yr',img:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80',
-   dests:[
-    {name:'Tokyo',sub:'Kanto Region',hot:true,city:'Tokyo',prov:'Kanto Region',ctry:'🇯🇵 Japan',map:'https://maps.google.com/?q=Tokyo,Japan',img:'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1400&q=85',desc:'มหานครที่ไม่มีวันหลับใหล ชิบูยา อากิฮาบาระ และวัดเซ็นโซจิ',badges:['#1 City 2025','Anime Capital','Michelin Stars']},
-    {name:'Kyoto',sub:'Kansai Region',hot:true,city:'Kyoto City',prov:'Kyoto Prefecture',ctry:'🇯🇵 Japan',map:'https://maps.google.com/?q=Kyoto,Japan',img:'https://images.unsplash.com/photo-1493997181344-712f2f19d87a?w=1400&q=85',desc:'อดีตราชธานี วัดทอง ฟูชิมิ อินาริ พิธีชงชา และเกอิชา',badges:['UNESCO Heritage','Cherry Blossom','Geisha']},
-    {name:'Osaka',sub:'Kansai Region',hot:false,city:'Osaka',prov:'Osaka Prefecture',ctry:'🇯🇵 Japan',map:'https://maps.google.com/?q=Osaka,Japan',img:'https://images.unsplash.com/photo-1589452271712-64b8a66c7b71?w=1400&q=85',desc:'เมืองอาหารชั้นเยี่ยม ตลาดโดทงโบริ ปราสาทโอซาก้า',badges:['Street Food Capital','USJ Theme Park','Dotonbori']},
-    {name:'Hokkaido',sub:'Northern Island',hot:false,city:'Sapporo',prov:'Hokkaido',ctry:'🇯🇵 Japan',map:'https://maps.google.com/?q=Hokkaido,Japan',img:'https://images.unsplash.com/photo-1553701256-0beaec0234df?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
-    {name:'Nara',sub:'Kansai Region',hot:false,city:'Nara City',prov:'Nara Prefecture',ctry:'🇯🇵 Japan',map:'https://maps.google.com/?q=Nara,Japan',img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
+  {id:'jp',name:'Japan',nameL:'ญี่ปุ่น',continent:'asia',rank:'#1',vis:'31.9M/yr',img:'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80',dests:[
+    {name:'Tokyo',sub:'Kanto',hot:true,city:'Tokyo',prov:'Kanto Region',ctry:'Japan',map:'https://maps.google.com/?q=Tokyo',img:'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=900&q=80',desc:'มหานครที่ไม่มีวันหลับใหล ชิบูยา อากิฮาบาระ',badges:['#1 City 2025','Anime Capital','Michelin Stars']},
+    {name:'Kyoto',sub:'Kansai',hot:true,city:'Kyoto',prov:'Kyoto Pref.',ctry:'Japan',map:'https://maps.google.com/?q=Kyoto',img:'https://images.unsplash.com/photo-1493997181344-712f2f19d87a?w=900&q=80',desc:'อดีตราชธานี วัดทอง ฟูชิมิ อินาริ เกอิชา',badges:['UNESCO','Cherry Blossom','Geisha']},
+    {name:'Osaka',sub:'Kansai',hot:false,city:'Osaka',prov:'Osaka Pref.',ctry:'Japan',map:'https://maps.google.com/?q=Osaka',img:'https://images.unsplash.com/photo-1589452271712-64b8a66c7b71?w=900&q=80',desc:'เมืองอาหาร ตลาดโดทงโบริ USJ',badges:['Street Food','USJ','Dotonbori']},
+    {name:'Hokkaido',sub:'North',hot:false,city:'Sapporo',prov:'Hokkaido',ctry:'Japan',map:'https://maps.google.com/?q=Hokkaido',img:'https://images.unsplash.com/photo-1553701256-0beaec0234df?w=900&q=80',desc:'VIP Only',badges:[]},
+    {name:'Nara',sub:'Kansai',hot:false,city:'Nara',prov:'Nara Pref.',ctry:'Japan',map:'https://maps.google.com/?q=Nara',img:'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=900&q=80',desc:'VIP Only',badges:[]},
   ]},
-  {id:'th',flag:'🇹🇭',name:'Thailand',nameLocal:'ไทย',continent:'asia',rank:'#2',visitors:'28.1M/yr',img:'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80',
-   dests:[
-    {name:'Bangkok',sub:'Central Thailand',hot:true,city:'Bangkok',prov:'Bangkok Metropolitan',ctry:'🇹🇭 Thailand',map:'https://maps.google.com/?q=Bangkok,Thailand',img:'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=1400&q=85',desc:'เมืองหลวงสุดคึกคัก สตรีทฟู้ดระดับ Michelin วัดวาอาราม',badges:['#1 Street Food','Grand Palace','Muay Thai']},
-    {name:'Chiang Mai',sub:'Northern Thailand',hot:true,city:'Chiang Mai',prov:'Chiang Mai Province',ctry:'🇹🇭 Thailand',map:'https://maps.google.com/?q=Chiang+Mai,Thailand',img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1400&q=85',desc:'เมืองเหนือโบราณ 300 วัดงดงาม ดอยสุเทพ ช้างไทย',badges:['300 Temples','Elephant Sanctuary','Night Bazaar']},
-    {name:'Phuket',sub:'Andaman Coast',hot:false,city:'Phuket Town',prov:'Phuket Province',ctry:'🇹🇭 Thailand',map:'https://maps.google.com/?q=Phuket,Thailand',img:'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=1400&q=85',desc:'เกาะที่ใหญ่ที่สุดของไทย ทะเลอันดามันสีเขียวมรกต',badges:['Crystal Clear Sea','Island Hopping','Water Sports']},
-    {name:'Krabi',sub:'Andaman Coast',hot:false,city:'Ao Nang',prov:'Krabi Province',ctry:'🇹🇭 Thailand',map:'https://maps.google.com/?q=Krabi,Thailand',img:'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
-    {name:'Pai',sub:'Mae Hong Son',hot:false,city:'Pai District',prov:'Mae Hong Son Province',ctry:'🇹🇭 Thailand',map:'https://maps.google.com/?q=Pai,Thailand',img:'https://images.unsplash.com/photo-1504214208698-ea1916a2195a?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
+  {id:'th',name:'Thailand',nameL:'ไทย',continent:'asia',rank:'#2',vis:'28.1M/yr',img:'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80',dests:[
+    {name:'Bangkok',sub:'Central',hot:true,city:'Bangkok',prov:'Bangkok Metro',ctry:'Thailand',map:'https://maps.google.com/?q=Bangkok',img:'https://images.unsplash.com/photo-1563492065599-3520f775eeed?w=900&q=80',desc:'สตรีทฟู้ดระดับ Michelin วัดวาอาราม',badges:['Street Food','Grand Palace','Muay Thai']},
+    {name:'Chiang Mai',sub:'North',hot:true,city:'Chiang Mai',prov:'Chiang Mai',ctry:'Thailand',map:'https://maps.google.com/?q=Chiang+Mai',img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=900&q=80',desc:'300 วัด ดอยสุเทพ ช้างไทย',badges:['300 Temples','Elephants','Night Bazaar']},
+    {name:'Phuket',sub:'Andaman',hot:false,city:'Phuket',prov:'Phuket',ctry:'Thailand',map:'https://maps.google.com/?q=Phuket',img:'https://images.unsplash.com/photo-1589394815804-964ed0be2eb5?w=900&q=80',desc:'ทะเลอันดามัน หาดป่าตอง',badges:['Crystal Sea','Island Hop','Water Sports']},
+    {name:'Krabi',sub:'Andaman',hot:false,city:'Ao Nang',prov:'Krabi',ctry:'Thailand',map:'https://maps.google.com/?q=Krabi',img:'https://images.unsplash.com/photo-1552465011-b4e21bf6e79a?w=900&q=80',desc:'VIP Only',badges:[]},
+    {name:'Chiang Rai',sub:'North',hot:false,city:'Chiang Rai',prov:'Chiang Rai',ctry:'Thailand',map:'https://maps.google.com/?q=Chiang+Rai',img:'https://images.unsplash.com/photo-1599739583526-2f5a5e0da7dc?w=900&q=80',desc:'VIP Only',badges:[]},
   ]},
-  {id:'it',flag:'🇮🇹',name:'Italy',nameLocal:'อิตาลี',continent:'europe',rank:'#3',visitors:'57.2M/yr',img:'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80',
-   dests:[
-    {name:'Rome',sub:'Lazio',hot:true,city:'Rome',prov:'Lazio Region',ctry:'🇮🇹 Italy',map:'https://maps.google.com/?q=Rome,Italy',img:'https://images.unsplash.com/photo-1525874684015-58379d421a52?w=1400&q=85',desc:'นครนิรันดร์ โคลอสเซียม วาติกัน สาดน้ำโทรวี เจลาโต้',badges:['Colosseum','Vatican City','Trevi Fountain']},
-    {name:'Venice',sub:'Veneto Region',hot:true,city:'Venice',prov:'Veneto Region',ctry:'🇮🇹 Italy',map:'https://maps.google.com/?q=Venice,Italy',img:'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=1400&q=85',desc:'เมืองลอยน้ำ Grand Canal คลองกอนโดล่า เทศกาลคาร์นิวัล',badges:['Grand Canal','Gondola Ride','UNESCO']},
-    {name:'Florence',sub:'Tuscany',hot:false,city:'Florence',prov:'Tuscany Region',ctry:'🇮🇹 Italy',map:'https://maps.google.com/?q=Florence,Italy',img:'https://images.unsplash.com/photo-1541343672885-9be56236302a?w=1400&q=85',desc:'เมืองหลวงแห่ง Renaissance Uffizi Gallery รูปปั้นดาวิด',badges:['Renaissance Capital','Uffizi Gallery','Tuscan Wine']},
-    {name:'Amalfi Coast',sub:'Campania',hot:false,city:'Positano',prov:'Campania',ctry:'🇮🇹 Italy',map:'https://maps.google.com/?q=Amalfi+Coast',img:'https://images.unsplash.com/photo-1534308143481-c55f00be8bd7?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
-    {name:'Cinque Terre',sub:'Liguria',hot:false,city:'Riomaggiore',prov:'Liguria',ctry:'🇮🇹 Italy',map:'https://maps.google.com/?q=Cinque+Terre',img:'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
+  {id:'it',name:'Italy',nameL:'อิตาลี',continent:'europe',rank:'#3',vis:'57.2M/yr',img:'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&q=80',dests:[
+    {name:'Rome',sub:'Lazio',hot:true,city:'Rome',prov:'Lazio',ctry:'Italy',map:'https://maps.google.com/?q=Rome',img:'https://images.unsplash.com/photo-1525874684015-58379d421a52?w=900&q=80',desc:'โคลอสเซียม วาติกัน สาดน้ำโทรวี',badges:['Colosseum','Vatican','Trevi Fountain']},
+    {name:'Venice',sub:'Veneto',hot:true,city:'Venice',prov:'Veneto',ctry:'Italy',map:'https://maps.google.com/?q=Venice',img:'https://images.unsplash.com/photo-1514890547357-a9ee288728e0?w=900&q=80',desc:'เมืองลอยน้ำ คลองกอนโดล่า',badges:['Grand Canal','Gondola','UNESCO']},
+    {name:'Florence',sub:'Tuscany',hot:false,city:'Florence',prov:'Tuscany',ctry:'Italy',map:'https://maps.google.com/?q=Florence',img:'https://images.unsplash.com/photo-1541343672885-9be56236302a?w=900&q=80',desc:'Renaissance Uffizi Gallery',badges:['Renaissance','Uffizi','Tuscan Wine']},
+    {name:'Amalfi Coast',sub:'Campania',hot:false,city:'Positano',prov:'Campania',ctry:'Italy',map:'https://maps.google.com/?q=Amalfi+Coast',img:'https://images.unsplash.com/photo-1534308143481-c55f00be8bd7?w=900&q=80',desc:'VIP Only',badges:[]},
+    {name:'Cinque Terre',sub:'Liguria',hot:false,city:'Riomaggiore',prov:'Liguria',ctry:'Italy',map:'https://maps.google.com/?q=Cinque+Terre',img:'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=900&q=80',desc:'VIP Only',badges:[]},
   ]},
-  {id:'fr',flag:'🇫🇷',name:'France',nameLocal:'ฝรั่งเศส',continent:'europe',rank:'#4',visitors:'100M/yr',img:'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80',
-   dests:[
-    {name:'Paris',sub:'Île-de-France',hot:true,city:'Paris',prov:'Île-de-France',ctry:'🇫🇷 France',map:'https://maps.google.com/?q=Paris,France',img:'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1400&q=85',desc:'เมืองแห่งความรัก หอไอเฟล ลูฟวร์ มงมาร์ต',badges:['City of Love','Eiffel Tower','Louvre Museum']},
-    {name:'Nice',sub:'French Riviera',hot:true,city:'Nice',prov:'Alpes-Maritimes',ctry:'🇫🇷 France',map:'https://maps.google.com/?q=Nice,France',img:'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=1400&q=85',desc:"ไข่มุกแห่ง Côte d'Azur Promenade des Anglais น้ำทะเลสีฟ้า",badges:['French Riviera','Promenade','Flower Market']},
-    {name:'Mont Saint-Michel',sub:'Normandy',hot:false,city:'Mont-Saint-Michel',prov:'Normandy',ctry:'🇫🇷 France',map:'https://maps.google.com/?q=Mont+Saint+Michel',img:'https://images.unsplash.com/photo-1589083130544-0d6a2926e519?w=1400&q=85',desc:'ปราสาทกลางอ่าว น้ำขึ้นน้ำลงห้อมล้อม Abbey สมัยกลาง',badges:['UNESCO','Tidal Island','Medieval Abbey']},
-    {name:'Versailles',sub:'Île-de-France',hot:false,city:'Versailles',prov:'Yvelines',ctry:'🇫🇷 France',map:'https://maps.google.com/?q=Palace+of+Versailles',img:'https://images.unsplash.com/photo-1565099824688-e93eb20fe622?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
-    {name:'Lyon',sub:'Auvergne-Rhône',hot:false,city:'Lyon',prov:'Auvergne-Rhône-Alpes',ctry:'🇫🇷 France',map:'https://maps.google.com/?q=Lyon,France',img:'https://images.unsplash.com/photo-1524591986429-9f57c1b9e05e?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
+  {id:'fr',name:'France',nameL:'ฝรั่งเศส',continent:'europe',rank:'#4',vis:'100M/yr',img:'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80',dests:[
+    {name:'Paris',sub:'Île-de-France',hot:true,city:'Paris',prov:'Île-de-France',ctry:'France',map:'https://maps.google.com/?q=Paris',img:'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=900&q=80',desc:'หอไอเฟล ลูฟวร์ มงมาร์ต',badges:['City of Love','Eiffel Tower','Louvre']},
+    {name:'Nice',sub:'French Riviera',hot:true,city:'Nice',prov:'Alpes-Maritimes',ctry:'France',map:'https://maps.google.com/?q=Nice',img:'https://images.unsplash.com/photo-1505761671935-60b3a7427bad?w=900&q=80',desc:"Côte d'Azur ทะเลสีฟ้า",badges:['French Riviera','Promenade','Monaco']},
+    {name:'Mont Saint-Michel',sub:'Normandy',hot:false,city:'Mont-Saint-Michel',prov:'Normandy',ctry:'France',map:'https://maps.google.com/?q=Mont+Saint+Michel',img:'https://images.unsplash.com/photo-1589083130544-0d6a2926e519?w=900&q=80',desc:'ปราสาทกลางอ่าว',badges:['UNESCO','Tidal Island','Medieval']},
+    {name:'Lyon',sub:'Auvergne-Rhône',hot:false,city:'Lyon',prov:'Auvergne-Rhône',ctry:'France',map:'https://maps.google.com/?q=Lyon',img:'https://images.unsplash.com/photo-1524591986429-9f57c1b9e05e?w=900&q=80',desc:'VIP Only',badges:[]},
+    {name:'Versailles',sub:'Île-de-France',hot:false,city:'Versailles',prov:'Yvelines',ctry:'France',map:'https://maps.google.com/?q=Palace+of+Versailles',img:'https://images.unsplash.com/photo-1565099824688-e93eb20fe622?w=900&q=80',desc:'VIP Only',badges:[]},
   ]},
-  {id:'us',flag:'🇺🇸',name:'USA',nameLocal:'สหรัฐฯ',continent:'americas',rank:'#5',visitors:'76.9M/yr',img:'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=800&q=80',
-   dests:[
-    {name:'New York',sub:'East Coast',hot:true,city:'New York City',prov:'New York State',ctry:'🇺🇸 USA',map:'https://maps.google.com/?q=New+York+City',img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=1400&q=85',desc:'เมืองที่ไม่หลับ Times Square เสรีภาพ Central Park Broadway',badges:['Times Square','Statue of Liberty','Broadway']},
-    {name:'Grand Canyon',sub:'Arizona Desert',hot:true,city:'Grand Canyon',prov:'Arizona State',ctry:'🇺🇸 USA',map:'https://maps.google.com/?q=Grand+Canyon',img:'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=1400&q=85',desc:'หุบผาอันยิ่งใหญ่ที่สุดในโลก แกะสลักโดยแม่น้ำโคโลราโด',badges:['Natural Wonder','Colorado River','Sunrise Views']},
-    {name:'Hawaii',sub:'Pacific Islands',hot:false,city:'Honolulu',prov:'Hawaii State',ctry:'🇺🇸 USA',map:'https://maps.google.com/?q=Hawaii,USA',img:'https://images.unsplash.com/photo-1542259009477-d625272157b7?w=1400&q=85',desc:'หมู่เกาะสวรรค์ ภูเขาไฟ เล่นเซิร์ฟ Aloha Spirit',badges:['Aloha Spirit','Active Volcano','World-class Surf']},
-    {name:'Las Vegas',sub:'Nevada Desert',hot:false,city:'Las Vegas',prov:'Nevada State',ctry:'🇺🇸 USA',map:'https://maps.google.com/?q=Las+Vegas',img:'https://images.unsplash.com/photo-1617404803854-58b81b1c9a3e?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
-    {name:'Yellowstone',sub:'Rocky Mountains',hot:false,city:'Yellowstone',prov:'Wyoming',ctry:'🇺🇸 USA',map:'https://maps.google.com/?q=Yellowstone',img:'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
+  {id:'us',name:'USA',nameL:'สหรัฐฯ',continent:'americas',rank:'#5',vis:'76.9M/yr',img:'https://images.unsplash.com/photo-1485738422979-f5c462d49f74?w=800&q=80',dests:[
+    {name:'New York',sub:'East Coast',hot:true,city:'New York City',prov:'New York State',ctry:'USA',map:'https://maps.google.com/?q=New+York+City',img:'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=900&q=80',desc:'Times Square เสรีภาพ Broadway',badges:['Times Square','Broadway','Central Park']},
+    {name:'Grand Canyon',sub:'Arizona',hot:true,city:'Grand Canyon',prov:'Arizona',ctry:'USA',map:'https://maps.google.com/?q=Grand+Canyon',img:'https://images.unsplash.com/photo-1474044159687-1ee9f3a51722?w=900&q=80',desc:'หุบผาอันยิ่งใหญ่',badges:['Natural Wonder','Hiking','Sunrise Views']},
+    {name:'Hawaii',sub:'Pacific',hot:false,city:'Honolulu',prov:'Hawaii',ctry:'USA',map:'https://maps.google.com/?q=Hawaii',img:'https://images.unsplash.com/photo-1542259009477-d625272157b7?w=900&q=80',desc:'ภูเขาไฟ หาดทราย Aloha Spirit',badges:['Aloha','Volcano','Surfing']},
+    {name:'Las Vegas',sub:'Nevada',hot:false,city:'Las Vegas',prov:'Nevada',ctry:'USA',map:'https://maps.google.com/?q=Las+Vegas',img:'https://images.unsplash.com/photo-1617404803854-58b81b1c9a3e?w=900&q=80',desc:'VIP Only',badges:[]},
+    {name:'Yellowstone',sub:'Rocky Mts.',hot:false,city:'Yellowstone',prov:'Wyoming',ctry:'USA',map:'https://maps.google.com/?q=Yellowstone',img:'https://images.unsplash.com/photo-1472396961693-142e6e269027?w=900&q=80',desc:'VIP Only',badges:[]},
   ]},
-  {id:'au',flag:'🇦🇺',name:'Australia',nameLocal:'ออสเตรเลีย',continent:'oceania',rank:'#6',visitors:'9.5M/yr',img:'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=800&q=80',
-   dests:[
-    {name:'Sydney',sub:'New South Wales',hot:true,city:'Sydney',prov:'New South Wales',ctry:'🇦🇺 Australia',map:'https://maps.google.com/?q=Sydney,Australia',img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&q=85',desc:'Opera House ริมอ่าว หาด Bondi Harbour Bridge',badges:['Opera House','Bondi Beach','Harbour Bridge']},
-    {name:'Great Barrier Reef',sub:'Queensland',hot:true,city:'Cairns',prov:'Queensland State',ctry:'🇦🇺 Australia',map:'https://maps.google.com/?q=Great+Barrier+Reef',img:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=1400&q=85',desc:'แนวปะการังที่ยาวที่สุดในโลก 2,300 กม. ดำน้ำชมสีสัน',badges:['UNESCO','World Largest Reef','Scuba Diving']},
-    {name:'Melbourne',sub:'Victoria State',hot:false,city:'Melbourne',prov:'Victoria State',ctry:'🇦🇺 Australia',map:'https://maps.google.com/?q=Melbourne,Australia',img:'https://images.unsplash.com/photo-1514395462725-fb4566210144?w=1400&q=85',desc:'เมืองศิลปะวัฒนธรรม Street Art กาแฟ Specialty Australian Open',badges:['Coffee Capital','Street Art','Australian Open']},
-    {name:'Uluru',sub:'Northern Territory',hot:false,city:'Uluru',prov:'Northern Territory',ctry:'🇦🇺 Australia',map:'https://maps.google.com/?q=Uluru,Australia',img:'https://images.unsplash.com/photo-1529108190281-9a4f620bc2d8?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
-    {name:'Gold Coast',sub:'Queensland',hot:false,city:'Surfers Paradise',prov:'Queensland',ctry:'🇦🇺 Australia',map:'https://maps.google.com/?q=Gold+Coast',img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1400&q=85',desc:'🔒 ปลดล็อกด้วย VIP Diamond',badges:[]},
+  {id:'au',name:'Australia',nameL:'ออสเตรเลีย',continent:'oceania',rank:'#6',vis:'9.5M/yr',img:'https://images.unsplash.com/photo-1523482580672-f109ba8cb9be?w=800&q=80',dests:[
+    {name:'Sydney',sub:'NSW',hot:true,city:'Sydney',prov:'New South Wales',ctry:'Australia',map:'https://maps.google.com/?q=Sydney',img:'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=80',desc:'Opera House Bondi Harbour Bridge',badges:['Opera House','Bondi Beach','Harbour Bridge']},
+    {name:'Great Barrier Reef',sub:'Queensland',hot:true,city:'Cairns',prov:'QLD',ctry:'Australia',map:'https://maps.google.com/?q=Great+Barrier+Reef',img:'https://images.unsplash.com/photo-1559827260-dc66d52bef19?w=900&q=80',desc:'แนวปะการังที่ยาวที่สุดในโลก',badges:['UNESCO','Largest Reef','Diving']},
+    {name:'Melbourne',sub:'Victoria',hot:false,city:'Melbourne',prov:'VIC',ctry:'Australia',map:'https://maps.google.com/?q=Melbourne',img:'https://images.unsplash.com/photo-1514395462725-fb4566210144?w=900&q=80',desc:'Street Art กาแฟ Australian Open',badges:['Coffee Capital','Street Art','Culture']},
+    {name:'Uluru',sub:'NT',hot:false,city:'Uluru',prov:'NT',ctry:'Australia',map:'https://maps.google.com/?q=Uluru',img:'https://images.unsplash.com/photo-1529108190281-9a4f620bc2d8?w=900&q=80',desc:'VIP Only',badges:[]},
+    {name:'Gold Coast',sub:'Queensland',hot:false,city:'Surfers Paradise',prov:'QLD',ctry:'Australia',map:'https://maps.google.com/?q=Gold+Coast',img:'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=900&q=80',desc:'VIP Only',badges:[]},
   ]},
 ];
 
@@ -357,171 +453,116 @@ function setCookie(n,v,d){const e=new Date();e.setTime(e.getTime()+d*86400000);d
 function getCookie(n){const m=document.cookie.match('(^|;)\\s*'+n+'\\s*=\\s*([^;]+)');return m?decodeURIComponent(m.pop()):'';}
 function acceptCookies(){setCookie('ge_consent','yes',365);document.getElementById('cookie-toast').classList.remove('show');}
 function declineCookies(){setCookie('ge_consent','no',30);document.getElementById('cookie-toast').classList.remove('show');}
-
 function showModal(){document.getElementById('free-limit').classList.add('show');document.getElementById('fl-overlay').classList.add('show');}
 function closeModal(){document.getElementById('free-limit').classList.remove('show');document.getElementById('fl-overlay').classList.remove('show');}
 
-function buildBGSlides(){
-  const wrap=document.getElementById('bg-wrap');
-  wrap.querySelectorAll('.bg-slide').forEach(el=>el.remove());
+function buildBG(){
+  const w=document.getElementById('bg-wrap');w.querySelectorAll('.bg-slide').forEach(e=>e.remove());
   COUNTRIES.forEach(c=>c.dests.slice(0,FREE_LIMIT).forEach(d=>{
     const el=document.createElement('div');el.className='bg-slide';el.dataset.key=d.img;
-    el.style.backgroundImage=`url(${d.img})`;wrap.appendChild(el);
+    el.style.backgroundImage=`url(${d.img})`;w.appendChild(el);
   }));
 }
 
 function buildCountryCards(){
-  const strip=document.getElementById('country-strip');strip.innerHTML='';
+  const s=document.getElementById('country-strip');s.innerHTML='';
   FILTERED.forEach((c,i)=>{
-    const el=document.createElement('div');el.className='cc'+(i===0?' active':'');el.dataset.i=i;
-    el.innerHTML=`<div class="cc-img" style="background-image:url(${c.img})"></div><div class="cc-over"></div><div class="cc-flag">${c.flag}</div><div class="cc-rank">${c.rank}</div><div class="cc-dot"></div><div class="cc-vis">${c.visitors}</div><div class="cc-name">${c.name}<br><span style="font-size:10px;font-weight:300;opacity:.6">${c.nameLocal}</span></div>`;
-    el.addEventListener('click',()=>selectCountry(i));
-    strip.appendChild(el);
+    const el=document.createElement('div');el.className='cc'+(i===0?' active':'');
+    el.innerHTML=`<div class="cc-img" style="background-image:url(${c.img})"></div><div class="cc-over"></div><img class="cc-flag" src="${FLAGS[c.id]}" alt="${c.name}"><div class="cc-rank">${c.rank}</div><div class="cc-dot"></div><div class="cc-vis">${c.vis}</div><div class="cc-name">${c.name}<br><span style="font-size:10px;font-weight:300;opacity:.55">${c.nameL}</span></div>`;
+    el.addEventListener('click',()=>selectCountry(i));s.appendChild(el);
   });
 }
 
-function buildDestStrip(country){
-  const strip=document.getElementById('dest-strip');strip.innerHTML='';
-  country.dests.forEach((d,i)=>{
+function buildDestStrip(c){
+  const s=document.getElementById('dest-strip');s.innerHTML='';
+  c.dests.forEach((d,i)=>{
     const locked=i>=FREE_LIMIT;
-    const el=document.createElement('div');
-    el.className='dest-card'+(i===0?' active':'')+(locked?' locked-card':'');el.dataset.i=i;
-    el.innerHTML=`
-      <div class="dc-img" style="background-image:url(${d.img})"></div>
-      <div class="dc-over"></div>
-      ${!locked&&d.hot?'<div class="dc-hot">HOT</div>':''}
-      ${locked?`<div class="lock-overlay"><div class="lock-icon">🔒</div><div class="lock-label">VIP Only</div><div class="lock-cnt">${i+1}/${country.dests.length}</div></div>`:''}
-      <div class="dc-prog" id="dp-${i}"></div>
-      <div class="dc-info"><div class="dc-name">${d.name}</div><div class="dc-sub">${locked?'ปลดล็อกด้วย VIP':d.sub}</div></div>
-    `;
-    if(locked){el.addEventListener('click',showModal);}
-    else{el.addEventListener('click',()=>switchDest(i,FILTERED[CUR_CTRY]));}
-    strip.appendChild(el);
+    const el=document.createElement('div');el.className='dest-card'+(i===0?' active':'')+(locked?' locked':'');
+    el.innerHTML=`<div class="dc-img" style="background-image:url(${d.img})"></div><div class="dc-over"></div>${!locked&&d.hot?'<div class="dc-hot">HOT</div>':''}${locked?'<div class="lock-over"><div class="lock-bar"></div><div class="lock-text">VIP Only</div><div class="lock-cnt">'+(i+1)+'/'+c.dests.length+'</div></div>':''}<div class="dc-prog" id="dp-${i}"></div><div class="dc-info"><div class="dc-name">${d.name}</div><div class="dc-sub">${locked?'Upgrade to unlock':d.sub}</div></div>`;
+    if(locked)el.addEventListener('click',showModal);
+    else el.addEventListener('click',()=>switchDest(i,FILTERED[CUR_CTRY]));
+    s.appendChild(el);
+  });
+}
+
+function buildGrid(c){
+  const g=document.getElementById('dest-grid');g.innerHTML='';
+  document.getElementById('grid-title').textContent=c.name+' · Top Destinations (Free Preview)';
+  c.dests.forEach((d,i)=>{
+    const locked=i>=FREE_LIMIT;
+    const el=document.createElement('div');el.className='dg-card'+(locked?' locked-card':'');
+    el.innerHTML=`<div class="dg-img-wrap"><div class="dg-img" style="background-image:url(${d.img})"></div>${!locked&&d.hot?'<div class="dg-hot">HOT</div>':''}${locked?'<div class="dg-lock-over"><div class="dg-lock-bar"></div><div class="dg-lock-txt">VIP Only</div></div>':''}</div><div class="dg-body"><div class="dg-name">${d.name}</div><div class="dg-sub">${d.sub}</div><div class="dg-meta"><div class="dg-badges">${(d.badges||[]).slice(0,2).map(b=>`<span class="dg-badge">${b}</span>`).join('')}</div>${locked?'<a class="dg-upgrade-a" href="travel-vip.html">Upgrade</a>':`<a class="dg-map-a" href="${d.map}" target="_blank" rel="noopener">Map</a>`}</div></div>`;
+    if(locked)el.addEventListener('click',showModal);
+    g.appendChild(el);
+  });
+}
+
+function buildCatBtns(){
+  const w=document.getElementById('cat-btns');w.innerHTML='';
+  Object.entries(CATS).forEach(([k,v])=>{
+    const b=document.createElement('button');b.className='filter-btn'+(k==='all'?' active':'');b.textContent=v;
+    b.addEventListener('click',()=>{document.querySelectorAll('.filter-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');FILTERED=k==='all'?[...COUNTRIES]:COUNTRIES.filter(c=>c.continent===k);buildCountryCards();if(FILTERED.length)selectCountry(0);});
+    w.appendChild(b);
   });
 }
 
 function selectCountry(idx){
-  CUR_CTRY=idx;CUR_DEST=0;
-  const c=FILTERED[idx];
+  CUR_CTRY=idx;CUR_DEST=0;const c=FILTERED[idx];
   document.querySelectorAll('.cc').forEach((el,i)=>el.classList.toggle('active',i===idx));
-  buildDestStrip(c);
+  buildDestStrip(c);buildGrid(c);
   document.getElementById('dest-section').classList.add('open');
-  document.getElementById('ds-flag').textContent=c.flag;
-  document.getElementById('ds-name').textContent=c.name+' · Free Preview';
+  const nw=document.getElementById('ds-name-wrap');
+  nw.innerHTML=`<img src="${FLAGS[c.id]}" style="width:22px;height:16px;border-radius:2px;margin-right:8px">${c.name} &mdash; Free Preview`;
   document.getElementById('tot-num').textContent='/'+String(Math.min(FREE_LIMIT,c.dests.length)).padStart(2,'0');
   switchDest(0,c,true);resetAuto();
 }
 
 function switchDest(idx,country,instant=false){
-  const prev=CUR_DEST;CUR_DEST=idx;
-  const d=country.dests[idx];
-  const bgs=document.querySelectorAll('.bg-slide');
-  let newBg=null;bgs.forEach(b=>{if(b.dataset.key===d.img)newBg=b;});
-  if(!newBg){
-    newBg=document.createElement('div');newBg.className='bg-slide';newBg.dataset.key=d.img;
-    newBg.style.backgroundImage=`url(${d.img})`;document.getElementById('bg-wrap').appendChild(newBg);
-  }
-  const dcards=document.querySelectorAll('.dest-card');
-  const activeCard=dcards[idx];
-  if(instant||!activeCard||!activeCard.getBoundingClientRect().width){
-    bgs.forEach(b=>b.classList.remove('active'));newBg.classList.add('active');
-    gsap.fromTo(newBg,{scale:1.06,opacity:0},{scale:1,opacity:1,duration:.85,ease:'power2.out'});
+  const prev=CUR_DEST;CUR_DEST=idx;const d=country.dests[idx];
+  const bgs=document.querySelectorAll('.bg-slide');let nb=null;bgs.forEach(b=>{if(b.dataset.key===d.img)nb=b;});
+  if(!nb){nb=document.createElement('div');nb.className='bg-slide';nb.dataset.key=d.img;nb.style.backgroundImage=`url(${d.img})`;document.getElementById('bg-wrap').appendChild(nb);}
+  const dcs=document.querySelectorAll('.dest-card');const ac=dcs[idx];
+  if(instant||!ac||!ac.getBoundingClientRect().width){
+    bgs.forEach(b=>b.classList.remove('active'));nb.classList.add('active');
+    gsap.fromTo(nb,{scale:1.06,opacity:0},{scale:1,opacity:1,duration:.85,ease:'power2.out'});
   } else {
-    const rect=activeCard.getBoundingClientRect();
-    const ox=((rect.left+rect.width/2)/window.innerWidth*100).toFixed(1)+'%';
-    const oy=((rect.top+rect.height/2)/window.innerHeight*100).toFixed(1)+'%';
-    newBg.style.transformOrigin=`${ox} ${oy}`;
-    gsap.set(newBg,{opacity:0,scale:.25});newBg.classList.add('active');
-    gsap.to(newBg,{opacity:1,scale:1,duration:.72,ease:'power3.inOut',onComplete:()=>{
-      bgs.forEach(b=>{if(b!==newBg){b.classList.remove('active');gsap.set(b,{scale:1,opacity:0});}});
-      newBg.style.transformOrigin='center center';
-    }});
-    [...bgs].filter(b=>b!==newBg&&b.classList.contains('active')).forEach(b=>gsap.to(b,{opacity:0,scale:1.04,duration:.4,ease:'power2.in'}));
+    const rect=ac.getBoundingClientRect();const ox=((rect.left+rect.width/2)/window.innerWidth*100).toFixed(1)+'%';const oy=((rect.top+rect.height/2)/window.innerHeight*100).toFixed(1)+'%';
+    nb.style.transformOrigin=`${ox} ${oy}`;gsap.set(nb,{opacity:0,scale:.25});nb.classList.add('active');
+    gsap.to(nb,{opacity:1,scale:1,duration:.72,ease:'power3.inOut',onComplete:()=>{bgs.forEach(b=>{if(b!==nb){b.classList.remove('active');gsap.set(b,{scale:1,opacity:0});}});nb.style.transformOrigin='center center';}});
+    [...bgs].filter(b=>b!==nb&&b.classList.contains('active')).forEach(b=>gsap.to(b,{opacity:0,scale:1.04,duration:.4,ease:'power2.in'}));
   }
-  dcards.forEach((c,i)=>c.classList.toggle('active',i===idx));
-  const op=document.getElementById(`dp-${prev}`);
-  if(op&&prev!==idx)gsap.set(op,{width:'0%'});
-
-  // Update panels only for unlocked
-  const r=document.getElementById('dest-region'),t=document.getElementById('dest-title'),desc=document.getElementById('dest-desc'),btn=document.getElementById('btn-discover'),badges=document.getElementById('dest-badges');
+  dcs.forEach((c,i)=>c.classList.toggle('active',i===idx));
+  const op=document.getElementById(`dp-${prev}`);if(op&&prev!==idx)gsap.set(op,{width:'0%'});
+  const r=document.getElementById('dest-region'),t=document.getElementById('dest-title'),desc=document.getElementById('dest-desc'),btn=document.getElementById('btn-discover'),b=document.getElementById('dest-badges');
   gsap.to([r,t,desc],{y:-14,opacity:0,duration:.2,stagger:.04,onComplete:()=>{
     r.textContent=d.sub;t.innerHTML=d.name;desc.textContent=d.desc;btn.href=d.map;
-    badges.innerHTML=(d.badges||[]).map((b,i)=>`<span class="badge${i===0?' hot':''}">${b}</span>`).join('');
+    b.innerHTML=(d.badges||[]).map((x,i)=>`<span class="badge${i===0?' hot':''}">${x}</span>`).join('');
     gsap.fromTo([r,t,desc],{y:18,opacity:0},{y:0,opacity:1,duration:.44,stagger:.07,ease:'power2.out'});
   }});
-
   gsap.to('#loc-badge',{opacity:0,x:-8,duration:.16,onComplete:()=>{
-    document.getElementById('loc-city').textContent=d.city;
-    document.getElementById('loc-prov').textContent=d.prov;
-    document.getElementById('loc-ctry').textContent=d.ctry;
-    document.getElementById('loc-map').href=d.map;
+    document.getElementById('loc-city').textContent=d.city;document.getElementById('loc-prov').textContent=d.prov;
+    document.getElementById('loc-ctry').textContent=d.ctry;document.getElementById('loc-map').href=d.map;
     gsap.to('#loc-badge',{opacity:1,x:0,duration:.34,ease:'power2.out'});
   }});
   document.getElementById('cur-num').textContent=String(idx+1).padStart(2,'0');
   resetAuto();
 }
 
-document.querySelectorAll('.nav-pill').forEach(p=>{
-  p.addEventListener('click',()=>{
-    document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));
-    p.classList.add('active');
-    const cat=p.dataset.cat;
-    FILTERED=cat==='all'?[...COUNTRIES]:COUNTRIES.filter(c=>c.continent===cat);
-    buildCountryCards();if(FILTERED.length>0){CUR_CTRY=0;selectCountry(0);}
-  });
-});
+document.querySelectorAll('.nav-pill').forEach(p=>{p.addEventListener('click',()=>{document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');const cat=p.dataset.cat;FILTERED=cat==='all'?[...COUNTRIES]:COUNTRIES.filter(c=>c.continent===cat);buildCountryCards();if(FILTERED.length)selectCountry(0);});});
 
-function tickAuto(ts){
-  if(!lastTs)lastTs=ts;elapsed+=ts-lastTs;lastTs=ts;
-  const pct=Math.min(elapsed/AUTO_MS*100,100);
-  const dp=document.getElementById(`dp-${CUR_DEST}`);if(dp)dp.style.width=pct+'%';
-  document.getElementById('prog-line').style.width=pct+'%';
-  if(elapsed>=AUTO_MS){
-    elapsed=0;lastTs=null;if(dp)dp.style.width='0%';
-    const c=FILTERED[CUR_CTRY];
-    const next=(CUR_DEST+1)%FREE_LIMIT;switchDest(next,c);
-  }
-  autoRaf=requestAnimationFrame(tickAuto);
-}
+function tickAuto(ts){if(!lastTs)lastTs=ts;elapsed+=ts-lastTs;lastTs=ts;const pct=Math.min(elapsed/AUTO_MS*100,100);const dp=document.getElementById(`dp-${CUR_DEST}`);if(dp)dp.style.width=pct+'%';document.getElementById('prog-line').style.width=pct+'%';if(elapsed>=AUTO_MS){elapsed=0;lastTs=null;if(dp)dp.style.width='0%';const c=FILTERED[CUR_CTRY];switchDest((CUR_DEST+1)%FREE_LIMIT,c);}autoRaf=requestAnimationFrame(tickAuto);}
 function startAuto(){elapsed=0;lastTs=null;autoRaf=requestAnimationFrame(tickAuto);}
 function stopAuto(){cancelAnimationFrame(autoRaf);}
 function resetAuto(){stopAuto();const dp=document.getElementById(`dp-${CUR_DEST}`);if(dp)dp.style.width='0%';document.getElementById('prog-line').style.width='0%';elapsed=0;lastTs=null;setTimeout(startAuto,350);}
 
 document.getElementById('btn-prev').addEventListener('click',()=>{const c=FILTERED[CUR_CTRY];switchDest((CUR_DEST-1+FREE_LIMIT)%FREE_LIMIT,c);});
 document.getElementById('btn-next').addEventListener('click',()=>{const c=FILTERED[CUR_CTRY];switchDest((CUR_DEST+1)%FREE_LIMIT,c);});
-document.addEventListener('keydown',e=>{
-  if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;
-  const c=FILTERED[CUR_CTRY];
-  if(e.key==='ArrowRight'||e.key==='ArrowDown')switchDest((CUR_DEST+1)%FREE_LIMIT,c);
-  if(e.key==='ArrowLeft'||e.key==='ArrowUp')switchDest((CUR_DEST-1+FREE_LIMIT)%FREE_LIMIT,c);
-});
-let wLock=false;
-document.addEventListener('wheel',e=>{if(wLock)return;wLock=true;setTimeout(()=>wLock=false,850);const c=FILTERED[CUR_CTRY];e.deltaY>0?switchDest((CUR_DEST+1)%FREE_LIMIT,c):switchDest((CUR_DEST-1+FREE_LIMIT)%FREE_LIMIT,c);},{passive:true});
-(function(){
-  let sx=0,sy=0,st=0;
-  document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();},{passive:true});
-  document.addEventListener('touchend',e=>{
-    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy,held=Date.now()-st;
-    if(held>300||Math.abs(dy)>Math.abs(dx)||Math.abs(dx)<35)return;
-    const c=FILTERED[CUR_CTRY];
-    dx<0?switchDest((CUR_DEST+1)%FREE_LIMIT,c):switchDest((CUR_DEST-1+FREE_LIMIT)%FREE_LIMIT,c);
-  },{passive:true});
-})();
+document.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;const c=FILTERED[CUR_CTRY];if(e.key==='ArrowRight'||e.key==='ArrowDown')switchDest((CUR_DEST+1)%FREE_LIMIT,c);if(e.key==='ArrowLeft'||e.key==='ArrowUp')switchDest((CUR_DEST-1+FREE_LIMIT)%FREE_LIMIT,c);});
+let wLock=false;document.addEventListener('wheel',e=>{if(window.scrollY>60)return;if(wLock)return;wLock=true;setTimeout(()=>wLock=false,850);const c=FILTERED[CUR_CTRY];e.deltaY>0?switchDest((CUR_DEST+1)%FREE_LIMIT,c):switchDest((CUR_DEST-1+FREE_LIMIT)%FREE_LIMIT,c);},{passive:true});
+(function(){let sx=0,sy=0,st=0;document.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;st=Date.now();},{passive:true});document.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy,held=Date.now()-st;if(held>300||Math.abs(dy)>Math.abs(dx)||Math.abs(dx)<35)return;const c=FILTERED[CUR_CTRY];dx<0?switchDest((CUR_DEST+1)%FREE_LIMIT,c):switchDest((CUR_DEST-1+FREE_LIMIT)%FREE_LIMIT,c);},{passive:true});})();
 
-function init(){
-  buildBGSlides();buildCountryCards();
-  if(!getCookie('ge_consent'))setTimeout(()=>document.getElementById('cookie-toast').classList.add('show'),2200);
-  selectCountry(0);
-  gsap.set('#left-panel > *',{opacity:0,y:22});gsap.to('#left-panel > *',{opacity:1,y:0,duration:.8,stagger:.1,ease:'power3.out',delay:.6});
-  gsap.set('#loc-badge',{opacity:0,x:-16});gsap.to('#loc-badge',{opacity:1,x:0,duration:.7,ease:'power3.out',delay:.9});
-  gsap.set('.cc',{opacity:0,y:26,scale:.93});gsap.to('.cc',{opacity:1,y:0,scale:1,duration:.55,stagger:.08,ease:'back.out(1.4)',delay:.75});
-  gsap.set('#free-badge',{opacity:0,y:-14});gsap.to('#free-badge',{opacity:1,y:0,duration:.6,ease:'back.out(1.4)',delay:1.1});
-  startAuto();
-}
+function init(){buildBG();buildCountryCards();buildCatBtns();if(!getCookie('ge_consent'))setTimeout(()=>document.getElementById('cookie-toast').classList.add('show'),2200);selectCountry(0);gsap.set('#left-panel > *',{opacity:0,y:22});gsap.to('#left-panel > *',{opacity:1,y:0,duration:.8,stagger:.1,ease:'power3.out',delay:.6});gsap.set('#loc-badge',{opacity:0,x:-16});gsap.to('#loc-badge',{opacity:1,x:0,duration:.7,ease:'power3.out',delay:.9});gsap.set('.cc',{opacity:0,y:26,scale:.93});gsap.to('.cc',{opacity:1,y:0,scale:1,duration:.55,stagger:.08,ease:'back.out(1.4)',delay:.75});gsap.set('#free-badge',{opacity:0,y:-14});gsap.to('#free-badge',{opacity:1,y:0,duration:.6,ease:'back.out(1.4)',delay:1.1});startAuto();}
 init();
-  function goToRegister() {
-    window.location.href = 'index.html'; 
-  }
 </script>
 </body>
 </html>
