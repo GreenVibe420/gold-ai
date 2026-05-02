@@ -563,6 +563,9 @@ let wLock=false;document.addEventListener('wheel',e=>{if(window.scrollY>60)retur
 
 function init(){buildBG();buildCountryCards();buildCatBtns();if(!getCookie('ge_consent'))setTimeout(()=>document.getElementById('cookie-toast').classList.add('show'),2200);selectCountry(0);gsap.set('#left-panel > *',{opacity:0,y:22});gsap.to('#left-panel > *',{opacity:1,y:0,duration:.8,stagger:.1,ease:'power3.out',delay:.6});gsap.set('#loc-badge',{opacity:0,x:-16});gsap.to('#loc-badge',{opacity:1,x:0,duration:.7,ease:'power3.out',delay:.9});gsap.set('.cc',{opacity:0,y:26,scale:.93});gsap.to('.cc',{opacity:1,y:0,scale:1,duration:.55,stagger:.08,ease:'back.out(1.4)',delay:.75});gsap.set('#free-badge',{opacity:0,y:-14});gsap.to('#free-badge',{opacity:1,y:0,duration:.6,ease:'back.out(1.4)',delay:1.1});startAuto();}
 init();
+  function goToRegister() {
+    window.location.href = 'index.html'; 
+  }
 </script>
 </body>
 </html>
