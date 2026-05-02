@@ -122,39 +122,7 @@ html,body{width:100%;font-family:'Inter',sans-serif;background:var(--bg);color:#
 .cc.active .cc-dot{opacity:1;transform:scale(1);}
 .cc-vis{position:absolute;bottom:27px;left:8px;z-index:3;font-size:9px;color:rgba(255,255,255,.36);letter-spacing:1px;}
 .cc-name{position:absolute;bottom:8px;left:8px;right:8px;z-index:3;font-family:'Oswald',sans-serif;font-size:13px;font-weight:700;color:#fff;text-transform:uppercase;letter-spacing:.8px;line-height:1.2;}
-  /* ตั้งค่าเริ่มต้นให้กับแถบ */
-.plan-badge {
-  position: fixed; /* หรือ absolute ขึ้นอยู่กับโครงสร้างของคุณ */
-  top: 20px;
-  /* ใส่ CSS การตกแต่งสีฟ้าและรูปทรงเดิมของคุณตรงนี้ */
   
-  /* เรียกใช้แอนิเมชันเด้งลงมา (ตอนโหลดหน้าเว็บ) */
-  animation: popDown 0.5s ease-out forwards;
-}
-
-/* Class สำหรับสั่งให้ซ่อนตัว */
-.plan-badge.hide {
-  /* เรียกใช้แอนิเมชันเลื่อนขึ้นและจางหาย */
-  animation: fadeOutUp 0.5s ease-in forwards;
-}
-
-/* Keyframes สำหรับตอนเด้งลงมา */
-@keyframes popDown {
-  0% { transform: translateY(-50px); opacity: 0; }
-  60% { transform: translateY(10px); opacity: 1; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
-/* Keyframes สำหรับตอนหายไป */
-@keyframes fadeOutUp {
-  0% { transform: translateY(0); opacity: 1; }
-  100% { 
-    transform: translateY(-50px); 
-    opacity: 0; 
-    visibility: hidden; /* ปิดการมองเห็นและการคลิก */
-  }
-}
-
 
 /* MAIN */
 #main{background:var(--bg);position:relative;z-index:10;}
@@ -289,9 +257,7 @@ html,body{width:100%;font-family:'Inter',sans-serif;background:var(--bg);color:#
   <div class="grid-ol"></div>
   <div id="prog-line"></div>
 
-  <div id="free-plan-badge" class="plan-badge">
-  ALL FREE PLAN — 3 DESTINATIONS / COUNTRY
-</div>
+  
 
   <nav id="navbar">
     <div class="nav-logo">Globe Express<span>Free Edition</span></div>
@@ -582,21 +548,6 @@ function switchDest(idx,country,instant=false){
   document.getElementById('cur-num').textContent=String(idx+1).padStart(2,'0');
   resetAuto();
 }
-document.addEventListener("DOMContentLoaded", () => {
-  // ตั้งเวลา 3 วินาที
-  setTimeout(() => {
-    const badge = document.getElementById('free-plan-badge');
-    if (badge) {
-      // เพิ่ม class 'hide' เพื่อให้แอนิเมชันตอนหายไปทำงาน
-      badge.classList.add('hide');
-      
-      // (ตัวเลือกเสริม) ลบ Element ออกจากหน้าเว็บอย่างสมบูรณ์หลังจากแอนิเมชันเล่นจบ (0.5 วินาที)
-      setTimeout(() => {
-        badge.style.display = 'none';
-      }, 500); 
-    }
-  }, 3000);
-});
 
 document.querySelectorAll('.nav-pill').forEach(p=>{p.addEventListener('click',()=>{document.querySelectorAll('.nav-pill').forEach(x=>x.classList.remove('active'));p.classList.add('active');const cat=p.dataset.cat;FILTERED=cat==='all'?[...COUNTRIES]:COUNTRIES.filter(c=>c.continent===cat);buildCountryCards();if(FILTERED.length)selectCountry(0);});});
 
